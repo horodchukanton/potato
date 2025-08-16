@@ -587,12 +587,11 @@ export default class GameScene extends Phaser.Scene {
 
     // Button click events
     playTetrisButton.on('pointerdown', () => {
-      console.log('Would transition to Tetris scene');
-      // TODO: Uncomment when TetrisScene is implemented
-      // this.scene.start(SCENE_KEYS.TETRIS);
-      
-      // For now, just close the dialog and continue
-      this.closeTetrisPrompt(overlay, congratsText, achievementText, promptText, playTetrisButton, continueButton);
+      console.log('Transitioning to Tetris scene');
+      // Save current phase to LocalStorage
+      localStorage.setItem(STORAGE_KEYS.CURRENT_PHASE, 'tetris');
+      // Start TetrisScene
+      this.scene.start(SCENE_KEYS.TETRIS);
     });
 
     continueButton.on('pointerdown', () => {

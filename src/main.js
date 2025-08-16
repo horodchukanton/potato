@@ -3,6 +3,7 @@ import { GAME_CONFIG, SCENE_KEYS } from './config.js';
 import PreloadScene from './scenes/PreloadScene.js';
 import MenuScene from './scenes/MenuScene.js';
 import GameScene from './scenes/GameScene.js';
+import TetrisScene from './scenes/TetrisScene.js';
 
 /**
  * Main game initialization and configuration
@@ -43,7 +44,8 @@ class Game {
       scene: [
         PreloadScene,
         MenuScene,
-        GameScene
+        GameScene,
+        TetrisScene
       ]
     };
 
