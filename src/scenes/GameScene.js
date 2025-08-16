@@ -59,11 +59,18 @@ export default class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
+    // Create ground platform for the player to stand on
+    this.ground = this.add.rectangle(width / 2, height - 20, width, 40, 0x8B4513);
+    this.physics.add.existing(this.ground, true); // true makes it static
+    
     // Create player as a colored rectangle for now
-    this.player = this.add.rectangle(100, height - 100, 32, 48, 0xe74c3c);
+    this.player = this.add.rectangle(100, height - 60, 32, 48, 0xe74c3c);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setSize(32, 48);
+    
+    // Add collision between player and ground
+    this.physics.add.collider(this.player, this.ground);
   }
 
   /**
