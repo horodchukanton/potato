@@ -103,6 +103,34 @@ potato/
 
 ### Troubleshooting
 
+
+#### Common Issues
+- **Port already in use**: If port 8080 is busy, webpack will use the next available port
+- **Module not found**: Run `npm install` to ensure all dependencies are installed
+- **Build fails**: Check Node.js version (requires 16+)
+- **Game doesn't load**: Check browser console for JavaScript errors
+
+#### Development Tips for Agents
+1. **Quick Start**: `cd /path/to/potato && npm install && npm start`
+2. **Verify Game State**: Check browser console for Phaser initialization messages
+3. **Test Features**: Use browser dev tools to monitor game object creation
+4. **Build Verification**: After `npm run build`, serve `dist/index.html` to test production build
+
+### Deployment to GitHub Pages
+1. Run `npm run build` to create production build
+2. Copy contents of `dist/` folder to GitHub Pages source
+3. Commit and push to trigger GitHub Pages deployment
+4. Game will be available at `https://username.github.io/repository-name/`
+
+### Current Status
+✅ Phaser framework integrated and working  
+✅ Basic project structure established  
+✅ Test scenes implemented (Preload, Menu, Game)  
+✅ Build system configured for GitHub Pages deployment  
+🚧 Game mechanics in development  
+🚧 Asset creation pending
+
+
 **Port 8080 already in use:**
 ```bash
 # Kill process using port 8080
