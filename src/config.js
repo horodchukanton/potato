@@ -28,6 +28,14 @@ export const GAME_CONFIG = {
     COLOR: 0x808080, // Grey color for rock-like obstacles
     DAMAGE: 1, // Damage dealt to player
     LIVES: 3 // Player starting lives
+  },
+  // Bubble configuration
+  BUBBLES: {
+    SPEED_X: -150, // Horizontal speed matching obstacles
+    SPEED_Y_MIN: -30, // Minimum vertical speed for diagonal movement
+    SPEED_Y_MAX: 30, // Maximum vertical speed for diagonal movement
+    COLOR: 0x3498db, // Blue color
+    RADIUS: 16 // Bubble radius
   }
 };
 
@@ -66,4 +74,5 @@ export const STORAGE_KEYS = {
   CURRENT_PHASE: 'current_phase',
   TETRIS_LINES: 'tetris_lines',
   TETROMINOES_USED: 'tetrominoes_used',
+  FIRST_BUBBLE_COLLECTED: 'first_bubble_collected',
 };

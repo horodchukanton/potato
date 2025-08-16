@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { SCENE_KEYS, GAME_CONFIG, ASSET_KEYS } from '../config.js';
+import { SCENE_KEYS, GAME_CONFIG, ASSET_KEYS, STORAGE_KEYS } from '../config.js';
 
 /**
  * GameScene handles the main running and collecting gameplay
@@ -13,7 +13,10 @@ export default class GameScene extends Phaser.Scene {
    * Initialize scene data
    */
   init() {
-    this.bubblesCollected = 0;
+    // Load saved progress from localStorage
+    this.bubblesCollected = this.loadProgress();
+    this.firstBubbleCollected = this.loadFirstBubbleFlag();
+    
     this.cursors = null;
     this.player = null;
     this.bubbles = null;
@@ -22,6 +25,36 @@ export default class GameScene extends Phaser.Scene {
     this.gameOver = false;
     this.invulnerable = false;
     this.invulnerabilityTimer = null;
+  }
+
+  /**
+   * Load bubble collection progress from localStorage
+   */
+  loadProgress() {
+    const saved = localStorage.getItem(STORAGE_KEYS.BUBBLES_COLLECTED);
+    return saved ? parseInt(saved, 10) : 0;
+  }
+
+  /**
+   * Load first bubble collection flag from localStorage
+   */
+  loadFirstBubbleFlag() {
+    const saved = localStorage.getItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED);
+    return saved === 'true';
+  }
+
+  /**
+   * Save bubble collection progress to localStorage
+   */
+  saveProgress() {
+    localStorage.setItem(STORAGE_KEYS.BUBBLES_COLLECTED, this.bubblesCollected.toString());
+  }
+
+  /**
+   * Save first bubble collection flag to localStorage
+   */
+  saveFirstBubbleFlag() {
+    localStorage.setItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED, 'true');
   }
 
   /**
@@ -223,7 +256,7 @@ export default class GameScene extends Phaser.Scene {
    * Create UI elements
    */
   createUI() {
-    this.bubblesText = this.add.text(16, 16, 'Bubbles: 0', {
+    this.bubblesText = this.add.text(16, 16, `Bubbles: ${this.bubblesCollected}`, {
       font: '18px Arial',
       fill: '#2c3e50',
       backgroundColor: '#ecf0f1',
@@ -307,12 +340,16 @@ export default class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
-    const x = Phaser.Math.Between(width, width - 200);
+    const x = Phaser.Math.Between(width, width + 200);
     const y = Phaser.Math.Between(100, height - 100);
     
-    const bubble = this.add.circle(x, y, 16, 0x3498db);
+    const bubble = this.add.circle(x, y, GAME_CONFIG.BUBBLES.RADIUS, GAME_CONFIG.BUBBLES.COLOR);
     this.physics.add.existing(bubble);
-    bubble.body.setVelocityX(-100);
+    
+    // Set diagonal movement with X speed matching obstacles and random Y movement
+    bubble.body.setVelocityX(GAME_CONFIG.BUBBLES.SPEED_X);
+    bubble.body.setVelocityY(Phaser.Math.Between(GAME_CONFIG.BUBBLES.SPEED_Y_MIN, GAME_CONFIG.BUBBLES.SPEED_Y_MAX));
+    
     this.bubbles.add(bubble);
 
     // Remove bubble when it goes off screen
@@ -361,12 +398,70 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /**
+   * Trigger cutscene/animation for first bubble collection
+   */
+  triggerFirstBubbleCutscene() {
+    // Pause game temporarily
+    this.physics.pause();
+    
+    // Create glowing effect on player's belly
+    const glowEffect = this.add.circle(this.player.x, this.player.y + 10, 20, 0xffff00, 0.6);
+    
+    // Animate the glow effect
+    this.tweens.add({
+      targets: glowEffect,
+      alpha: { from: 0.6, to: 0.2 },
+      scaleX: { from: 1, to: 1.5 },
+      scaleY: { from: 1, to: 1.5 },
+      duration: 1000,
+      yoyo: true,
+      repeat: 2,
+      onComplete: () => {
+        glowEffect.destroy();
+        this.physics.resume();
+      }
+    });
+
+    // Show cutscene message
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    const cutsceneText = this.add.text(width / 2, height / 2 - 100, 'Magic energy flows through you!', {
+      font: 'bold 24px Arial',
+      fill: '#ffff00',
+      stroke: '#000000',
+      strokeThickness: 2,
+      align: 'center'
+    }).setOrigin(0.5);
+
+    // Fade out the cutscene text
+    this.tweens.add({
+      targets: cutsceneText,
+      alpha: { from: 1, to: 0 },
+      duration: 3000,
+      onComplete: () => {
+        cutsceneText.destroy();
+      }
+    });
+  }
+
+  /**
    * Handle bubble collection
    */
   collectBubble(player, bubble) {
     bubble.destroy();
     this.bubblesCollected++;
     this.bubblesText.setText(`Bubbles: ${this.bubblesCollected}`);
+
+    // Save progress to localStorage
+    this.saveProgress();
+
+    // Trigger cutscene on first bubble collection
+    if (!this.firstBubbleCollected) {
+      this.firstBubbleCollected = true;
+      this.saveFirstBubbleFlag();
+      this.triggerFirstBubbleCutscene();
+    }
 
     // Check if reached target
     if (this.bubblesCollected >= GAME_CONFIG.BUBBLE_COLLECTION_TARGET) {
