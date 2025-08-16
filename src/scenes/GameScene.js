@@ -18,6 +18,10 @@ export default class GameScene extends Phaser.Scene {
     this.player = null;
     this.bubbles = null;
     this.obstacles = null;
+    this.playerLives = GAME_CONFIG.OBSTACLES.LIVES;
+    this.gameOver = false;
+    this.invulnerable = false;
+    this.invulnerabilityTimer = null;
   }
 
   /**
@@ -226,13 +230,21 @@ export default class GameScene extends Phaser.Scene {
       padding: { x: 8, y: 4 }
     });
 
+    // Lives display
+    this.livesText = this.add.text(16, 42, `Lives: ${this.playerLives}`, {
+      font: '18px Arial',
+      fill: '#e74c3c',
+      backgroundColor: '#ecf0f1',
+      padding: { x: 8, y: 4 }
+    });
+
     // Responsive instructions based on device type
     const isMobile = this.sys.game.device.input.touch;
     const instructionText = isMobile 
       ? 'Tap Left/Right to Move | Tap Upper Right to Jump'
       : 'Arrow Keys: Move | Space: Jump';
     
-    this.instructionsText = this.add.text(16, 50, instructionText, {
+    this.instructionsText = this.add.text(16, 76, instructionText, {
       font: '14px Arial',
       fill: '#2c3e50',
       backgroundColor: '#ecf0f1',
@@ -275,6 +287,14 @@ export default class GameScene extends Phaser.Scene {
       callbackScope: this,
       loop: true
     });
+
+    // Spawn obstacles every 3-6 seconds
+    this.obstacleTimer = this.time.addEvent({
+      delay: Phaser.Math.Between(GAME_CONFIG.OBSTACLES.SPAWN_DELAY_MIN, GAME_CONFIG.OBSTACLES.SPAWN_DELAY_MAX),
+      callback: this.createObstacle,
+      callbackScope: this,
+      loop: true
+    });
   }
 
   /**
@@ -298,6 +318,41 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /**
+   * Create an obstacle with procedural generation
+   */
+  createObstacle() {
+    if (this.gameOver) return;
+    
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    // Generate obstacle properties
+    const obstacleHeight = Phaser.Math.Between(GAME_CONFIG.OBSTACLES.MIN_HEIGHT, GAME_CONFIG.OBSTACLES.MAX_HEIGHT);
+    const obstacleWidth = GAME_CONFIG.OBSTACLES.WIDTH;
+    
+    // Position obstacle off-screen to the right, on the ground
+    const x = width + obstacleWidth;
+    const y = height - 40 - (obstacleHeight / 2); // Ground level minus half obstacle height
+    
+    // Create obstacle as a colored rectangle
+    const obstacle = this.add.rectangle(x, y, obstacleWidth, obstacleHeight, GAME_CONFIG.OBSTACLES.COLOR);
+    this.physics.add.existing(obstacle);
+    obstacle.body.setVelocityX(GAME_CONFIG.OBSTACLES.SPEED);
+    obstacle.body.setImmovable(true);
+    this.obstacles.add(obstacle);
+
+    // Remove obstacle when it goes off screen
+    obstacle.body.checkWorldBounds = true;
+    obstacle.body.outOfBoundsKill = true;
+
+    // Update the timer for next obstacle spawn with randomized delay
+    this.obstacleTimer.delay = Phaser.Math.Between(
+      GAME_CONFIG.OBSTACLES.SPAWN_DELAY_MIN, 
+      GAME_CONFIG.OBSTACLES.SPAWN_DELAY_MAX
+    );
+  }
+
+  /**
    * Handle bubble collection
    */
   collectBubble(player, bubble) {
@@ -315,8 +370,41 @@ export default class GameScene extends Phaser.Scene {
    * Handle obstacle collision
    */
   hitObstacle(player, obstacle) {
-    // Simple reaction for now - just bounce back a bit
-    player.body.setVelocityX(-50);
+    // Don't take damage if already invulnerable or game is over
+    if (this.invulnerable || this.gameOver) return;
+
+    // Take damage
+    this.playerLives -= GAME_CONFIG.OBSTACLES.DAMAGE;
+    this.livesText.setText(`Lives: ${this.playerLives}`);
+
+    // Player knockback effect
+    player.body.setVelocityX(-150);
+    player.body.setVelocityY(-200);
+
+    // Make player temporarily invulnerable
+    this.invulnerable = true;
+    this.player.setTint(0xff0000); // Red tint to show damage
+
+    // Clear existing invulnerability timer if any
+    if (this.invulnerabilityTimer) {
+      this.invulnerabilityTimer.remove();
+    }
+
+    // Set invulnerability timer
+    this.invulnerabilityTimer = this.time.delayedCall(2000, () => {
+      this.invulnerable = false;
+      this.player.clearTint(); // Remove damage tint
+      this.invulnerabilityTimer = null;
+    });
+
+    // Check for game over
+    if (this.playerLives <= 0) {
+      this.gameOver = true;
+      this.showGameOverScreen();
+    }
+
+    // Remove the obstacle that was hit
+    obstacle.destroy();
   }
 
   /**
@@ -332,9 +420,87 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /**
+   * Show game over screen with restart option
+   */
+  showGameOverScreen() {
+    // Stop all timers
+    if (this.bubbleTimer) this.bubbleTimer.remove();
+    if (this.obstacleTimer) this.obstacleTimer.remove();
+
+    // Create semi-transparent overlay
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.7);
+    
+    // Game Over text
+    const gameOverText = this.add.text(width / 2, height / 2 - 50, 'GAME OVER', {
+      font: 'bold 48px Arial',
+      fill: '#e74c3c',
+      stroke: '#ffffff',
+      strokeThickness: 3
+    }).setOrigin(0.5);
+
+    // Score display
+    const scoreText = this.add.text(width / 2, height / 2, `Bubbles Collected: ${this.bubblesCollected}`, {
+      font: '24px Arial',
+      fill: '#ecf0f1'
+    }).setOrigin(0.5);
+
+    // Restart button
+    const restartButton = this.add.text(width / 2, height / 2 + 60, 'Restart Game', {
+      font: 'bold 20px Arial',
+      fill: '#27ae60',
+      backgroundColor: '#2c3e50',
+      padding: { x: 20, y: 10 }
+    }).setOrigin(0.5);
+
+    // Menu button
+    const menuButton = this.add.text(width / 2, height / 2 + 110, 'Back to Menu', {
+      font: '18px Arial',
+      fill: '#3498db',
+      backgroundColor: '#2c3e50',
+      padding: { x: 20, y: 10 }
+    }).setOrigin(0.5);
+
+    // Make buttons interactive
+    restartButton.setInteractive({ useHandCursor: true });
+    menuButton.setInteractive({ useHandCursor: true });
+
+    // Button hover effects
+    restartButton.on('pointerover', () => {
+      restartButton.setStyle({ fill: '#2ecc71' });
+    });
+
+    restartButton.on('pointerout', () => {
+      restartButton.setStyle({ fill: '#27ae60' });
+    });
+
+    menuButton.on('pointerover', () => {
+      menuButton.setStyle({ fill: '#5dade2' });
+    });
+
+    menuButton.on('pointerout', () => {
+      menuButton.setStyle({ fill: '#3498db' });
+    });
+
+    // Button click events
+    restartButton.on('pointerdown', () => {
+      this.scene.restart();
+    });
+
+    menuButton.on('pointerdown', () => {
+      this.scene.start(SCENE_KEYS.MENU);
+    });
+  }
+
+  /**
    * Update loop - handle player movement and game logic
    */
   update() {
+    // Don't process movement if game is over
+    if (this.gameOver) return;
+    
     this.handlePlayerMovement();
   }
 

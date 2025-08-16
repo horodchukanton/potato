@@ -16,6 +16,18 @@ export const GAME_CONFIG = {
     FEEDBACK_ALPHA: 1.0,
     NORMAL_ALPHA: 0.6,
     INDICATOR_SIZE: 32
+  },
+  // Obstacle configuration
+  OBSTACLES: {
+    SPAWN_DELAY_MIN: 3000, // Minimum time between obstacle spawns (ms)
+    SPAWN_DELAY_MAX: 6000, // Maximum time between obstacle spawns (ms)
+    SPEED: -120, // Obstacle movement speed (negative = moving left)
+    MIN_HEIGHT: 40, // Minimum obstacle height
+    MAX_HEIGHT: 80, // Maximum obstacle height
+    WIDTH: 30, // Obstacle width
+    COLOR: 0x8B4513, // Brown color for obstacles
+    DAMAGE: 1, // Damage dealt to player
+    LIVES: 3 // Player starting lives
   }
 };
 
