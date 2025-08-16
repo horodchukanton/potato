@@ -15,12 +15,30 @@ class Game {
       height: GAME_CONFIG.HEIGHT,
       parent: 'game-container',
       backgroundColor: '#2c3e50',
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        min: {
+          width: 320,
+          height: 240
+        },
+        max: {
+          width: 1600,
+          height: 1200
+        }
+      },
       physics: {
         default: 'arcade',
         arcade: {
           gravity: { y: GAME_CONFIG.PHYSICS.GRAVITY },
           debug: false
         }
+      },
+      input: {
+        activePointers: 3, // Support multi-touch
+        keyboard: true,
+        mouse: true,
+        touch: true
       },
       scene: [
         PreloadScene,

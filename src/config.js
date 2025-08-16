@@ -6,11 +6,17 @@ export const GAME_CONFIG = {
   HEIGHT: 600,
   PHYSICS: {
     GRAVITY: 300,
-    PLAYER_SPEED: 160,
-    JUMP_VELOCITY: -330,
+    PLAYER_SPEED: 180, // Slightly increased for better responsiveness
+    JUMP_VELOCITY: -350, // Slightly stronger jump for mobile
   },
   BUBBLE_COLLECTION_TARGET: 50,
   TETRIS_LINES_TARGET: 34,
+  // Mobile touch responsiveness settings
+  TOUCH: {
+    FEEDBACK_ALPHA: 1.0,
+    NORMAL_ALPHA: 0.6,
+    INDICATOR_SIZE: 32
+  }
 };
 
 /**
