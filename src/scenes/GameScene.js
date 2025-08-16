@@ -330,8 +330,8 @@ export default class GameScene extends Phaser.Scene {
     const obstacleHeight = Phaser.Math.Between(GAME_CONFIG.OBSTACLES.MIN_HEIGHT, GAME_CONFIG.OBSTACLES.MAX_HEIGHT);
     const obstacleWidth = GAME_CONFIG.OBSTACLES.WIDTH;
     
-    // Position obstacle off-screen to the right, on the ground
-    const x = width + obstacleWidth;
+    // Position obstacle just off-screen to the right, on the ground
+    const x = width + (obstacleWidth / 2); // Start at right edge with half width offset
     const y = height - 40 - (obstacleHeight / 2); // Ground level minus half obstacle height
     
     // Create obstacle as a colored rectangle
