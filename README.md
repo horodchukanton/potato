@@ -1,11 +1,16 @@
 ## Overview
 Build a small 2-phase birthday game for a friend using Phaser. Publish on GitHub Pages. Use LocalStorage to save progress.
 
+Assets:
+ - Player: a pixelated male human with big height
+ - Bubble: small blue/red/green baloons
+ - Obstacle: a small rock
+
 ## Phases
 1. **Running & Collecting**
-    - Player runs on a horizontal plane (infinite runner style).
-    - Obstacles appear, player must avoid them.
-    - Player collects bubbles.
+    - A horizontal plane moves under the player (infinite runner style).
+    - Obstacles appear, player must jump over them.
+    - Player collects bubbles that appear randomly. Bubbles are collected by colliding with them.
     - After catching the first bubble, a cutscene shows his belly glowing and a tetromino forming inside.
     - When 50 bubbles are collected, a dialog asks if player wants to play Tetris. On confirmation, belly glows brighter and game switches to Phase 2.
 2. **Tetris**
