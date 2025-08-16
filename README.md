@@ -1,3 +1,18 @@
+# Potato - Birthday Game
+
+## Quick Start
+
+**For immediate development:**
+```bash
+npm install          # Install dependencies
+npm start           # Start development server (http://localhost:8080)
+```
+
+**For building/deployment:**
+```bash
+npm run build       # Create production build in dist/
+```
+
 ## Overview
 Build a small 2-phase birthday game for a friend using Phaser. Publish on GitHub Pages. Use LocalStorage to save progress.
 
@@ -31,19 +46,34 @@ Assets:
 - npm
 
 ### Installation
-1. Clone the repository
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/horodchukanton/potato.git
+   cd potato
+   ```
 2. Install dependencies:
    ```bash
    npm install
    ```
 
-### Running the Game
-- **Development mode**: `npm start`
-  - Starts a development server at http://localhost:8080
-  - Includes hot reload for development
-- **Build for production**: `npm run build`
-  - Creates optimized build in `dist/` folder
-  - Ready for deployment to GitHub Pages
+### Development Commands
+
+| Command | Description | URL |
+|---------|-------------|-----|
+| `npm start` | Start development server with hot reload | http://localhost:8080 |
+| `npm run build` | Create production build | Creates `dist/` folder |
+
+### Development Workflow
+1. **Start development**: `npm start`
+2. **Open browser**: Navigate to http://localhost:8080
+3. **Make changes**: Edit files in `src/` - changes auto-reload
+4. **Build for production**: `npm run build` when ready to deploy
+
+### Deployment to GitHub Pages
+1. Build the project: `npm run build`
+2. The `dist/` folder contains the deployable files
+3. Deploy `dist/` contents to GitHub Pages
+4. Game will be available at: `https://horodchukanton.github.io/potato/`
 
 ### Project Structure
 ```
@@ -70,3 +100,31 @@ potato/
 ✅ Build system configured for GitHub Pages deployment  
 🚧 Game mechanics in development  
 🚧 Asset creation pending  
+
+### Troubleshooting
+
+**Port 8080 already in use:**
+```bash
+# Kill process using port 8080
+npx kill-port 8080
+# Or use different port
+npm start -- --port 3000
+```
+
+**Build warnings about bundle size:**
+- This is expected for Phaser games
+- Bundle includes entire Phaser framework (~1.15MB)
+- Warnings don't affect functionality
+
+**Development server not accessible:**
+- Ensure you're using http://localhost:8080 (not 127.0.0.1)
+- Check firewall settings
+- Try restarting the development server
+
+### For Automated Agents/CI
+```bash
+# Complete setup and verification
+npm ci                    # Clean install (faster for CI)
+npm run build            # Verify build works
+test -f dist/index.html  # Verify build output exists
+```
