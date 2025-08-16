@@ -25,6 +25,7 @@ export default class GameScene extends Phaser.Scene {
     this.gameOver = false;
     this.invulnerable = false;
     this.invulnerabilityTimer = null;
+    this.tetrisPromptShowing = false;
   }
 
   /**
@@ -514,12 +515,109 @@ export default class GameScene extends Phaser.Scene {
    * Show prompt to play Tetris phase
    */
   showTetrisPrompt() {
-    // Simple alert for now - will be replaced with proper dialog
-    const confirmed = confirm(`You collected ${GAME_CONFIG.BUBBLE_COLLECTION_TARGET} bubbles! Play Tetris phase?`);
-    if (confirmed) {
+    // Set flag to pause the game
+    this.tetrisPromptShowing = true;
+    
+    // Stop spawning timers while dialog is open
+    if (this.bubbleTimer) this.bubbleTimer.paused = true;
+    if (this.obstacleTimer) this.obstacleTimer.paused = true;
+
+    // Create semi-transparent overlay
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.7);
+    
+    // Congratulations text
+    const congratsText = this.add.text(width / 2, height / 2 - 80, 'CONGRATULATIONS!', {
+      font: 'bold 42px Arial',
+      fill: '#f39c12',
+      stroke: '#ffffff',
+      strokeThickness: 3
+    }).setOrigin(0.5);
+
+    // Bubble collection achievement text
+    const achievementText = this.add.text(width / 2, height / 2 - 30, `You collected ${GAME_CONFIG.BUBBLE_COLLECTION_TARGET} bubbles!`, {
+      font: '24px Arial',
+      fill: '#ecf0f1'
+    }).setOrigin(0.5);
+
+    // Prompt text
+    const promptText = this.add.text(width / 2, height / 2 + 10, 'Ready to play the Tetris phase?', {
+      font: '20px Arial',
+      fill: '#bdc3c7'
+    }).setOrigin(0.5);
+
+    // Play Tetris button
+    const playTetrisButton = this.add.text(width / 2, height / 2 + 60, 'Play Tetris', {
+      font: 'bold 22px Arial',
+      fill: '#e74c3c',
+      backgroundColor: '#2c3e50',
+      padding: { x: 25, y: 12 }
+    }).setOrigin(0.5);
+
+    // Continue Running button
+    const continueButton = this.add.text(width / 2, height / 2 + 110, 'Continue Running', {
+      font: '18px Arial',
+      fill: '#3498db',
+      backgroundColor: '#2c3e50',
+      padding: { x: 20, y: 10 }
+    }).setOrigin(0.5);
+
+    // Make buttons interactive
+    playTetrisButton.setInteractive({ useHandCursor: true });
+    continueButton.setInteractive({ useHandCursor: true });
+
+    // Button hover effects
+    playTetrisButton.on('pointerover', () => {
+      playTetrisButton.setStyle({ fill: '#c0392b' });
+    });
+
+    playTetrisButton.on('pointerout', () => {
+      playTetrisButton.setStyle({ fill: '#e74c3c' });
+    });
+
+    continueButton.on('pointerover', () => {
+      continueButton.setStyle({ fill: '#5dade2' });
+    });
+
+    continueButton.on('pointerout', () => {
+      continueButton.setStyle({ fill: '#3498db' });
+    });
+
+    // Button click events
+    playTetrisButton.on('pointerdown', () => {
       console.log('Would transition to Tetris scene');
+      // TODO: Uncomment when TetrisScene is implemented
       // this.scene.start(SCENE_KEYS.TETRIS);
-    }
+      
+      // For now, just close the dialog and continue
+      this.closeTetrisPrompt(overlay, congratsText, achievementText, promptText, playTetrisButton, continueButton);
+    });
+
+    continueButton.on('pointerdown', () => {
+      this.closeTetrisPrompt(overlay, congratsText, achievementText, promptText, playTetrisButton, continueButton);
+    });
+  }
+
+  /**
+   * Close the Tetris prompt dialog and resume game
+   */
+  closeTetrisPrompt(overlay, congratsText, achievementText, promptText, playTetrisButton, continueButton) {
+    // Remove dialog elements
+    overlay.destroy();
+    congratsText.destroy();
+    achievementText.destroy();
+    promptText.destroy();
+    playTetrisButton.destroy();
+    continueButton.destroy();
+
+    // Resume the game
+    this.tetrisPromptShowing = false;
+    
+    // Resume spawning timers
+    if (this.bubbleTimer) this.bubbleTimer.paused = false;
+    if (this.obstacleTimer) this.obstacleTimer.paused = false;
   }
 
   /**
@@ -601,8 +699,8 @@ export default class GameScene extends Phaser.Scene {
    * Update loop - handle player movement and game logic
    */
   update() {
-    // Don't process movement if game is over
-    if (this.gameOver) return;
+    // Don't process movement if game is over or Tetris prompt is showing
+    if (this.gameOver || this.tetrisPromptShowing) return;
     
     this.handlePlayerMovement();
     this.updateObstacles();
