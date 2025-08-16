@@ -391,7 +391,7 @@ export default class GameScene extends Phaser.Scene {
 
     // Make player temporarily invulnerable
     this.invulnerable = true;
-    this.player.setTint(0xff0000); // Red tint to show damage
+    this.player.setFillStyle(0xff0000); // Red color to show damage
 
     // Clear existing invulnerability timer if any
     if (this.invulnerabilityTimer) {
@@ -401,7 +401,7 @@ export default class GameScene extends Phaser.Scene {
     // Set invulnerability timer
     this.invulnerabilityTimer = this.time.delayedCall(2000, () => {
       this.invulnerable = false;
-      this.player.clearTint(); // Remove damage tint
+      this.player.setFillStyle(0xe74c3c); // Restore original player color
       this.invulnerabilityTimer = null;
     });
 
