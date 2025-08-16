@@ -295,6 +295,9 @@ export default class GameScene extends Phaser.Scene {
       callbackScope: this,
       loop: true
     });
+
+    // Create an immediate obstacle for testing
+    this.time.delayedCall(1000, this.createObstacle, [], this);
   }
 
   /**
@@ -331,19 +334,24 @@ export default class GameScene extends Phaser.Scene {
     const obstacleWidth = GAME_CONFIG.OBSTACLES.WIDTH;
     
     // Position obstacle just off-screen to the right, on the ground
-    const x = width + (obstacleWidth / 2); // Start at right edge with half width offset
+    const x = width + (obstacleWidth / 2); // Start just off-screen
     const y = height - 40 - (obstacleHeight / 2); // Ground level minus half obstacle height
     
-    // Create obstacle as a colored rectangle
+    // Create obstacle as a grey rock-like rectangle
     const obstacle = this.add.rectangle(x, y, obstacleWidth, obstacleHeight, GAME_CONFIG.OBSTACLES.COLOR);
+    
+    // Add some visual detail to make it look more rock-like
+    obstacle.setStrokeStyle(2, 0x606060); // Darker grey outline
+    
+    // Add physics for collision detection only
     this.physics.add.existing(obstacle);
-    obstacle.body.setVelocityX(GAME_CONFIG.OBSTACLES.SPEED);
     obstacle.body.setImmovable(true);
+    
+    // Store initial position and movement data
+    obstacle.initialY = y;
+    obstacle.moveSpeed = GAME_CONFIG.OBSTACLES.SPEED;
+    
     this.obstacles.add(obstacle);
-
-    // Remove obstacle when it goes off screen
-    obstacle.body.checkWorldBounds = true;
-    obstacle.body.outOfBoundsKill = true;
 
     // Update the timer for next obstacle spawn with randomized delay
     this.obstacleTimer.delay = Phaser.Math.Between(
@@ -502,6 +510,31 @@ export default class GameScene extends Phaser.Scene {
     if (this.gameOver) return;
     
     this.handlePlayerMovement();
+    this.updateObstacles();
+  }
+
+  /**
+   * Update obstacle positions manually
+   */
+  updateObstacles() {
+    if (!this.obstacles) return;
+    
+    this.obstacles.children.entries.forEach(obstacle => {
+      if (obstacle.active) {
+        // Move obstacle left using delta time for smooth movement
+        obstacle.x += obstacle.moveSpeed * this.game.loop.delta / 1000;
+        
+        // Keep at correct Y position (fix the Y drift issue)
+        if (obstacle.initialY) {
+          obstacle.y = obstacle.initialY;
+        }
+        
+        // Remove when off-screen
+        if (obstacle.x < -obstacle.width) {
+          obstacle.destroy();
+        }
+      }
+    });
   }
 
   /**
