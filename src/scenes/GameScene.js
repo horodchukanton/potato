@@ -284,7 +284,7 @@ export default class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
-    const x = Phaser.Math.Between(width + 50, width + 200);
+    const x = Phaser.Math.Between(width, width - 200);
     const y = Phaser.Math.Between(100, height - 100);
     
     const bubble = this.add.circle(x, y, 16, 0x3498db);
