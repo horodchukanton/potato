@@ -18,3 +18,50 @@ Build a small 2-phase birthday game for a friend using Phaser. Publish on GitHub
 - Built with Phaser
 - Published on GitHub Pages
 - Use LocalStorage for saving intermediate results (bubbles collected, phase, etc.)
+
+## Setup and Development
+
+### Prerequisites
+- Node.js (version 16 or higher)
+- npm
+
+### Installation
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Running the Game
+- **Development mode**: `npm start`
+  - Starts a development server at http://localhost:8080
+  - Includes hot reload for development
+- **Build for production**: `npm run build`
+  - Creates optimized build in `dist/` folder
+  - Ready for deployment to GitHub Pages
+
+### Project Structure
+```
+potato/
+├── src/
+│   ├── scenes/          # Phaser game scenes
+│   │   ├── PreloadScene.js
+│   │   ├── MenuScene.js
+│   │   └── GameScene.js
+│   ├── objects/         # Game objects and prefabs
+│   ├── utils/           # Helper functions
+│   ├── config.js        # Game configuration
+│   ├── main.js          # Game initialization
+│   └── index.html       # HTML template
+├── assets/              # Game assets (images, audio, sprites)
+├── dist/                # Built game (created by npm run build)
+└── webpack.config.js    # Build configuration
+```
+
+### Current Status
+✅ Phaser framework integrated and working  
+✅ Basic project structure established  
+✅ Test scenes implemented (Preload, Menu, Game)  
+✅ Build system configured for GitHub Pages deployment  
+🚧 Game mechanics in development  
+🚧 Asset creation pending  
