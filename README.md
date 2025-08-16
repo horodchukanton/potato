@@ -1,15 +1,20 @@
-## Overview
-Build a small 2-phase birthday game for a friend using Phaser. Publish on GitHub Pages. Use LocalStorage to save progress.
+# Potato - Birthday Game
 
-## Quick Start for Development
+## Quick Start
+
+**For immediate development:**
 ```bash
-cd /home/runner/work/potato/potato  # or your project path
-npm install                         # Install dependencies
-npm start                          # Start development server
-# Navigate to http://localhost:8080 to see the game
+npm install          # Install dependencies
+npm start           # Start development server (http://localhost:8080)
 ```
 
-**Current Game Status**: Phase 1 infinite runner with player movement, obstacle generation, collision detection, and bubble collection implemented.
+**For building/deployment:**
+```bash
+npm run build       # Create production build in dist/
+```
+
+## Overview
+Build a small 2-phase birthday game for a friend using Phaser. Publish on GitHub Pages. Use LocalStorage to save progress.
 
 Assets:
  - Player: a pixelated male human with big height
@@ -41,45 +46,34 @@ Assets:
 - npm
 
 ### Installation
-1. Clone the repository
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/horodchukanton/potato.git
+   cd potato
+   ```
 2. Install dependencies:
    ```bash
    npm install
    ```
 
-### Running the Game
+### Development Commands
 
-#### Development Mode
-```bash
-npm start
-```
-- Starts webpack dev server at **http://localhost:8080**
-- Includes hot reload for development
-- Console output shows compilation status
-- Game should load immediately in browser
+| Command | Description | URL |
+|---------|-------------|-----|
+| `npm start` | Start development server with hot reload | http://localhost:8080 |
+| `npm run build` | Create production build | Creates `dist/` folder |
 
-#### Production Build
-```bash
-npm run build
-```
-- Creates optimized build in `dist/` folder
-- Minifies and optimizes assets
-- Ready for deployment to GitHub Pages
-- Verify build success: check `dist/` folder contains `index.html` and `main.js`
+### Development Workflow
+1. **Start development**: `npm start`
+2. **Open browser**: Navigate to http://localhost:8080
+3. **Make changes**: Edit files in `src/` - changes auto-reload
+4. **Build for production**: `npm run build` when ready to deploy
 
-#### Quick Verification
-After running `npm start`, verify the game works:
-1. Navigate to http://localhost:8080
-2. Should see "Potato Game" menu scene
-3. Press SPACE or click to start the game
-4. Arrow keys should move the player
-5. Check browser console for any errors
-
-#### Testing Current Implementation
-- **Player Movement**: Arrow keys (left/right) and spacebar (jump)
-- **Obstacle Generation**: Obstacles spawn every 3-6 seconds from the right
-- **Collision Detection**: Player should stop/react when hitting obstacles
-- **Bubble Collection**: Bubbles appear and can be collected by touching them
+### Deployment to GitHub Pages
+1. Build the project: `npm run build`
+2. The `dist/` folder contains the deployable files
+3. Deploy `dist/` contents to GitHub Pages
+4. Game will be available at: `https://horodchukanton.github.io/potato/`
 
 ### Project Structure
 ```
@@ -89,16 +83,26 @@ potato/
 │   │   ├── PreloadScene.js
 │   │   ├── MenuScene.js
 │   │   └── GameScene.js
+│   ├── objects/         # Game objects and prefabs
+│   ├── utils/           # Helper functions
 │   ├── config.js        # Game configuration
 │   ├── main.js          # Game initialization
 │   └── index.html       # HTML template
+├── assets/              # Game assets (images, audio, sprites)
 ├── dist/                # Built game (created by npm run build)
-├── package.json         # Dependencies and scripts
-├── webpack.config.js    # Build configuration
-└── README.md           # This file
+└── webpack.config.js    # Build configuration
 ```
 
+### Current Status
+✅ Phaser framework integrated and working  
+✅ Basic project structure established  
+✅ Test scenes implemented (Preload, Menu, Game)  
+✅ Build system configured for GitHub Pages deployment  
+🚧 Game mechanics in development  
+🚧 Asset creation pending  
+
 ### Troubleshooting
+
 
 #### Common Issues
 - **Port already in use**: If port 8080 is busy, webpack will use the next available port
@@ -124,4 +128,31 @@ potato/
 ✅ Test scenes implemented (Preload, Menu, Game)  
 ✅ Build system configured for GitHub Pages deployment  
 🚧 Game mechanics in development  
-🚧 Asset creation pending  
+🚧 Asset creation pending
+
+
+**Port 8080 already in use:**
+```bash
+# Kill process using port 8080
+npx kill-port 8080
+# Or use different port
+npm start -- --port 3000
+```
+
+**Build warnings about bundle size:**
+- This is expected for Phaser games
+- Bundle includes entire Phaser framework (~1.15MB)
+- Warnings don't affect functionality
+
+**Development server not accessible:**
+- Ensure you're using http://localhost:8080 (not 127.0.0.1)
+- Check firewall settings
+- Try restarting the development server
+
+### For Automated Agents/CI
+```bash
+# Complete setup and verification
+npm ci                    # Clean install (faster for CI)
+npm run build            # Verify build works
+test -f dist/index.html  # Verify build output exists
+```
