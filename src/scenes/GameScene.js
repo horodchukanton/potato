@@ -70,8 +70,124 @@ export default class GameScene extends Phaser.Scene {
    * Create input controls
    */
   createControls() {
+    // Keyboard controls
     this.cursors = this.input.keyboard.createCursorKeys();
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    
+    // Touch/mobile controls
+    this.createTouchControls();
+  }
+
+  /**
+   * Create touch controls for mobile devices
+   */
+  createTouchControls() {
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    // Touch input state
+    this.touchInput = {
+      left: false,
+      right: false,
+      jump: false
+    };
+    
+    // Create invisible touch areas for better mobile experience
+    // Left side for moving left
+    this.leftTouchArea = this.add.rectangle(0, 0, width * 0.3, height, 0x000000, 0)
+      .setOrigin(0, 0)
+      .setInteractive()
+      .setDepth(-1);
+    
+    // Right side for moving right  
+    this.rightTouchArea = this.add.rectangle(width * 0.3, 0, width * 0.4, height, 0x000000, 0)
+      .setOrigin(0, 0)
+      .setInteractive()
+      .setDepth(-1);
+    
+    // Jump area (top portion of screen)
+    this.jumpTouchArea = this.add.rectangle(width * 0.7, 0, width * 0.3, height, 0x000000, 0)
+      .setOrigin(0, 0)
+      .setInteractive()
+      .setDepth(-1);
+    
+    // Touch events for left movement
+    this.leftTouchArea.on('pointerdown', () => {
+      this.touchInput.left = true;
+    });
+    
+    this.leftTouchArea.on('pointerup', () => {
+      this.touchInput.left = false;
+    });
+    
+    this.leftTouchArea.on('pointerout', () => {
+      this.touchInput.left = false;
+    });
+    
+    // Touch events for right movement
+    this.rightTouchArea.on('pointerdown', () => {
+      this.touchInput.right = true;
+    });
+    
+    this.rightTouchArea.on('pointerup', () => {
+      this.touchInput.right = false;
+    });
+    
+    this.rightTouchArea.on('pointerout', () => {
+      this.touchInput.right = false;
+    });
+    
+    // Touch events for jumping
+    this.jumpTouchArea.on('pointerdown', () => {
+      this.touchInput.jump = true;
+    });
+    
+    this.jumpTouchArea.on('pointerup', () => {
+      this.touchInput.jump = false;
+    });
+    
+    this.jumpTouchArea.on('pointerout', () => {
+      this.touchInput.jump = false;
+    });
+    
+    // Add visual indicators for touch controls (semi-transparent)
+    this.createTouchIndicators();
+  }
+
+  /**
+   * Create visual indicators for touch controls
+   */
+  createTouchIndicators() {
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    // Only show touch indicators on mobile devices
+    const isMobile = this.sys.game.device.input.touch;
+    const alpha = isMobile ? GAME_CONFIG.TOUCH.NORMAL_ALPHA : 0;
+    
+    // Left arrow indicator
+    this.leftIndicator = this.add.text(width * 0.15, height - 80, '←', {
+      font: 'bold 32px Arial',
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5).setAlpha(alpha);
+    
+    // Right arrow indicator  
+    this.rightIndicator = this.add.text(width * 0.5, height - 80, '→', {
+      font: 'bold 32px Arial',
+      fill: '#ffffff', 
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5).setAlpha(alpha);
+    
+    // Jump indicator
+    this.jumpIndicator = this.add.text(width * 0.85, height - 80, '↑', {
+      font: 'bold 32px Arial',
+      fill: '#ffffff',
+      stroke: '#000000', 
+      strokeThickness: 2
+    }).setOrigin(0.5).setAlpha(alpha);
   }
 
   /**
@@ -103,7 +219,13 @@ export default class GameScene extends Phaser.Scene {
       padding: { x: 8, y: 4 }
     });
 
-    this.instructionsText = this.add.text(16, 50, 'Arrow Keys: Move | Space: Jump', {
+    // Responsive instructions based on device type
+    const isMobile = this.sys.game.device.input.touch;
+    const instructionText = isMobile 
+      ? 'Tap Left/Right to Move | Tap Upper Right to Jump'
+      : 'Arrow Keys: Move | Space: Jump';
+    
+    this.instructionsText = this.add.text(16, 50, instructionText, {
       font: '14px Arial',
       fill: '#2c3e50',
       backgroundColor: '#ecf0f1',
@@ -215,19 +337,43 @@ export default class GameScene extends Phaser.Scene {
   handlePlayerMovement() {
     const player = this.player;
     const cursors = this.cursors;
+    const touch = this.touchInput;
+    const isMobile = this.sys.game.device.input.touch;
 
-    // Horizontal movement
-    if (cursors.left.isDown) {
+    // Horizontal movement (keyboard or touch)
+    if (cursors.left.isDown || touch.left) {
       player.body.setVelocityX(-GAME_CONFIG.PHYSICS.PLAYER_SPEED);
-    } else if (cursors.right.isDown) {
+      // Visual feedback for touch
+      if (touch.left && isMobile) {
+        this.leftIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);
+      }
+    } else if (cursors.right.isDown || touch.right) {
       player.body.setVelocityX(GAME_CONFIG.PHYSICS.PLAYER_SPEED);
+      // Visual feedback for touch
+      if (touch.right && isMobile) {
+        this.rightIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);
+      }
     } else {
       player.body.setVelocityX(0);
+      // Reset visual feedback
+      if (isMobile) {
+        this.leftIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
+        this.rightIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
+      }
     }
 
-    // Jumping
-    if (this.spaceKey.isDown && player.body.touching.down) {
+    // Jumping (keyboard or touch)
+    if ((this.spaceKey.isDown || touch.jump) && player.body.touching.down) {
       player.body.setVelocityY(GAME_CONFIG.PHYSICS.JUMP_VELOCITY);
+      // Visual feedback for touch
+      if (touch.jump && isMobile) {
+        this.jumpIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);
+      }
+    } else {
+      // Reset jump visual feedback
+      if (!touch.jump && isMobile) {
+        this.jumpIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
+      }
     }
   }
 }
