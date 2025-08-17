@@ -19,6 +19,7 @@ export default class GameScene extends Phaser.Scene {
     this.bubblesCollected = gameState.bubblesCollected;
     this.firstBubbleCollected = gameState.firstBubbleCollected;
     this.playerLives = gameState.playerLives;
+    this.audioEnabled = gameState.audioEnabled;
     
     // Save current phase as game scene only if it has changed
     const currentPhase = gameState.currentPhase;
@@ -68,6 +69,9 @@ export default class GameScene extends Phaser.Scene {
 
     // Create UI elements
     this.createUI();
+
+    // Initialize audio
+    this.initializeAudio();
 
     // Set up physics and collisions
     this.setupPhysics();
@@ -340,6 +344,90 @@ export default class GameScene extends Phaser.Scene {
     menuButton.on('pointerdown', () => {
       this.transitionToScene(SCENE_KEYS.MENU);
     });
+
+    // Audio toggle button
+    this.audioButton = this.add.text(this.cameras.main.width - 16, 42, 
+      this.audioEnabled ? 'Audio: ON' : 'Audio: OFF', {
+      font: '14px Arial',
+      fill: this.audioEnabled ? '#27ae60' : '#95a5a6',
+      backgroundColor: '#ecf0f1',
+      padding: { x: 8, y: 4 }
+    }).setOrigin(1, 0);
+
+    this.audioButton.setInteractive({ useHandCursor: true });
+    this.audioButton.on('pointerdown', () => {
+      this.toggleAudio();
+      this.audioButton.setText(this.audioEnabled ? 'Audio: ON' : 'Audio: OFF');
+      this.audioButton.setFill(this.audioEnabled ? '#27ae60' : '#95a5a6');
+    });
+  }
+
+  /**
+   * Initialize audio system and load sounds
+   */
+  initializeAudio() {
+    // Initialize sound objects if audio is available and enabled
+    this.sounds = {};
+    
+    if (this.audioEnabled && this.sound && this.sound.add) {
+      try {
+        this.sounds.collect = this.sound.add(ASSET_KEYS.COLLECT_SOUND, { 
+          volume: GAME_CONFIG.AUDIO.EFFECTS_VOLUME 
+        });
+        this.sounds.jump = this.sound.add(ASSET_KEYS.JUMP_SOUND, { 
+          volume: GAME_CONFIG.AUDIO.EFFECTS_VOLUME 
+        });
+        this.sounds.obstacleHit = this.sound.add(ASSET_KEYS.OBSTACLE_HIT_SOUND, { 
+          volume: GAME_CONFIG.AUDIO.EFFECTS_VOLUME 
+        });
+        this.sounds.backgroundMusic = this.sound.add(ASSET_KEYS.BACKGROUND_MUSIC, { 
+          volume: GAME_CONFIG.AUDIO.MUSIC_VOLUME,
+          loop: true
+        });
+        
+        // Start background music
+        if (this.sounds.backgroundMusic) {
+          this.sounds.backgroundMusic.play();
+        }
+      } catch (error) {
+        // Gracefully handle audio loading errors
+        console.warn('Audio initialization failed:', error);
+        this.sounds = {};
+      }
+    }
+  }
+
+  /**
+   * Play a sound effect if audio is enabled
+   * @param {string} soundKey - Key of the sound to play
+   */
+  playSound(soundKey) {
+    if (this.audioEnabled && this.sounds && this.sounds[soundKey]) {
+      try {
+        this.sounds[soundKey].play();
+      } catch (error) {
+        // Gracefully handle playback errors
+        console.warn(`Failed to play sound ${soundKey}:`, error);
+      }
+    }
+  }
+
+  /**
+   * Toggle audio on/off
+   */
+  toggleAudio() {
+    this.audioEnabled = !this.audioEnabled;
+    GameStateManager.saveAudioEnabled(this.audioEnabled);
+    
+    if (this.audioEnabled) {
+      // Re-initialize audio if enabling
+      this.initializeAudio();
+    } else {
+      // Stop all sounds if disabling
+      if (this.sounds.backgroundMusic && this.sounds.backgroundMusic.isPlaying) {
+        this.sounds.backgroundMusic.stop();
+      }
+    }
   }
 
   /**
@@ -559,6 +647,9 @@ export default class GameScene extends Phaser.Scene {
    * Handle bubble collection
    */
   collectBubble(player, bubble) {
+    // Play collect sound effect
+    this.playSound('collect');
+    
     // Create floating score text effect
     this.createFloatingText(bubble.x, bubble.y, '+1', '#00ff00', '20px');
     
@@ -604,6 +695,9 @@ export default class GameScene extends Phaser.Scene {
   hitObstacle(player, obstacle) {
     // Don't take damage if already invulnerable or game is over
     if (this.invulnerable || this.gameOver) return;
+
+    // Play obstacle hit sound effect
+    this.playSound('obstacleHit');
 
     // Create damage floating text
     this.createFloatingText(player.x, player.y - 30, '-1', '#ff0000', '24px');
@@ -948,6 +1042,10 @@ export default class GameScene extends Phaser.Scene {
     // Jumping (keyboard or touch)
     if ((this.spaceKey.isDown || touch.jump) && player.body.touching.down) {
       player.body.setVelocityY(GAME_CONFIG.PHYSICS.JUMP_VELOCITY);
+      
+      // Play jump sound effect
+      this.playSound('jump');
+      
       // Visual feedback for touch
       if (touch.jump && isMobile) {
         this.jumpIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);

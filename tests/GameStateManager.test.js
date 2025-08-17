@@ -135,7 +135,8 @@ describe('GameStateManager Integration Tests', () => {
         tetrisLines: 0,
         tetrominoesUsed: 0,
         firstBubbleCollected: false,
-        playerLives: GAME_CONFIG.OBSTACLES.LIVES
+        playerLives: GAME_CONFIG.OBSTACLES.LIVES,
+        audioEnabled: GAME_CONFIG.AUDIO.ENABLED_BY_DEFAULT
       });
     });
 
@@ -146,7 +147,8 @@ describe('GameStateManager Integration Tests', () => {
         tetrisLines: 15,
         tetrominoesUsed: 50,
         firstBubbleCollected: true,
-        playerLives: 2
+        playerLives: 2,
+        audioEnabled: false
       };
 
       GameStateManager.saveGameState(gameState);
@@ -330,6 +332,47 @@ describe('GameStateManager Integration Tests', () => {
         GameStateManager.saveBubblesCollected(i);
         expect(GameStateManager.loadBubblesCollected()).toBe(i);
       }
+    });
+  });
+
+  describe('Audio State Management', () => {
+    beforeEach(() => {
+      GameStateManager.clearProgress();
+    });
+
+    test('should save and load audio enabled state', () => {
+      // Test default value
+      expect(GameStateManager.loadAudioEnabled()).toBe(GAME_CONFIG.AUDIO.ENABLED_BY_DEFAULT);
+
+      // Test saving false
+      GameStateManager.saveAudioEnabled(false);
+      expect(GameStateManager.loadAudioEnabled()).toBe(false);
+
+      // Test saving true
+      GameStateManager.saveAudioEnabled(true);
+      expect(GameStateManager.loadAudioEnabled()).toBe(true);
+    });
+
+    test('should handle invalid audio state values', () => {
+      // Test that boolean conversion works for truthy/falsy values
+      GameStateManager.saveAudioEnabled(0);
+      expect(GameStateManager.loadAudioEnabled()).toBe(false);
+
+      GameStateManager.saveAudioEnabled(1);
+      expect(GameStateManager.loadAudioEnabled()).toBe(true);
+
+      GameStateManager.saveAudioEnabled('');
+      expect(GameStateManager.loadAudioEnabled()).toBe(false);
+
+      GameStateManager.saveAudioEnabled('anything');
+      expect(GameStateManager.loadAudioEnabled()).toBe(true);
+    });
+
+    test('should include audio state in complete game state', () => {
+      GameStateManager.saveAudioEnabled(false);
+      const gameState = GameStateManager.loadGameState();
+      
+      expect(gameState.audioEnabled).toBe(false);
     });
   });
 });

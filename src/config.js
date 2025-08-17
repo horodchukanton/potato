@@ -70,6 +70,13 @@ export const GAME_CONFIG = {
       FADE_DURATION: 500,
       SCENE_TRANSITION_DURATION: 800
     }
+  },
+  // Audio configuration
+  AUDIO: {
+    MASTER_VOLUME: 0.7,
+    EFFECTS_VOLUME: 0.8,
+    MUSIC_VOLUME: 0.4,
+    ENABLED_BY_DEFAULT: true
   }
 };
 
@@ -98,6 +105,7 @@ export const ASSET_KEYS = {
   COLLECT_SOUND: 'collect',
   JUMP_SOUND: 'jump',
   BACKGROUND_MUSIC: 'bgm',
+  OBSTACLE_HIT_SOUND: 'obstacle_hit',
 };
 
 /**
@@ -110,6 +118,7 @@ export const STORAGE_KEYS = {
     TETROMINOES_USED: 'tetrominoes_used',
     FIRST_BUBBLE_COLLECTED: 'first_bubble_collected',
     PLAYER_LIVES: 'player_lives',
+    AUDIO_ENABLED: 'audio_enabled',
 }
 /**
  * UI text constants for consistent messaging across scenes and tests
