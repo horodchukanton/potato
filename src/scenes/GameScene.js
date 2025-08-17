@@ -43,8 +43,16 @@ export default class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
+    // Smooth fade in from black (with safety check for test environment)
+    if (this.cameras.main.fadeIn) {
+      this.cameras.main.fadeIn(GAME_CONFIG.EFFECTS.TRANSITIONS.FADE_DURATION, 0, 0, 0);
+    }
+
     // Background - use tiled background sprite
     this.add.tileSprite(0, 0, width, height, ASSET_KEYS.BACKGROUND).setOrigin(0, 0);
+
+    // Initialize particle systems
+    this.createParticleSystems();
 
     // Create player
     this.createPlayer();
@@ -214,6 +222,63 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /**
+   * Create particle systems for visual effects
+   */
+  createParticleSystems() {
+    // Safety check for test environment
+    if (!this.add.graphics || !this.add.particles) {
+      // In test environment, create mock emitters
+      this.bubbleCollectEmitter = { explode: () => {}, startFollow: () => {}, start: () => {}, stopFollow: () => {}, stop: () => {} };
+      this.obstacleHitEmitter = { explode: () => {} };
+      this.playerTrailEmitter = { setPosition: () => {}, start: () => {}, stop: () => {} };
+      return;
+    }
+
+    // Create simple colored rectangles for particles since we don't have sprite assets
+    const particleTexture = this.add.graphics();
+    particleTexture.fillStyle(0xffffff);
+    particleTexture.fillRect(0, 0, 4, 4);
+    particleTexture.generateTexture('particle', 4, 4);
+    particleTexture.destroy();
+
+    // Bubble collection particle emitter
+    this.bubbleCollectEmitter = this.add.particles(0, 0, 'particle', {
+      speed: { min: GAME_CONFIG.EFFECTS.PARTICLES.BUBBLE_COLLECT.SPEED_MIN, 
+               max: GAME_CONFIG.EFFECTS.PARTICLES.BUBBLE_COLLECT.SPEED_MAX },
+      lifespan: GAME_CONFIG.EFFECTS.PARTICLES.BUBBLE_COLLECT.LIFE_SPAN,
+      scale: { start: 0.8, end: 0.1 },
+      alpha: { start: 1, end: 0 },
+      tint: GAME_CONFIG.EFFECTS.PARTICLES.BUBBLE_COLLECT.COLORS,
+      frequency: -1, // Manual emission
+      quantity: GAME_CONFIG.EFFECTS.PARTICLES.BUBBLE_COLLECT.PARTICLE_COUNT
+    });
+
+    // Obstacle hit particle emitter
+    this.obstacleHitEmitter = this.add.particles(0, 0, 'particle', {
+      speed: { min: GAME_CONFIG.EFFECTS.PARTICLES.OBSTACLE_HIT.SPEED_MIN, 
+               max: GAME_CONFIG.EFFECTS.PARTICLES.OBSTACLE_HIT.SPEED_MAX },
+      lifespan: GAME_CONFIG.EFFECTS.PARTICLES.OBSTACLE_HIT.LIFE_SPAN,
+      scale: { start: 1.2, end: 0.1 },
+      alpha: { start: 1, end: 0 },
+      tint: GAME_CONFIG.EFFECTS.PARTICLES.OBSTACLE_HIT.COLORS,
+      frequency: -1, // Manual emission
+      quantity: GAME_CONFIG.EFFECTS.PARTICLES.OBSTACLE_HIT.PARTICLE_COUNT
+    });
+
+    // Player movement trail emitter (continuous)
+    this.playerTrailEmitter = this.add.particles(0, 0, 'particle', {
+      speed: { min: GAME_CONFIG.EFFECTS.PARTICLES.PLAYER_TRAIL.SPEED_MIN, 
+               max: GAME_CONFIG.EFFECTS.PARTICLES.PLAYER_TRAIL.SPEED_MAX },
+      lifespan: GAME_CONFIG.EFFECTS.PARTICLES.PLAYER_TRAIL.LIFE_SPAN,
+      scale: { start: 0.6, end: 0.1 },
+      alpha: { start: 0.8, end: 0 },
+      tint: GAME_CONFIG.EFFECTS.PARTICLES.PLAYER_TRAIL.COLORS,
+      frequency: 100, // Emit continuously
+      quantity: GAME_CONFIG.EFFECTS.PARTICLES.PLAYER_TRAIL.PARTICLE_COUNT
+    });
+  }
+
+  /**
    * Create groups for organizing game objects
    */
   createGameGroups() {
@@ -273,8 +338,24 @@ export default class GameScene extends Phaser.Scene {
 
     menuButton.setInteractive({ useHandCursor: true });
     menuButton.on('pointerdown', () => {
-      this.scene.start(SCENE_KEYS.MENU);
+      this.transitionToScene(SCENE_KEYS.MENU);
     });
+  }
+
+  /**
+   * Smooth transition to another scene
+   */
+  transitionToScene(sceneKey) {
+    if (this.cameras.main.fadeOut) {
+      this.cameras.main.fadeOut(GAME_CONFIG.EFFECTS.TRANSITIONS.FADE_DURATION, 0, 0, 0);
+      
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.start(sceneKey);
+      });
+    } else {
+      // Fallback for test environment
+      this.scene.start(sceneKey);
+    }
   }
 
   /**
@@ -389,25 +470,47 @@ export default class GameScene extends Phaser.Scene {
     // Pause game temporarily
     this.physics.pause();
     
-    // Create glowing effect on player's belly
+    // Create glowing effect on player's belly with enhanced particles
     const glowEffect = this.add.circle(this.player.x, this.player.y + 10, 20, 0xffff00, 0.6);
     
+    // Add sparkle particles around the player during cutscene
+    if (this.bubbleCollectEmitter) {
+      this.bubbleCollectEmitter.startFollow(this.player);
+      this.bubbleCollectEmitter.start();
+    }
+    
     // Animate the glow effect
-    this.tweens.add({
-      targets: glowEffect,
-      alpha: { from: 0.6, to: 0.2 },
-      scaleX: { from: 1, to: 1.5 },
-      scaleY: { from: 1, to: 1.5 },
-      duration: 1000,
-      yoyo: true,
-      repeat: 2,
-      onComplete: () => {
+    if (this.tweens && this.tweens.add) {
+      this.tweens.add({
+        targets: glowEffect,
+        alpha: { from: 0.6, to: 0.2 },
+        scaleX: { from: 1, to: 1.5 },
+        scaleY: { from: 1, to: 1.5 },
+        duration: 1000,
+        yoyo: true,
+        repeat: 2,
+        onComplete: () => {
+          glowEffect.destroy();
+          if (this.bubbleCollectEmitter) {
+            this.bubbleCollectEmitter.stopFollow();
+            this.bubbleCollectEmitter.stop();
+          }
+          this.physics.resume();
+        }
+      });
+    } else {
+      // Fallback for test environment
+      this.time.delayedCall(3000, () => {
         glowEffect.destroy();
+        if (this.bubbleCollectEmitter) {
+          this.bubbleCollectEmitter.stopFollow();
+          this.bubbleCollectEmitter.stop();
+        }
         this.physics.resume();
-      }
-    });
+      });
+    }
 
-    // Show cutscene message
+    // Show cutscene message with enhanced visual effects
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
@@ -418,22 +521,63 @@ export default class GameScene extends Phaser.Scene {
       strokeThickness: 2,
       align: 'center'
     }).setOrigin(0.5);
+    
+    if (cutsceneText.setAlpha) cutsceneText.setAlpha(0);
 
-    // Fade out the cutscene text
-    this.tweens.add({
-      targets: cutsceneText,
-      alpha: { from: 1, to: 0 },
-      duration: 3000,
-      onComplete: () => {
+    // Enhanced text entrance with scale and fade
+    if (this.tweens && this.tweens.add) {
+      this.tweens.add({
+        targets: cutsceneText,
+        alpha: { from: 0, to: 1 },
+        scaleX: { from: 0.5, to: 1 },
+        scaleY: { from: 0.5, to: 1 },
+        duration: 500,
+        ease: 'Back.easeOut',
+        onComplete: () => {
+          // Hold text for a moment, then fade out
+          this.tweens.add({
+            targets: cutsceneText,
+            alpha: { from: 1, to: 0 },
+            duration: 2500,
+            delay: 500,
+            onComplete: () => {
+              cutsceneText.destroy();
+            }
+          });
+        }
+      });
+    } else {
+      // Fallback for test environment
+      if (cutsceneText.setAlpha) cutsceneText.setAlpha(1);
+      this.time.delayedCall(3000, () => {
         cutsceneText.destroy();
-      }
-    });
+      });
+    }
   }
 
   /**
    * Handle bubble collection
    */
   collectBubble(player, bubble) {
+    // Create floating score text effect
+    this.createFloatingText(bubble.x, bubble.y, '+1', '#00ff00', '20px');
+    
+    // Emit collection particles at bubble position
+    if (this.bubbleCollectEmitter) {
+      this.bubbleCollectEmitter.explode(
+        GAME_CONFIG.EFFECTS.PARTICLES.BUBBLE_COLLECT.PARTICLE_COUNT, 
+        bubble.x, 
+        bubble.y
+      );
+    }
+    
+    // Subtle screen flash effect (with safety check for test environment)
+    if (this.cameras.main.flash) {
+      this.cameras.main.flash(200, 255, 255, 0, false, (camera, progress) => {
+        // Flash completes automatically
+      });
+    }
+
     bubble.destroy();
     this.bubblesCollected++;
     this.bubblesText.setText(`Bubbles: ${this.bubblesCollected}`);
@@ -461,6 +605,21 @@ export default class GameScene extends Phaser.Scene {
     // Don't take damage if already invulnerable or game is over
     if (this.invulnerable || this.gameOver) return;
 
+    // Create damage floating text
+    this.createFloatingText(player.x, player.y - 30, '-1', '#ff0000', '24px');
+    
+    // Screen shake effect
+    this.addScreenShake();
+    
+    // Emit hit particles at collision point
+    if (this.obstacleHitEmitter) {
+      this.obstacleHitEmitter.explode(
+        GAME_CONFIG.EFFECTS.PARTICLES.OBSTACLE_HIT.PARTICLE_COUNT,
+        obstacle.x,
+        obstacle.y
+      );
+    }
+
     // Take damage
     this.playerLives -= GAME_CONFIG.OBSTACLES.DAMAGE;
     this.livesText.setText(`Lives: ${this.playerLives}`);
@@ -472,9 +631,21 @@ export default class GameScene extends Phaser.Scene {
     player.body.setVelocityX(-150);
     player.body.setVelocityY(-200);
 
-    // Make player temporarily invulnerable
+    // Make player temporarily invulnerable with enhanced visual feedback
     this.invulnerable = true;
     this.player.setTint(0xff0000); // Red tint to show damage
+    
+    // Add blinking effect during invulnerability
+    if (this.tweens && this.tweens.add) {
+      this.tweens.add({
+        targets: this.player,
+        alpha: { from: 1, to: 0.3 },
+        duration: 200,
+        yoyo: true,
+        repeat: 9, // 10 blinks total over 2 seconds
+        ease: 'Power1'
+      });
+    }
 
     // Clear existing invulnerability timer if any
     if (this.invulnerabilityTimer) {
@@ -485,6 +656,7 @@ export default class GameScene extends Phaser.Scene {
     this.invulnerabilityTimer = this.time.delayedCall(2000, () => {
       this.invulnerable = false;
       this.player.clearTint(); // Restore original sprite color
+      this.player.setAlpha(1); // Ensure full opacity
       this.invulnerabilityTimer = null;
     });
 
@@ -577,8 +749,8 @@ export default class GameScene extends Phaser.Scene {
       console.log('Transitioning to Tetris scene');
       // Save current phase using GameStateManager
       GameStateManager.saveCurrentPhase(SCENE_KEYS.TETRIS);
-      // Start TetrisScene
-      this.scene.start(SCENE_KEYS.TETRIS);
+      // Start TetrisScene with smooth transition
+      this.transitionToScene(SCENE_KEYS.TETRIS);
     });
 
     continueButton.on('pointerdown', () => {
@@ -675,11 +847,11 @@ export default class GameScene extends Phaser.Scene {
     restartButton.on('pointerdown', () => {
       // Clear all saved progress before restarting
       GameStateManager.clearProgress();
-      this.scene.restart();
+      this.transitionToScene(SCENE_KEYS.GAME);
     });
 
     menuButton.on('pointerdown', () => {
-      this.scene.start(SCENE_KEYS.MENU);
+      this.transitionToScene(SCENE_KEYS.MENU);
     });
   }
 
@@ -743,6 +915,14 @@ export default class GameScene extends Phaser.Scene {
     const touch = this.touchInput;
     const isMobile = this.sys.game.device.input.touch;
 
+    // Update player trail particles to follow player
+    if (this.playerTrailEmitter && player.body.velocity.x !== 0) {
+      this.playerTrailEmitter.setPosition(player.x, player.y + 20);
+      this.playerTrailEmitter.start();
+    } else if (this.playerTrailEmitter) {
+      this.playerTrailEmitter.stop();
+    }
+
     // Horizontal movement (keyboard or touch)
     if (cursors.left.isDown || touch.left) {
       player.body.setVelocityX(-GAME_CONFIG.PHYSICS.PLAYER_SPEED);
@@ -777,6 +957,49 @@ export default class GameScene extends Phaser.Scene {
       if (!touch.jump && isMobile) {
         this.jumpIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
       }
+    }
+  }
+
+  /**
+   * Add screen shake effect for impactful moments
+   */
+  addScreenShake() {
+    if (this.cameras.main.shake) {
+      this.cameras.main.shake(
+        GAME_CONFIG.EFFECTS.SCREEN_SHAKE.DURATION,
+        GAME_CONFIG.EFFECTS.SCREEN_SHAKE.INTENSITY
+      );
+    }
+  }
+
+  /**
+   * Create floating text effect for score/damage feedback
+   */
+  createFloatingText(x, y, text, color, fontSize) {
+    const floatingText = this.add.text(x, y, text, {
+      font: `bold ${fontSize} Arial`,
+      fill: color,
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5);
+
+    // Animate the floating text (with safety check for tweens)
+    if (this.tweens && this.tweens.add) {
+      this.tweens.add({
+        targets: floatingText,
+        y: y - 50,
+        alpha: { from: 1, to: 0 },
+        duration: 1000,
+        ease: 'Power2',
+        onComplete: () => {
+          floatingText.destroy();
+        }
+      });
+    } else {
+      // Fallback for test environment
+      this.time.delayedCall(1000, () => {
+        floatingText.destroy();
+      });
     }
   }
 }
