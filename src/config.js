@@ -69,6 +69,38 @@ export const GAME_CONFIG = {
     TRANSITIONS: {
       FADE_DURATION: 500,
       SCENE_TRANSITION_DURATION: 800
+    },
+    // Dynamic effects system configuration
+    DYNAMIC: {
+      EFFECT_DURATION: 5000, // 5 seconds per effect
+      NORMAL_DURATION: 5000, // 5 seconds normal state
+      EFFECTS: {
+        GRAVITY_LOW: {
+          name: 'Low Gravity',
+          gravityMultiplier: 0.3,
+          color: 0x9b59b6 // Purple tint
+        },
+        SPEED_BOOST: {
+          name: 'Speed Boost',
+          speedMultiplier: 1.8,
+          color: 0xe74c3c // Red tint
+        },
+        TIME_SLOW: {
+          name: 'Time Slow',
+          timeScale: 0.6,
+          color: 0x3498db // Blue tint
+        },
+        INVERTED_CONTROLS: {
+          name: 'Inverted Controls',
+          invertControls: true,
+          color: 0xf39c12 // Orange tint
+        },
+        BOUNCY_MODE: {
+          name: 'Bouncy Mode',
+          playerBounce: 0.8,
+          color: 0x2ecc71 // Green tint
+        }
+      }
     }
   }
 };

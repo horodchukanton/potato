@@ -916,4 +916,87 @@ describe('GameScene Visual and Positioning Tests', () => {
       clearProgressSpy.mockRestore();
     });
   });
+
+  describe('Dynamic Effects Integration', () => {
+    test('should initialize dynamic effects manager on create', () => {
+      const gameScene = new GameScene();
+      gameScene.init();
+      gameScene.create();
+      
+      expect(gameScene.dynamicEffectsManager).toBeDefined();
+      expect(gameScene.effectSpeedMultiplier).toBe(1.0);
+      expect(gameScene.invertedControls).toBe(false);
+    });
+
+    test('should handle effect speed multiplier in player movement', () => {
+      const gameScene = new GameScene();
+      gameScene.init();
+      gameScene.create();
+      
+      // Set up a speed boost effect
+      gameScene.effectSpeedMultiplier = 1.8;
+      
+      // Mock input for right movement
+      gameScene.cursors.right.isDown = true;
+      gameScene.cursors.left.isDown = false;
+      gameScene.spaceKey.isDown = false;
+      
+      gameScene.handlePlayerMovement();
+      
+      const expectedSpeed = GAME_CONFIG.PHYSICS.PLAYER_SPEED * 1.8;
+      expect(gameScene.player.body.setVelocityX).toHaveBeenCalledWith(expectedSpeed);
+    });
+
+    test('should handle inverted controls effect', () => {
+      const gameScene = new GameScene();
+      gameScene.init();
+      gameScene.create();
+      
+      // Enable inverted controls
+      gameScene.invertedControls = true;
+      
+      // Mock input for right movement (should result in left movement due to inversion)
+      gameScene.cursors.right.isDown = true;
+      gameScene.cursors.left.isDown = false;
+      gameScene.spaceKey.isDown = false;
+      
+      gameScene.handlePlayerMovement();
+      
+      const expectedSpeed = -GAME_CONFIG.PHYSICS.PLAYER_SPEED; // Negative for left movement
+      expect(gameScene.player.body.setVelocityX).toHaveBeenCalledWith(expectedSpeed);
+    });
+
+    test('should combine effects properly (speed boost + inverted controls)', () => {
+      const gameScene = new GameScene();
+      gameScene.init();
+      gameScene.create();
+      
+      // Enable both effects
+      gameScene.effectSpeedMultiplier = 1.5;
+      gameScene.invertedControls = true;
+      
+      // Mock input for left movement (should result in right movement due to inversion)
+      gameScene.cursors.left.isDown = true;
+      gameScene.cursors.right.isDown = false;
+      gameScene.spaceKey.isDown = false;
+      
+      gameScene.handlePlayerMovement();
+      
+      const expectedSpeed = GAME_CONFIG.PHYSICS.PLAYER_SPEED * 1.5; // Positive for right movement
+      expect(gameScene.player.body.setVelocityX).toHaveBeenCalledWith(expectedSpeed);
+    });
+
+    test('should clean up dynamic effects on destroy', () => {
+      const gameScene = new GameScene();
+      gameScene.init();
+      gameScene.create();
+      
+      const stopSpy = jest.spyOn(gameScene.dynamicEffectsManager, 'stop');
+      
+      gameScene.destroy();
+      
+      expect(stopSpy).toHaveBeenCalled();
+      expect(gameScene.dynamicEffectsManager).toBe(null);
+    });
+  });
 });

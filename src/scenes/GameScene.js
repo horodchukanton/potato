@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SCENE_KEYS, GAME_CONFIG, ASSET_KEYS, STORAGE_KEYS } from '../config.js';
 import GameStateManager from '../utils/GameStateManager.js';
+import DynamicEffectsManager from '../utils/DynamicEffectsManager.js';
 
 /**
  * GameScene handles the main running and collecting gameplay
@@ -34,6 +35,11 @@ export default class GameScene extends Phaser.Scene {
     this.invulnerable = false;
     this.invulnerabilityTimer = null;
     this.tetrisPromptShowing = false;
+    
+    // Dynamic effects system properties
+    this.dynamicEffectsManager = null;
+    this.effectSpeedMultiplier = 1.0;
+    this.invertedControls = false;
   }
 
   /**
@@ -74,6 +80,10 @@ export default class GameScene extends Phaser.Scene {
 
     // Start spawning objects
     this.startObjectSpawning();
+    
+    // Initialize and start dynamic effects system
+    this.dynamicEffectsManager = new DynamicEffectsManager(this);
+    this.dynamicEffectsManager.start();
   }
 
   /**
@@ -923,15 +933,29 @@ export default class GameScene extends Phaser.Scene {
       this.playerTrailEmitter.stop();
     }
 
+    // Apply speed multiplier from dynamic effects
+    const effectiveSpeed = GAME_CONFIG.PHYSICS.PLAYER_SPEED * this.effectSpeedMultiplier;
+    
+    // Determine movement direction (considering inverted controls)
+    let moveLeft = cursors.left.isDown || touch.left;
+    let moveRight = cursors.right.isDown || touch.right;
+    
+    // Apply inverted controls effect
+    if (this.invertedControls) {
+      const temp = moveLeft;
+      moveLeft = moveRight;
+      moveRight = temp;
+    }
+
     // Horizontal movement (keyboard or touch)
-    if (cursors.left.isDown || touch.left) {
-      player.body.setVelocityX(-GAME_CONFIG.PHYSICS.PLAYER_SPEED);
+    if (moveLeft) {
+      player.body.setVelocityX(-effectiveSpeed);
       // Visual feedback for touch
       if (touch.left && isMobile) {
         this.leftIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);
       }
-    } else if (cursors.right.isDown || touch.right) {
-      player.body.setVelocityX(GAME_CONFIG.PHYSICS.PLAYER_SPEED);
+    } else if (moveRight) {
+      player.body.setVelocityX(effectiveSpeed);
       // Visual feedback for touch
       if (touch.right && isMobile) {
         this.rightIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);
@@ -1000,6 +1024,38 @@ export default class GameScene extends Phaser.Scene {
       this.time.delayedCall(1000, () => {
         floatingText.destroy();
       });
+    }
+  }
+
+  /**
+   * Clean up resources when scene is destroyed
+   */
+  destroy() {
+    // Stop dynamic effects system
+    if (this.dynamicEffectsManager) {
+      this.dynamicEffectsManager.stop();
+      this.dynamicEffectsManager = null;
+    }
+
+    // Clean up timers
+    if (this.bubbleTimer) {
+      this.bubbleTimer.remove();
+      this.bubbleTimer = null;
+    }
+    
+    if (this.obstacleTimer) {
+      this.obstacleTimer.remove();
+      this.obstacleTimer = null;
+    }
+
+    if (this.invulnerabilityTimer) {
+      this.invulnerabilityTimer.remove();
+      this.invulnerabilityTimer = null;
+    }
+
+    // Call parent destroy if it exists
+    if (super.destroy) {
+      super.destroy();
     }
   }
 }

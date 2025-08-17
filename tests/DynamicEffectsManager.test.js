@@ -1,0 +1,334 @@
+import { GAME_CONFIG } from '../src/config.js';
+import DynamicEffectsManager from '../src/utils/DynamicEffectsManager.js';
+
+// Mock Phaser global for testing
+global.Phaser = {
+  Utils: {
+    Array: {
+      GetRandom: jest.fn()
+    }
+  }
+};
+
+// Mock scene object for testing
+const createMockScene = () => ({
+  time: {
+    delayedCall: jest.fn((delay, callback) => {
+      const timer = { 
+        remove: jest.fn(),
+        callback,
+        delay
+      };
+      // Don't execute callback immediately to avoid infinite loops
+      return timer;
+    })
+  },
+  physics: {
+    world: {
+      gravity: { y: 300 },
+      timeScale: 1.0
+    }
+  },
+  player: {
+    body: {
+      bounce: { y: 0 },
+      setBounce: jest.fn()
+    }
+  },
+  cameras: {
+    main: {
+      width: 800,
+      height: 600
+    }
+  },
+  add: {
+    rectangle: jest.fn().mockReturnValue({
+      setAlpha: jest.fn().mockReturnThis(),
+      setDepth: jest.fn().mockReturnThis(),
+      destroy: jest.fn()
+    }),
+    text: jest.fn().mockReturnValue({
+      setOrigin: jest.fn().mockReturnThis(),
+      setDepth: jest.fn().mockReturnThis(),
+      destroy: jest.fn()
+    })
+  },
+  tweens: {
+    add: jest.fn((config) => {
+      // Simulate tween completion
+      if (config.onComplete) config.onComplete();
+    })
+  },
+  effectSpeedMultiplier: 1.0,
+  invertedControls: false
+});
+
+describe('DynamicEffectsManager', () => {
+  let mockScene;
+  let effectsManager;
+
+  beforeEach(() => {
+    mockScene = createMockScene();
+    effectsManager = new DynamicEffectsManager(mockScene);
+  });
+
+  afterEach(() => {
+    if (effectsManager) {
+      effectsManager.stop();
+    }
+  });
+
+  describe('Initialization', () => {
+    test('should initialize with correct default values', () => {
+      expect(effectsManager.isActive).toBe(false);
+      expect(effectsManager.currentEffect).toBe(null);
+      expect(effectsManager.availableEffects).toEqual(
+        Object.keys(GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS)
+      );
+    });
+
+    test('should have all configured effects available', () => {
+      const expectedEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'INVERTED_CONTROLS', 'BOUNCY_MODE'];
+      expect(effectsManager.availableEffects).toEqual(expect.arrayContaining(expectedEffects));
+      expect(effectsManager.availableEffects.length).toBe(expectedEffects.length);
+    });
+  });
+
+  describe('Effects System Control', () => {
+    test('should start the effects system correctly', () => {
+      effectsManager.start();
+      
+      expect(effectsManager.isActive).toBe(true);
+      expect(mockScene.time.delayedCall).toHaveBeenCalledWith(
+        GAME_CONFIG.EFFECTS.DYNAMIC.NORMAL_DURATION,
+        expect.any(Function)
+      );
+    });
+
+    test('should not start if already active', () => {
+      effectsManager.start();
+      const firstCallCount = mockScene.time.delayedCall.mock.calls.length;
+      
+      effectsManager.start(); // Try to start again
+      
+      expect(mockScene.time.delayedCall.mock.calls.length).toBe(firstCallCount);
+    });
+
+    test('should stop the effects system and clean up', () => {
+      effectsManager.start();
+      const mockTimer = { remove: jest.fn() };
+      effectsManager.effectTimer = mockTimer;
+      effectsManager.normalTimer = mockTimer;
+      
+      effectsManager.stop();
+      
+      expect(effectsManager.isActive).toBe(false);
+      expect(mockTimer.remove).toHaveBeenCalledTimes(2);
+      expect(effectsManager.effectTimer).toBe(null);
+      expect(effectsManager.normalTimer).toBe(null);
+    });
+  });
+
+  describe('Effect Application', () => {
+    test('should store original values before applying effects', () => {
+      effectsManager.storeOriginalValues();
+      
+      expect(effectsManager.originalValues).toEqual({
+        gravity: 300,
+        playerSpeed: GAME_CONFIG.PHYSICS.PLAYER_SPEED,
+        timeScale: 1.0,
+        playerBounce: 0
+      });
+    });
+
+    test('should apply GRAVITY_LOW effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.GRAVITY_LOW;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('GRAVITY_LOW', effectConfig);
+      
+      expect(mockScene.physics.world.gravity.y).toBe(300 * effectConfig.gravityMultiplier);
+      expect(mockScene.add.rectangle).toHaveBeenCalledWith(
+        400, 300, 800, 600, effectConfig.color
+      );
+    });
+
+    test('should apply SPEED_BOOST effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.SPEED_BOOST;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('SPEED_BOOST', effectConfig);
+      
+      expect(mockScene.effectSpeedMultiplier).toBe(effectConfig.speedMultiplier);
+    });
+
+    test('should apply TIME_SLOW effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.TIME_SLOW;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('TIME_SLOW', effectConfig);
+      
+      expect(mockScene.physics.world.timeScale).toBe(effectConfig.timeScale);
+    });
+
+    test('should apply INVERTED_CONTROLS effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.INVERTED_CONTROLS;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('INVERTED_CONTROLS', effectConfig);
+      
+      expect(mockScene.invertedControls).toBe(effectConfig.invertControls);
+    });
+
+    test('should apply BOUNCY_MODE effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.BOUNCY_MODE;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('BOUNCY_MODE', effectConfig);
+      
+      expect(mockScene.player.body.setBounce).toHaveBeenCalledWith(effectConfig.playerBounce);
+    });
+  });
+
+  describe('Effect Deactivation', () => {
+    test('should restore all original values when deactivating', () => {
+      effectsManager.storeOriginalValues();
+      
+      // Apply an effect first
+      effectsManager.currentEffect = {
+        key: 'GRAVITY_LOW',
+        config: GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.GRAVITY_LOW
+      };
+      effectsManager.screenTint = { destroy: jest.fn() };
+      
+      effectsManager.deactivateCurrentEffect();
+      
+      expect(mockScene.physics.world.gravity.y).toBe(300);
+      expect(mockScene.physics.world.timeScale).toBe(1.0);
+      expect(mockScene.effectSpeedMultiplier).toBe(1.0);
+      expect(mockScene.invertedControls).toBe(false);
+      expect(mockScene.player.body.setBounce).toHaveBeenCalledWith(0);
+      expect(effectsManager.currentEffect).toBe(null);
+    });
+
+    test('should handle deactivation when no effect is active', () => {
+      expect(() => {
+        effectsManager.deactivateCurrentEffect();
+      }).not.toThrow();
+    });
+  });
+
+  describe('Visual Effects', () => {
+    test('should create screen tint with correct properties', () => {
+      const testColor = 0xff0000;
+      
+      effectsManager.addScreenTint(testColor);
+      
+      expect(mockScene.add.rectangle).toHaveBeenCalledWith(400, 300, 800, 600, testColor);
+    });
+
+    test('should remove existing tint before adding new one', () => {
+      const mockTint = { destroy: jest.fn() };
+      effectsManager.screenTint = mockTint;
+      
+      effectsManager.addScreenTint(0x00ff00);
+      
+      expect(mockTint.destroy).toHaveBeenCalled();
+    });
+
+    test('should create effect notification with correct text', () => {
+      effectsManager.showEffectNotification('Test Effect', 0xff0000);
+      
+      expect(mockScene.add.text).toHaveBeenCalledWith(400, 60, 'Test Effect', expect.any(Object));
+    });
+  });
+
+  describe('Random Effect Selection', () => {
+    beforeEach(() => {
+      // Mock Phaser.Utils.Array.GetRandom to return predictable results
+      global.Phaser.Utils.Array.GetRandom.mockReturnValue('GRAVITY_LOW');
+    });
+
+    afterEach(() => {
+      global.Phaser.Utils.Array.GetRandom.mockReset();
+    });
+
+    test('should activate random effect from available pool', () => {
+      effectsManager.isActive = true; // Manually set active for test
+      effectsManager.storeOriginalValues();
+      effectsManager.activateRandomEffect();
+      
+      expect(effectsManager.currentEffect).toBeTruthy();
+      expect(effectsManager.currentEffect.key).toBe('GRAVITY_LOW');
+      expect(global.Phaser.Utils.Array.GetRandom).toHaveBeenCalledWith(effectsManager.availableEffects);
+    });
+
+    test('should schedule effect end timer when activating effect', () => {
+      effectsManager.isActive = true; // Manually set active for test
+      effectsManager.activateRandomEffect();
+      
+      expect(mockScene.time.delayedCall).toHaveBeenCalledWith(
+        GAME_CONFIG.EFFECTS.DYNAMIC.EFFECT_DURATION,
+        expect.any(Function)
+      );
+    });
+  });
+
+  describe('Timer Management', () => {
+    test('should not schedule effects when stopped', () => {
+      effectsManager.isActive = false;
+      const callCountBefore = mockScene.time.delayedCall.mock.calls.length;
+      
+      effectsManager.scheduleNextEffect();
+      
+      expect(mockScene.time.delayedCall.mock.calls.length).toBe(callCountBefore);
+    });
+
+    test('should not activate effects when stopped', () => {
+      effectsManager.isActive = false;
+      const originalGravity = mockScene.physics.world.gravity.y;
+      
+      effectsManager.activateRandomEffect();
+      
+      expect(mockScene.physics.world.gravity.y).toBe(originalGravity);
+      expect(effectsManager.currentEffect).toBe(null);
+    });
+  });
+
+  describe('Utility Methods', () => {
+    test('should return current effect info', () => {
+      const testEffect = { key: 'TEST', config: {} };
+      effectsManager.currentEffect = testEffect;
+      
+      expect(effectsManager.getCurrentEffect()).toBe(testEffect);
+    });
+
+    test('should return effects active status', () => {
+      expect(effectsManager.isEffectsActive()).toBe(false);
+      
+      effectsManager.isActive = true;
+      expect(effectsManager.isEffectsActive()).toBe(true);
+      
+      effectsManager.stop();
+      expect(effectsManager.isEffectsActive()).toBe(false);
+    });
+  });
+
+  describe('Error Handling', () => {
+    test('should handle missing player body gracefully', () => {
+      mockScene.player.body = null;
+      
+      expect(() => {
+        effectsManager.applyEffect('BOUNCY_MODE', GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.BOUNCY_MODE);
+      }).not.toThrow();
+    });
+
+    test('should handle missing tweens system gracefully', () => {
+      mockScene.tweens = null;
+      
+      expect(() => {
+        effectsManager.showEffectNotification('Test', 0xff0000);
+      }).not.toThrow();
+    });
+  });
+});
