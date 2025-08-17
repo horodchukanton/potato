@@ -31,11 +31,45 @@ export const GAME_CONFIG = {
   },
   // Bubble configuration
   BUBBLES: {
-    SPEED_X: -100, // Horizontal speed matching obstacles
+    SPEED_X: -150, // Horizontal speed matching obstacles
     SPEED_Y_MIN: 20, // Minimum downward speed for falling effect
     SPEED_Y_MAX: 80, // Maximum downward speed for falling effect
     COLOR: 0x3498db, // Blue color
     RADIUS: 16 // Bubble radius
+  },
+  // Visual effects configuration
+  EFFECTS: {
+    SCREEN_SHAKE: {
+      DURATION: 300,
+      INTENSITY: 10
+    },
+    PARTICLES: {
+      BUBBLE_COLLECT: {
+        PARTICLE_COUNT: 8,
+        SPEED_MIN: 50,
+        SPEED_MAX: 150,
+        LIFE_SPAN: 800,
+        COLORS: [0xffff00, 0x00ffff, 0xff00ff, 0x00ff00]
+      },
+      OBSTACLE_HIT: {
+        PARTICLE_COUNT: 12,
+        SPEED_MIN: 80,
+        SPEED_MAX: 200,
+        LIFE_SPAN: 1000,
+        COLORS: [0xff6b6b, 0xffa500, 0x696969]
+      },
+      PLAYER_TRAIL: {
+        PARTICLE_COUNT: 2,
+        SPEED_MIN: 20,
+        SPEED_MAX: 50,
+        LIFE_SPAN: 400,
+        COLORS: [0x4ecdc4, 0x45b7d1]
+      }
+    },
+    TRANSITIONS: {
+      FADE_DURATION: 500,
+      SCENE_TRANSITION_DURATION: 800
+    }
   }
 };
 

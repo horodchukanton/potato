@@ -907,7 +907,8 @@ describe('GameScene Visual and Positioning Tests', () => {
       
       // Verify that clearProgress was called before restart
       expect(clearProgressSpy).toHaveBeenCalled();
-      expect(gameScene.scene.restart).toHaveBeenCalled();
+      // The new implementation uses transitionToScene instead of scene.restart
+      expect(gameScene.scene.start).toHaveBeenCalledWith(SCENE_KEYS.GAME);
       
       // Restore mocks
       gameScene.add.text = originalAddText;
