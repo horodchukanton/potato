@@ -374,10 +374,10 @@ describe('Game Flow Integration', () => {
       };
 
       // Values should be the same regardless of device
-      expect(mechanicsConfig.bubbleTarget).toBe(50);
-      expect(mechanicsConfig.playerSpeed).toBe(180);
-      expect(mechanicsConfig.jumpVelocity).toBe(350);
-      expect(mechanicsConfig.obstacleSpeed).toBe(150);
+      expect(mechanicsConfig.bubbleTarget).toBe(GAME_CONFIG.BUBBLE_COLLECTION_TARGET);
+      expect(mechanicsConfig.playerSpeed).toBe(GAME_CONFIG.PHYSICS.PLAYER_SPEED);
+      expect(mechanicsConfig.jumpVelocity).toBe(Math.abs(GAME_CONFIG.PHYSICS.JUMP_VELOCITY));
+      expect(mechanicsConfig.obstacleSpeed).toBe(Math.abs(GAME_CONFIG.OBSTACLES.SPEED));
     });
   });
 

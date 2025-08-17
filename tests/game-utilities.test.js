@@ -29,6 +29,8 @@ describe('Game State and Logic Utilities', () => {
       
       // Negative values
       expect(Math.min(100, (-5 / 10) * 100)).toBe(-50);
+      // Math.max wrapper prevents negative progress percentages that could occur
+      // if localStorage contains corrupted negative values, ensuring UI displays 0% instead of negative
       expect(Math.min(100, Math.max(0, (-5 / 10) * 100))).toBe(0); // Better handling
     });
   });

@@ -9,7 +9,7 @@
  * - Cross-platform user experience consistency
  */
 
-import { GAME_CONFIG, SCENE_KEYS } from '../src/config.js';
+import { GAME_CONFIG, SCENE_KEYS, UI_TEXT } from '../src/config.js';
 
 describe('Mobile Responsiveness and Touch Controls', () => {
   describe('Touch Input Areas', () => {
@@ -94,8 +94,8 @@ describe('Mobile Responsiveness and Touch Controls', () => {
     });
 
     test('should show appropriate instructions for each device type', () => {
-      const mobileInstructions = 'Tap LEFT/RIGHT to move and TAP UPPER RIGHT to jump';
-      const desktopInstructions = 'Use ARROW KEYS to move and SPACE to jump';
+      const mobileInstructions = UI_TEXT.INSTRUCTIONS.MOBILE;
+      const desktopInstructions = UI_TEXT.INSTRUCTIONS.DESKTOP;
       
       // Mobile instructions should mention touch gestures
       expect(mobileInstructions).toContain('Tap');

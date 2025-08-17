@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { SCENE_KEYS, GAME_CONFIG } from '../config.js';
+import { SCENE_KEYS, GAME_CONFIG, UI_TEXT } from '../config.js';
 import GameStateManager from '../utils/GameStateManager.js';
 
 /**
@@ -118,8 +118,8 @@ export default class MenuScene extends Phaser.Scene {
     // Instructions - responsive based on device
     const isMobile = this.sys.game.device.input.touch;
     const instructionText = isMobile 
-      ? 'Tap LEFT/RIGHT to move and TAP UPPER RIGHT to jump\nCollect bubbles and avoid obstacles!'
-      : 'Use ARROW KEYS to move and SPACE to jump\nCollect bubbles and avoid obstacles!';
+      ? `${UI_TEXT.INSTRUCTIONS.MOBILE}\nCollect bubbles and avoid obstacles!`
+      : `${UI_TEXT.INSTRUCTIONS.DESKTOP}\nCollect bubbles and avoid obstacles!`;
     
     this.add.text(width / 2, buttonY + 20, instructionText, {
       font: '16px Arial',
