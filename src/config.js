@@ -31,9 +31,9 @@ export const GAME_CONFIG = {
   },
   // Bubble configuration
   BUBBLES: {
-    SPEED_X: -150, // Horizontal speed matching obstacles
-    SPEED_Y_MIN: -30, // Minimum vertical speed for diagonal movement
-    SPEED_Y_MAX: 30, // Maximum vertical speed for diagonal movement
+    SPEED_X: -100, // Horizontal speed matching obstacles
+    SPEED_Y_MIN: 20, // Minimum downward speed for falling effect
+    SPEED_Y_MAX: 80, // Maximum downward speed for falling effect
     COLOR: 0x3498db, // Blue color
     RADIUS: 16 // Bubble radius
   }

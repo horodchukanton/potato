@@ -13,6 +13,9 @@ describe('Game Mechanics Validation', () => {
       expect(bubbles.SPEED_X).toBeLessThan(0); // Moving left
       expect(Math.abs(bubbles.SPEED_X)).toBeGreaterThan(0); // Has movement
       expect(bubbles.SPEED_Y_MIN).toBeLessThanOrEqual(bubbles.SPEED_Y_MAX);
+      // Should fall downward (positive Y values)
+      expect(bubbles.SPEED_Y_MIN).toBeGreaterThan(0);
+      expect(bubbles.SPEED_Y_MAX).toBeGreaterThan(0);
     });
 
     test('should have appropriate bubble size', () => {

@@ -319,16 +319,19 @@ export default class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
+    // Spawn bubbles from above the screen and within horizontal bounds
     const x = Phaser.Math.Between(200, width - 200);
-    const y = Phaser.Math.Between(100, height - 100);
+    const y = Phaser.Math.Between(-100, -20); // Above screen to fall into view
     
     const bubble = this.add.image(x, y, ASSET_KEYS.BUBBLE);
     this.physics.add.existing(bubble);
     bubble.body.setSize(32, 32); // Set collision box for bubble sprite
     
-    // Set diagonal movement with X speed matching obstacles and random Y movement
-    bubble.body.setVelocityX(GAME_CONFIG.BUBBLES.SPEED_X);
+    // Set Y velocity for natural falling (physics-based)
     bubble.body.setVelocityY(Phaser.Math.Between(GAME_CONFIG.BUBBLES.SPEED_Y_MIN, GAME_CONFIG.BUBBLES.SPEED_Y_MAX));
+    
+    // Store horizontal movement speed for manual X movement (matching obstacle movement system)
+    bubble.moveSpeedX = GAME_CONFIG.BUBBLES.SPEED_X; // Horizontal speed matching obstacles exactly
     
     this.bubbles.add(bubble);
 
@@ -689,6 +692,22 @@ export default class GameScene extends Phaser.Scene {
     
     this.handlePlayerMovement();
     this.updateObstacles();
+    this.updateBubbles();
+  }
+
+  /**
+   * Update bubble positions manually (synchronized X movement with obstacles)
+   */
+  updateBubbles() {
+    if (!this.bubbles) return;
+    
+    this.bubbles.children.entries.forEach(bubble => {
+      if (bubble.active) {
+        // Move bubble horizontally using delta time (matching obstacle movement exactly)
+        // Y movement is handled by physics for natural falling
+        bubble.x += bubble.moveSpeedX * this.game.loop.delta / 1000;
+      }
+    });
   }
 
   /**

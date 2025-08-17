@@ -35,7 +35,10 @@ jest.mock('phaser', () => ({
               setSize: jest.fn(),
               setImmovable: jest.fn(),
               setVelocityX: jest.fn(),
-              setVelocityY: jest.fn(),
+              setVelocityY: jest.fn((velocity) => {
+                obj.body.velocity.y = velocity;
+              }),
+              velocity: { x: 0, y: 0 },
               checkWorldBounds: false,
               outOfBoundsKill: false,
               touching: { down: false }
@@ -454,9 +457,9 @@ describe('GameScene Visual and Positioning Tests', () => {
         expect(bubble.x).toBeGreaterThanOrEqual(200);
         expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH - 200);
         
-        // Should be within vertical bounds (with margin)
-        expect(bubble.y).toBeGreaterThanOrEqual(100);
-        expect(bubble.y).toBeLessThanOrEqual(GAME_CONFIG.HEIGHT - 100);
+        // Should spawn above screen to fall into view (simulating diagonal falling)
+        expect(bubble.y).toBeGreaterThanOrEqual(-100);
+        expect(bubble.y).toBeLessThanOrEqual(-20);
         
         // Should have correct texture
         expect(bubble.texture).toBe('bubble');
@@ -479,8 +482,10 @@ describe('GameScene Visual and Positioning Tests', () => {
       );
       
       expect(gameScene.physics.add.existing).toHaveBeenCalledWith(bubble);
-      expect(bubble.body.setVelocityX).toHaveBeenCalledWith(GAME_CONFIG.BUBBLES.SPEED_X);
-      expect(bubble.body.setVelocityY).toHaveBeenCalled();
+      // Bubbles now use manual X movement (synchronized with obstacles) and physics Y movement for natural falling
+      expect(bubble.moveSpeedX).toBe(GAME_CONFIG.BUBBLES.SPEED_X);
+      expect(bubble.body.velocity.y).toBeGreaterThanOrEqual(GAME_CONFIG.BUBBLES.SPEED_Y_MIN);
+      expect(bubble.body.velocity.y).toBeLessThanOrEqual(GAME_CONFIG.BUBBLES.SPEED_Y_MAX);
       expect(bubble.body.checkWorldBounds).toBe(true);
       expect(bubble.body.outOfBoundsKill).toBe(true);
     });
@@ -749,11 +754,12 @@ describe('GameScene Visual and Positioning Tests', () => {
       );
       
       bubbles.forEach(bubble => {
-        // Should have 200px margin from edges
+        // Should have 200px margin from horizontal edges
         expect(bubble.x).toBeGreaterThanOrEqual(200);
         expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH - 200);
-        expect(bubble.y).toBeGreaterThanOrEqual(100);
-        expect(bubble.y).toBeLessThanOrEqual(GAME_CONFIG.HEIGHT - 100);
+        // Should spawn above screen for diagonal falling effect
+        expect(bubble.y).toBeGreaterThanOrEqual(-100);
+        expect(bubble.y).toBeLessThanOrEqual(-20);
       });
     });
   });
