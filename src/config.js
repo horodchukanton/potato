@@ -31,7 +31,7 @@ export const GAME_CONFIG = {
   },
   // Bubble configuration
   BUBBLES: {
-    SPEED_X: -150, // Horizontal speed matching obstacles
+    SPEED_X: -100, // Horizontal speed matching obstacles
     SPEED_Y_MIN: 20, // Minimum downward speed for falling effect
     SPEED_Y_MAX: 80, // Maximum downward speed for falling effect
     COLOR: 0x3498db, // Blue color
