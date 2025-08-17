@@ -326,20 +326,20 @@ describe('PreloadScene', () => {
   });
 
   describe('Loading Performance', () => {
-    test('should use optimized placeholder images', () => {
+    test('should use custom sprite assets', () => {
       preloadScene.preload();
       
-      // Verify all placeholders use the same minimal base64 image
+      // Verify all assets are loaded with proper base64 images
       const imageCalls = preloadScene.load.image.mock.calls;
-      const firstImageData = imageCalls[0][1];
       
-      // All placeholders should use the same minimal data for efficiency
+      // Each asset should have unique sprite data (no longer identical placeholders)
+      const assetDataSet = new Set(imageCalls.map(call => call[1]));
+      expect(assetDataSet.size).toBe(4); // All 4 assets should be different
+      
+      // All should still be valid base64 PNG images
       imageCalls.forEach(call => {
-        expect(call[1]).toBe(firstImageData);
+        expect(call[1]).toMatch(/^data:image\/png;base64,/);
       });
-      
-      // Verify it's a minimal 1x1 pixel image
-      expect(firstImageData).toContain('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAY');
     });
 
     test('should minimize loading time with efficient assets', () => {
