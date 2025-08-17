@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SCENE_KEYS, GAME_CONFIG, ASSET_KEYS, STORAGE_KEYS } from '../config.js';
+import GameStateManager from '../utils/GameStateManager.js';
 
 /**
  * GameScene handles the main running and collecting gameplay
@@ -13,49 +14,26 @@ export default class GameScene extends Phaser.Scene {
    * Initialize scene data
    */
   init() {
-    // Load saved progress from localStorage
-    this.bubblesCollected = this.loadProgress();
-    this.firstBubbleCollected = this.loadFirstBubbleFlag();
+    // Load saved progress from localStorage using GameStateManager
+    const gameState = GameStateManager.loadGameState();
+    this.bubblesCollected = gameState.bubblesCollected;
+    this.firstBubbleCollected = gameState.firstBubbleCollected;
+    this.playerLives = gameState.playerLives;
+    
+    // Save current phase as game scene only if it has changed
+    const currentPhase = gameState.currentPhase;
+    if (currentPhase !== SCENE_KEYS.GAME) {
+      GameStateManager.saveCurrentPhase(SCENE_KEYS.GAME);
+    }
     
     this.cursors = null;
     this.player = null;
     this.bubbles = null;
     this.obstacles = null;
-    this.playerLives = GAME_CONFIG.OBSTACLES.LIVES;
     this.gameOver = false;
     this.invulnerable = false;
     this.invulnerabilityTimer = null;
     this.tetrisPromptShowing = false;
-  }
-
-  /**
-   * Load bubble collection progress from localStorage
-   */
-  loadProgress() {
-    const saved = localStorage.getItem(STORAGE_KEYS.BUBBLES_COLLECTED);
-    return saved ? parseInt(saved, 10) : 0;
-  }
-
-  /**
-   * Load first bubble collection flag from localStorage
-   */
-  loadFirstBubbleFlag() {
-    const saved = localStorage.getItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED);
-    return saved === 'true';
-  }
-
-  /**
-   * Save bubble collection progress to localStorage
-   */
-  saveProgress() {
-    localStorage.setItem(STORAGE_KEYS.BUBBLES_COLLECTED, this.bubblesCollected.toString());
-  }
-
-  /**
-   * Save first bubble collection flag to localStorage
-   */
-  saveFirstBubbleFlag() {
-    localStorage.setItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED, 'true');
   }
 
   /**
@@ -454,13 +432,13 @@ export default class GameScene extends Phaser.Scene {
     this.bubblesCollected++;
     this.bubblesText.setText(`Bubbles: ${this.bubblesCollected}`);
 
-    // Save progress to localStorage
-    this.saveProgress();
+    // Save progress to localStorage using GameStateManager
+    GameStateManager.saveBubblesCollected(this.bubblesCollected);
 
     // Trigger cutscene on first bubble collection
     if (!this.firstBubbleCollected) {
       this.firstBubbleCollected = true;
-      this.saveFirstBubbleFlag();
+      GameStateManager.saveFirstBubbleFlag(true);
       this.triggerFirstBubbleCutscene();
     }
 
@@ -480,6 +458,9 @@ export default class GameScene extends Phaser.Scene {
     // Take damage
     this.playerLives -= GAME_CONFIG.OBSTACLES.DAMAGE;
     this.livesText.setText(`Lives: ${this.playerLives}`);
+
+    // Save updated lives to localStorage
+    GameStateManager.savePlayerLives(this.playerLives);
 
     // Player knockback effect
     player.body.setVelocityX(-150);
@@ -589,6 +570,7 @@ export default class GameScene extends Phaser.Scene {
     playTetrisButton.on('pointerdown', () => {
       console.log('Would transition to Tetris scene');
       // TODO: Uncomment when TetrisScene is implemented
+      // GameStateManager.saveCurrentPhase(SCENE_KEYS.TETRIS);
       // this.scene.start(SCENE_KEYS.TETRIS);
       
       // For now, just close the dialog and continue

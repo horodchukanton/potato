@@ -75,4 +75,5 @@ export const STORAGE_KEYS = {
   TETRIS_LINES: 'tetris_lines',
   TETROMINOES_USED: 'tetrominoes_used',
   FIRST_BUBBLE_COLLECTED: 'first_bubble_collected',
+  PLAYER_LIVES: 'player_lives',
 };
