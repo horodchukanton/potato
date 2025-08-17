@@ -55,7 +55,8 @@ export default class GameStateManager {
     }
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.BUBBLES_COLLECTED);
-      return saved ? parseInt(saved, 10) : 0;
+      const parsed = saved ? parseInt(saved, 10) : 0;
+      return isNaN(parsed) || parsed < 0 ? 0 : parsed;
     } catch (e) {
       console.error('Failed to load bubbles collected from localStorage:', e);
       return 0;
@@ -151,7 +152,8 @@ export default class GameStateManager {
     }
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.TETROMINOES_USED);
-      return saved ? parseInt(saved, 10) : 0;
+      const parsed = saved ? parseInt(saved, 10) : 0;
+      return isNaN(parsed) || parsed < 0 ? 0 : parsed;
     } catch (e) {
       console.error('Failed to load tetrominoes used from localStorage:', e);
       return 0;

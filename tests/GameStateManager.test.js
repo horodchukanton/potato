@@ -31,14 +31,14 @@ describe('GameStateManager Integration Tests', () => {
 
     test('should handle invalid bubble count by returning 0', () => {
       localStorage.setItem(STORAGE_KEYS.BUBBLES_COLLECTED, 'invalid');
-      // Note: parseInt('invalid', 10) returns NaN, which our current implementation doesn't handle
-      // This test documents the current behavior
-      expect(GameStateManager.loadBubblesCollected()).toBeNaN();
+      // Updated: Now properly handles NaN by returning 0
+      expect(GameStateManager.loadBubblesCollected()).toBe(0);
     });
 
-    test('should handle negative values', () => {
+    test('should handle negative values by returning 0', () => {
       localStorage.setItem(STORAGE_KEYS.BUBBLES_COLLECTED, '-5');
-      expect(GameStateManager.loadBubblesCollected()).toBe(-5);
+      // Updated: Now clamps negative values to 0 for safety
+      expect(GameStateManager.loadBubblesCollected()).toBe(0);
     });
 
     test('should handle large numbers', () => {
