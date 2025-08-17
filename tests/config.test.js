@@ -102,4 +102,59 @@ describe('Game Configuration', () => {
       expect(uniqueValues.size).toBe(values.length);
     });
   });
+
+  describe('DYNAMIC_EFFECTS', () => {
+    test('should have valid dynamic effects configuration', () => {
+      const dynamicConfig = GAME_CONFIG.EFFECTS.DYNAMIC;
+      
+      // Check timing configuration
+      expect(dynamicConfig.EFFECT_DURATION).toBe(5000);
+      expect(dynamicConfig.NORMAL_DURATION).toBe(5000);
+      expect(dynamicConfig.EFFECT_DURATION).toBeGreaterThan(1000);
+      expect(dynamicConfig.NORMAL_DURATION).toBeGreaterThan(1000);
+    });
+
+    test('should have all required effect types', () => {
+      const effects = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS;
+      const requiredEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'INVERTED_CONTROLS', 'BOUNCY_MODE'];
+      
+      requiredEffects.forEach(effectKey => {
+        expect(effects[effectKey]).toBeDefined();
+        expect(effects[effectKey].name).toBeTruthy();
+        expect(effects[effectKey].color).toBeGreaterThan(0);
+      });
+    });
+
+    test('should have valid effect multipliers and values', () => {
+      const effects = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS;
+      
+      // Gravity multiplier should be reasonable
+      expect(effects.GRAVITY_LOW.gravityMultiplier).toBeGreaterThan(0);
+      expect(effects.GRAVITY_LOW.gravityMultiplier).toBeLessThan(1);
+      
+      // Speed multiplier should boost speed
+      expect(effects.SPEED_BOOST.speedMultiplier).toBeGreaterThan(1);
+      expect(effects.SPEED_BOOST.speedMultiplier).toBeLessThan(3);
+      
+      // Time scale should slow down time
+      expect(effects.TIME_SLOW.timeScale).toBeGreaterThan(0);
+      expect(effects.TIME_SLOW.timeScale).toBeLessThan(1);
+      
+      // Inverted controls should be boolean
+      expect(typeof effects.INVERTED_CONTROLS.invertControls).toBe('boolean');
+      expect(effects.INVERTED_CONTROLS.invertControls).toBe(true);
+      
+      // Bounce should be reasonable
+      expect(effects.BOUNCY_MODE.playerBounce).toBeGreaterThan(0);
+      expect(effects.BOUNCY_MODE.playerBounce).toBeLessThanOrEqual(1);
+    });
+
+    test('should have distinct colors for each effect', () => {
+      const effects = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS;
+      const colors = Object.values(effects).map(effect => effect.color);
+      const uniqueColors = new Set(colors);
+      
+      expect(uniqueColors.size).toBe(colors.length);
+    });
+  });
 });
