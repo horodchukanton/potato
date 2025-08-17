@@ -42,8 +42,8 @@ describe('Game Configuration', () => {
     test('should have valid bubble configuration', () => {
       const bubbles = GAME_CONFIG.BUBBLES;
       expect(bubbles.SPEED_X).toBe(-150);
-      expect(bubbles.SPEED_Y_MIN).toBe(-30);
-      expect(bubbles.SPEED_Y_MAX).toBe(30);
+      expect(bubbles.SPEED_Y_MIN).toBe(20);
+      expect(bubbles.SPEED_Y_MAX).toBe(80);
       expect(bubbles.SPEED_Y_MIN).toBeLessThan(bubbles.SPEED_Y_MAX);
       expect(bubbles.RADIUS).toBe(16);
       expect(bubbles.RADIUS).toBeGreaterThan(0);

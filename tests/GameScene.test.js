@@ -454,9 +454,9 @@ describe('GameScene Visual and Positioning Tests', () => {
         expect(bubble.x).toBeGreaterThanOrEqual(200);
         expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH - 200);
         
-        // Should be within vertical bounds (with margin)
-        expect(bubble.y).toBeGreaterThanOrEqual(100);
-        expect(bubble.y).toBeLessThanOrEqual(GAME_CONFIG.HEIGHT - 100);
+        // Should spawn above screen to fall into view (simulating diagonal falling)
+        expect(bubble.y).toBeGreaterThanOrEqual(-100);
+        expect(bubble.y).toBeLessThanOrEqual(-20);
         
         // Should have correct texture
         expect(bubble.texture).toBe('bubble');
@@ -749,11 +749,12 @@ describe('GameScene Visual and Positioning Tests', () => {
       );
       
       bubbles.forEach(bubble => {
-        // Should have 200px margin from edges
+        // Should have 200px margin from horizontal edges
         expect(bubble.x).toBeGreaterThanOrEqual(200);
         expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH - 200);
-        expect(bubble.y).toBeGreaterThanOrEqual(100);
-        expect(bubble.y).toBeLessThanOrEqual(GAME_CONFIG.HEIGHT - 100);
+        // Should spawn above screen for diagonal falling effect
+        expect(bubble.y).toBeGreaterThanOrEqual(-100);
+        expect(bubble.y).toBeLessThanOrEqual(-20);
       });
     });
   });

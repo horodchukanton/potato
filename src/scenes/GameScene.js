@@ -319,14 +319,15 @@ export default class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
+    // Spawn bubbles from above the screen and within horizontal bounds
     const x = Phaser.Math.Between(200, width - 200);
-    const y = Phaser.Math.Between(100, height - 100);
+    const y = Phaser.Math.Between(-100, -20); // Above screen to fall into view
     
     const bubble = this.add.image(x, y, ASSET_KEYS.BUBBLE);
     this.physics.add.existing(bubble);
     bubble.body.setSize(32, 32); // Set collision box for bubble sprite
     
-    // Set diagonal movement with X speed matching obstacles and random Y movement
+    // Set diagonal falling movement - left movement to simulate forward motion, downward for falling
     bubble.body.setVelocityX(GAME_CONFIG.BUBBLES.SPEED_X);
     bubble.body.setVelocityY(Phaser.Math.Between(GAME_CONFIG.BUBBLES.SPEED_Y_MIN, GAME_CONFIG.BUBBLES.SPEED_Y_MAX));
     
