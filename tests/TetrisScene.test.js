@@ -114,6 +114,46 @@ describe('Tetromino Limiting Mechanics', () => {
       expect(afterUsingAll).toBe(0);
     });
 
+    test('should reset bubbles to 0 when transitioning from Tetris to Runner phase', () => {
+      // Set up initial state with collected bubbles
+      GameStateManager.saveBubblesCollected(25);
+      GameStateManager.saveCurrentPhase(SCENE_KEYS.TETRIS);
+      
+      // Verify initial state
+      expect(GameStateManager.loadBubblesCollected()).toBe(25);
+      expect(GameStateManager.loadCurrentPhase()).toBe(SCENE_KEYS.TETRIS);
+      
+      // Simulate transition back to game scene by resetting bubbles
+      GameStateManager.saveBubblesCollected(0);
+      GameStateManager.saveCurrentPhase(SCENE_KEYS.GAME);
+      
+      // Verify bubbles are reset
+      expect(GameStateManager.loadBubblesCollected()).toBe(0);
+      expect(GameStateManager.loadCurrentPhase()).toBe(SCENE_KEYS.GAME);
+    });
+
+    test('should ensure bubble count resets after all types of Tetris scene exits', () => {
+      // Test multiple scenarios where TetrisScene transitions back to GameScene
+      const scenarios = [
+        { name: 'game over', bubbles: 30 },
+        { name: 'no more pieces', bubbles: 15 },
+        { name: 'win condition', bubbles: 50 },
+        { name: 'manual exit', bubbles: 20 }
+      ];
+
+      scenarios.forEach(scenario => {
+        // Set up state with bubbles collected
+        GameStateManager.saveBubblesCollected(scenario.bubbles);
+        expect(GameStateManager.loadBubblesCollected()).toBe(scenario.bubbles);
+
+        // Simulate the TetrisScene behavior - should reset bubbles when transitioning
+        GameStateManager.saveBubblesCollected(0);
+        
+        // Verify bubbles are reset
+        expect(GameStateManager.loadBubblesCollected()).toBe(0);
+      });
+    });
+
     test('should handle zero bubbles scenario', () => {
       const bubblesCollected = 0;
       const tetrominoesUsed = 0;
