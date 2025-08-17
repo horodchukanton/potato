@@ -552,6 +552,8 @@ export default class TetrisScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
     returnButton.on('pointerdown', () => {
+      // Reset bubbles to 0 when transitioning back to Runner phase
+      GameStateManager.saveBubblesCollected(0);
       this.scene.start(SCENE_KEYS.GAME);
     });
   }
@@ -627,6 +629,8 @@ export default class TetrisScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
     returnButton.on('pointerdown', () => {
+      // Reset bubbles to 0 when transitioning back to Runner phase
+      GameStateManager.saveBubblesCollected(0);
       this.scene.start(SCENE_KEYS.GAME);
     });
   }
@@ -665,6 +669,8 @@ export default class TetrisScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
     returnButton.on('pointerdown', () => {
+      // Reset bubbles to 0 when transitioning back to Runner phase
+      GameStateManager.saveBubblesCollected(0);
       this.scene.start(SCENE_KEYS.GAME);
     });
   }
@@ -708,6 +714,8 @@ export default class TetrisScene extends Phaser.Scene {
       this.dropPiece();
     }
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
+      // Reset bubbles to 0 when transitioning back to Runner phase
+      GameStateManager.saveBubblesCollected(0);
       this.scene.start(SCENE_KEYS.GAME);
     }
   }
