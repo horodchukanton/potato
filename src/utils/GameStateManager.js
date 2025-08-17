@@ -50,8 +50,16 @@ export default class GameStateManager {
    * @returns {number} Number of bubbles collected
    */
   static loadBubblesCollected() {
-    const saved = localStorage.getItem(STORAGE_KEYS.BUBBLES_COLLECTED);
-    return saved ? parseInt(saved, 10) : 0;
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return 0;
+    }
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.BUBBLES_COLLECTED);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch (e) {
+      console.error('Failed to load bubbles collected from localStorage:', e);
+      return 0;
+    }
   }
 
   /**
@@ -59,7 +67,14 @@ export default class GameStateManager {
    * @param {number} count - Number of bubbles collected
    */
   static saveBubblesCollected(count) {
-    localStorage.setItem(STORAGE_KEYS.BUBBLES_COLLECTED, count.toString());
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEYS.BUBBLES_COLLECTED, count.toString());
+    } catch (e) {
+      console.error('Failed to save bubbles collected to localStorage:', e);
+    }
   }
 
   /**
@@ -67,8 +82,16 @@ export default class GameStateManager {
    * @returns {string} Current phase scene key
    */
   static loadCurrentPhase() {
-    const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_PHASE);
-    return saved || SCENE_KEYS.GAME; // Default to game scene
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return SCENE_KEYS.GAME; // Default to game scene
+    }
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_PHASE);
+      return saved || SCENE_KEYS.GAME; // Default to game scene
+    } catch (e) {
+      console.error('Failed to load current phase from localStorage:', e);
+      return SCENE_KEYS.GAME; // Default to game scene
+    }
   }
 
   /**
@@ -76,7 +99,14 @@ export default class GameStateManager {
    * @param {string} phase - Phase scene key
    */
   static saveCurrentPhase(phase) {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_PHASE, phase);
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_PHASE, phase);
+    } catch (e) {
+      console.error('Failed to save current phase to localStorage:', e);
+    }
   }
 
   /**
@@ -84,8 +114,16 @@ export default class GameStateManager {
    * @returns {number} Number of lines cleared
    */
   static loadTetrisLines() {
-    const saved = localStorage.getItem(STORAGE_KEYS.TETRIS_LINES);
-    return saved ? parseInt(saved, 10) : 0;
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return 0;
+    }
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.TETRIS_LINES);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch (e) {
+      console.error('Failed to load Tetris lines from localStorage:', e);
+      return 0;
+    }
   }
 
   /**
@@ -93,7 +131,14 @@ export default class GameStateManager {
    * @param {number} lines - Number of lines cleared
    */
   static saveTetrisLines(lines) {
-    localStorage.setItem(STORAGE_KEYS.TETRIS_LINES, lines.toString());
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEYS.TETRIS_LINES, lines.toString());
+    } catch (e) {
+      console.error('Failed to save Tetris lines to localStorage:', e);
+    }
   }
 
   /**
@@ -101,8 +146,16 @@ export default class GameStateManager {
    * @returns {number} Number of tetrominoes used
    */
   static loadTetrominoesUsed() {
-    const saved = localStorage.getItem(STORAGE_KEYS.TETROMINOES_USED);
-    return saved ? parseInt(saved, 10) : 0;
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return 0;
+    }
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.TETROMINOES_USED);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch (e) {
+      console.error('Failed to load tetrominoes used from localStorage:', e);
+      return 0;
+    }
   }
 
   /**
@@ -110,7 +163,14 @@ export default class GameStateManager {
    * @param {number} count - Number of tetrominoes used
    */
   static saveTetrominoesUsed(count) {
-    localStorage.setItem(STORAGE_KEYS.TETROMINOES_USED, count.toString());
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEYS.TETROMINOES_USED, count.toString());
+    } catch (e) {
+      console.error('Failed to save tetrominoes used to localStorage:', e);
+    }
   }
 
   /**
@@ -118,8 +178,16 @@ export default class GameStateManager {
    * @returns {boolean} Whether first bubble has been collected
    */
   static loadFirstBubbleFlag() {
-    const saved = localStorage.getItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED);
-    return saved === 'true';
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return false;
+    }
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED);
+      return saved === 'true';
+    } catch (e) {
+      console.error('Failed to load first bubble flag from localStorage:', e);
+      return false;
+    }
   }
 
   /**
@@ -127,7 +195,14 @@ export default class GameStateManager {
    * @param {boolean} collected - Whether first bubble has been collected
    */
   static saveFirstBubbleFlag(collected) {
-    localStorage.setItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED, collected.toString());
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED, collected.toString());
+    } catch (e) {
+      console.error('Failed to save first bubble flag to localStorage:', e);
+    }
   }
 
   /**
@@ -135,8 +210,16 @@ export default class GameStateManager {
    * @returns {number} Player lives count
    */
   static loadPlayerLives() {
-    const saved = localStorage.getItem(STORAGE_KEYS.PLAYER_LIVES);
-    return saved ? parseInt(saved, 10) : GAME_CONFIG.OBSTACLES.LIVES;
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return GAME_CONFIG.OBSTACLES.LIVES;
+    }
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PLAYER_LIVES);
+      return saved ? parseInt(saved, 10) : GAME_CONFIG.OBSTACLES.LIVES;
+    } catch (e) {
+      console.error('Failed to load player lives from localStorage:', e);
+      return GAME_CONFIG.OBSTACLES.LIVES;
+    }
   }
 
   /**
@@ -144,7 +227,14 @@ export default class GameStateManager {
    * @param {number} lives - Player lives count
    */
   static savePlayerLives(lives) {
-    localStorage.setItem(STORAGE_KEYS.PLAYER_LIVES, lives.toString());
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEYS.PLAYER_LIVES, lives.toString());
+    } catch (e) {
+      console.error('Failed to save player lives to localStorage:', e);
+    }
   }
 
   /**
@@ -184,12 +274,19 @@ export default class GameStateManager {
    * Clear all saved progress (reset game)
    */
   static clearProgress() {
-    localStorage.removeItem(STORAGE_KEYS.BUBBLES_COLLECTED);
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_PHASE);
-    localStorage.removeItem(STORAGE_KEYS.TETRIS_LINES);
-    localStorage.removeItem(STORAGE_KEYS.TETROMINOES_USED);
-    localStorage.removeItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED);
-    localStorage.removeItem(STORAGE_KEYS.PLAYER_LIVES);
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return;
+    }
+    try {
+      localStorage.removeItem(STORAGE_KEYS.BUBBLES_COLLECTED);
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_PHASE);
+      localStorage.removeItem(STORAGE_KEYS.TETRIS_LINES);
+      localStorage.removeItem(STORAGE_KEYS.TETROMINOES_USED);
+      localStorage.removeItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED);
+      localStorage.removeItem(STORAGE_KEYS.PLAYER_LIVES);
+    } catch (e) {
+      console.error('Failed to clear progress from localStorage:', e);
+    }
   }
 
   /**
