@@ -667,6 +667,8 @@ export default class GameScene extends Phaser.Scene {
 
     // Button click events
     restartButton.on('pointerdown', () => {
+      // Clear all saved progress before restarting
+      GameStateManager.clearProgress();
       this.scene.restart();
     });
 
