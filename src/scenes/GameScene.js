@@ -20,8 +20,11 @@ export default class GameScene extends Phaser.Scene {
     this.firstBubbleCollected = gameState.firstBubbleCollected;
     this.playerLives = gameState.playerLives;
     
-    // Save current phase as game scene
-    GameStateManager.saveCurrentPhase(SCENE_KEYS.GAME);
+    // Save current phase as game scene only if it has changed
+    const currentPhase = gameState.currentPhase;
+    if (currentPhase !== SCENE_KEYS.GAME) {
+      GameStateManager.saveCurrentPhase(SCENE_KEYS.GAME);
+    }
     
     this.cursors = null;
     this.player = null;
