@@ -327,15 +327,17 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.existing(bubble);
     bubble.body.setSize(32, 32); // Set collision box for bubble sprite
     
-    // Store movement properties for manual movement (matching obstacle movement system)
+    // Set Y velocity for natural falling (physics-based)
+    bubble.body.setVelocityY(Phaser.Math.Between(GAME_CONFIG.BUBBLES.SPEED_Y_MIN, GAME_CONFIG.BUBBLES.SPEED_Y_MAX));
+    
+    // Store horizontal movement speed for manual X movement (matching obstacle movement system)
     bubble.moveSpeedX = GAME_CONFIG.BUBBLES.SPEED_X; // Horizontal speed matching obstacles exactly
-    bubble.moveSpeedY = Phaser.Math.Between(GAME_CONFIG.BUBBLES.SPEED_Y_MIN, GAME_CONFIG.BUBBLES.SPEED_Y_MAX); // Downward falling speed
     
     this.bubbles.add(bubble);
 
-    // Remove bubble when it goes off screen (will be handled manually in update)
-    bubble.body.checkWorldBounds = false;
-    bubble.body.outOfBoundsKill = false;
+    // Remove bubble when it goes off screen
+    bubble.body.checkWorldBounds = true;
+    bubble.body.outOfBoundsKill = true;
   }
 
   /**
@@ -694,22 +696,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Update bubble positions manually (synchronized with obstacle movement)
+   * Update bubble positions manually (synchronized X movement with obstacles)
    */
   updateBubbles() {
     if (!this.bubbles) return;
     
     this.bubbles.children.entries.forEach(bubble => {
       if (bubble.active) {
-        // Move bubble using delta time for smooth movement (matching obstacle movement exactly)
+        // Move bubble horizontally using delta time (matching obstacle movement exactly)
+        // Y movement is handled by physics for natural falling
         bubble.x += bubble.moveSpeedX * this.game.loop.delta / 1000;
-        bubble.y += bubble.moveSpeedY * this.game.loop.delta / 1000;
-        
-        // Remove when off-screen (left, right, or bottom)
-        if (bubble.x < -bubble.width || bubble.x > this.cameras.main.width + bubble.width || 
-            bubble.y > this.cameras.main.height + bubble.height) {
-          bubble.destroy();
-        }
       }
     });
   }

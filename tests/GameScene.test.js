@@ -35,7 +35,10 @@ jest.mock('phaser', () => ({
               setSize: jest.fn(),
               setImmovable: jest.fn(),
               setVelocityX: jest.fn(),
-              setVelocityY: jest.fn(),
+              setVelocityY: jest.fn((velocity) => {
+                obj.body.velocity.y = velocity;
+              }),
+              velocity: { x: 0, y: 0 },
               checkWorldBounds: false,
               outOfBoundsKill: false,
               touching: { down: false }
@@ -479,12 +482,12 @@ describe('GameScene Visual and Positioning Tests', () => {
       );
       
       expect(gameScene.physics.add.existing).toHaveBeenCalledWith(bubble);
-      // Bubbles now use manual movement (synchronized with obstacles) instead of physics velocity
+      // Bubbles now use manual X movement (synchronized with obstacles) and physics Y movement for natural falling
       expect(bubble.moveSpeedX).toBe(GAME_CONFIG.BUBBLES.SPEED_X);
-      expect(bubble.moveSpeedY).toBeGreaterThanOrEqual(GAME_CONFIG.BUBBLES.SPEED_Y_MIN);
-      expect(bubble.moveSpeedY).toBeLessThanOrEqual(GAME_CONFIG.BUBBLES.SPEED_Y_MAX);
-      expect(bubble.body.checkWorldBounds).toBe(false);
-      expect(bubble.body.outOfBoundsKill).toBe(false);
+      expect(bubble.body.velocity.y).toBeGreaterThanOrEqual(GAME_CONFIG.BUBBLES.SPEED_Y_MIN);
+      expect(bubble.body.velocity.y).toBeLessThanOrEqual(GAME_CONFIG.BUBBLES.SPEED_Y_MAX);
+      expect(bubble.body.checkWorldBounds).toBe(true);
+      expect(bubble.body.outOfBoundsKill).toBe(true);
     });
   });
   
