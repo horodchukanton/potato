@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SCENE_KEYS, GAME_CONFIG, STORAGE_KEYS } from '../config.js';
+import GameStateManager from '../utils/GameStateManager.js';
 
 /**
  * TetrisScene handles the Tetris gameplay inside character's belly
@@ -519,21 +520,18 @@ export default class TetrisScene extends Phaser.Scene {
   }
 
   /**
-   * Load progress from LocalStorage
+   * Load progress from GameStateManager
    */
   loadProgress() {
-    const savedLines = localStorage.getItem(STORAGE_KEYS.TETRIS_LINES);
-    if (savedLines) {
-      this.linesCleared = parseInt(savedLines, 10);
-    }
+    this.linesCleared = GameStateManager.loadTetrisLines();
   }
 
   /**
-   * Save progress to LocalStorage
+   * Save progress to GameStateManager
    */
   saveProgress() {
-    localStorage.setItem(STORAGE_KEYS.TETRIS_LINES, this.linesCleared.toString());
-    localStorage.setItem(STORAGE_KEYS.CURRENT_PHASE, 'tetris');
+    GameStateManager.saveTetrisLines(this.linesCleared);
+    GameStateManager.saveCurrentPhase(SCENE_KEYS.TETRIS);
   }
 
   /**
