@@ -112,7 +112,12 @@ export default class DynamicEffectsManager {
       gravity: this.scene.physics.world.gravity.y,
       playerSpeed: GAME_CONFIG.PHYSICS.PLAYER_SPEED,
       timeScale: this.scene.physics.world.timeScale,
-      playerBounce: player.body ? player.body.bounce.y : 0
+      playerBounce: player.body ? player.body.bounce.y : 0,
+      playerScale: player.scale,
+      playerFriction: player.body ? player.body.friction : { x: 0, y: 0 },
+      playerDrag: player.body ? player.body.drag : { x: 0, y: 0 },
+      obstacleSpeed: GAME_CONFIG.PHYSICS.OBSTACLE_SPEED,
+      obstacleColor: GAME_CONFIG.OBSTACLES.COLOR
     };
   }
 
@@ -145,10 +150,71 @@ export default class DynamicEffectsManager {
           player.body.setBounce(effectConfig.playerBounce);
         }
         break;
+        
+      case 'GRAVITY_FLIP':
+        this.scene.physics.world.gravity.y = this.originalValues.gravity * effectConfig.gravityMultiplier;
+        break;
+        
+      case 'WIND_GUST':
+        // Apply continuous lateral force (handled in update loop)
+        this.scene.windForce = effectConfig.windForce;
+        break;
+        
+      case 'SLIPPERY_FLOOR':
+        if (player.body) {
+          player.body.setDrag(this.originalValues.playerDrag.x * effectConfig.frictionMultiplier);
+        }
+        break;
+        
+      case 'STICKY_FLOOR':
+        if (player.body) {
+          player.body.setDrag(this.originalValues.playerDrag.x * effectConfig.frictionMultiplier);
+        }
+        break;
+        
+      case 'TELEPORT_PORTAL':
+        // Teleport player to random position
+        this.teleportPlayer();
+        break;
+        
+      case 'SHRINK_PLAYER':
+        player.setScale(effectConfig.scaleMultiplier);
+        break;
+        
+      case 'OBSTACLE_SPEED_BOOST':
+        this.scene.obstacleSpeedMultiplier = effectConfig.obstacleSpeedMultiplier;
+        break;
+        
+      case 'OBSTACLE_REVERSE':
+        this.scene.obstacleSpeedMultiplier = effectConfig.obstacleSpeedMultiplier;
+        break;
+        
+      case 'OBSTACLE_COLOR_SHIFT':
+        this.scene.obstacleColorOverride = effectConfig.obstacleColor;
+        break;
     }
     
     // Add visual screen tint
     this.addScreenTint(effectConfig.color);
+  }
+
+  /**
+   * Teleport player to a random safe position
+   */
+  teleportPlayer() {
+    const player = this.scene.player;
+    if (!player.body) return;
+    
+    const gameWidth = this.scene.cameras.main.width;
+    const gameHeight = this.scene.cameras.main.height;
+    
+    // Random X position (avoid edges)
+    const newX = 50 + Math.random() * (gameWidth - 100);
+    // Keep Y position reasonable (middle area)
+    const newY = gameHeight * 0.3 + Math.random() * (gameHeight * 0.4);
+    
+    player.setPosition(newX, newY);
+    player.body.setVelocity(0, 0); // Stop momentum
   }
 
   /**
@@ -164,9 +230,20 @@ export default class DynamicEffectsManager {
     this.scene.physics.world.timeScale = 1.0;
     this.scene.effectSpeedMultiplier = 1.0;
     this.scene.invertedControls = false;
+    this.scene.windForce = 0;
+    this.scene.obstacleSpeedMultiplier = 1.0;
+    this.scene.obstacleColorOverride = null;
     
     if (player.body) {
       player.body.setBounce(this.originalValues.playerBounce);
+      if (this.originalValues.playerDrag) {
+        player.body.setDrag(this.originalValues.playerDrag.x);
+      }
+    }
+    
+    // Restore player scale
+    if (this.originalValues.playerScale) {
+      player.setScale(this.originalValues.playerScale);
     }
     
     // Remove screen tint
