@@ -479,10 +479,12 @@ describe('GameScene Visual and Positioning Tests', () => {
       );
       
       expect(gameScene.physics.add.existing).toHaveBeenCalledWith(bubble);
-      expect(bubble.body.setVelocityX).toHaveBeenCalledWith(GAME_CONFIG.BUBBLES.SPEED_X);
-      expect(bubble.body.setVelocityY).toHaveBeenCalled();
-      expect(bubble.body.checkWorldBounds).toBe(true);
-      expect(bubble.body.outOfBoundsKill).toBe(true);
+      // Bubbles now use manual movement (synchronized with obstacles) instead of physics velocity
+      expect(bubble.moveSpeedX).toBe(GAME_CONFIG.BUBBLES.SPEED_X);
+      expect(bubble.moveSpeedY).toBeGreaterThanOrEqual(GAME_CONFIG.BUBBLES.SPEED_Y_MIN);
+      expect(bubble.moveSpeedY).toBeLessThanOrEqual(GAME_CONFIG.BUBBLES.SPEED_Y_MAX);
+      expect(bubble.body.checkWorldBounds).toBe(false);
+      expect(bubble.body.outOfBoundsKill).toBe(false);
     });
   });
   

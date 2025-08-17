@@ -327,15 +327,15 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.existing(bubble);
     bubble.body.setSize(32, 32); // Set collision box for bubble sprite
     
-    // Set diagonal falling movement - left movement to simulate forward motion, downward for falling
-    bubble.body.setVelocityX(GAME_CONFIG.BUBBLES.SPEED_X);
-    bubble.body.setVelocityY(Phaser.Math.Between(GAME_CONFIG.BUBBLES.SPEED_Y_MIN, GAME_CONFIG.BUBBLES.SPEED_Y_MAX));
+    // Store movement properties for manual movement (matching obstacle movement system)
+    bubble.moveSpeedX = GAME_CONFIG.BUBBLES.SPEED_X; // Horizontal speed matching obstacles exactly
+    bubble.moveSpeedY = Phaser.Math.Between(GAME_CONFIG.BUBBLES.SPEED_Y_MIN, GAME_CONFIG.BUBBLES.SPEED_Y_MAX); // Downward falling speed
     
     this.bubbles.add(bubble);
 
-    // Remove bubble when it goes off screen
-    bubble.body.checkWorldBounds = true;
-    bubble.body.outOfBoundsKill = true;
+    // Remove bubble when it goes off screen (will be handled manually in update)
+    bubble.body.checkWorldBounds = false;
+    bubble.body.outOfBoundsKill = false;
   }
 
   /**
@@ -690,6 +690,28 @@ export default class GameScene extends Phaser.Scene {
     
     this.handlePlayerMovement();
     this.updateObstacles();
+    this.updateBubbles();
+  }
+
+  /**
+   * Update bubble positions manually (synchronized with obstacle movement)
+   */
+  updateBubbles() {
+    if (!this.bubbles) return;
+    
+    this.bubbles.children.entries.forEach(bubble => {
+      if (bubble.active) {
+        // Move bubble using delta time for smooth movement (matching obstacle movement exactly)
+        bubble.x += bubble.moveSpeedX * this.game.loop.delta / 1000;
+        bubble.y += bubble.moveSpeedY * this.game.loop.delta / 1000;
+        
+        // Remove when off-screen (left, right, or bottom)
+        if (bubble.x < -bubble.width || bubble.x > this.cameras.main.width + bubble.width || 
+            bubble.y > this.cameras.main.height + bubble.height) {
+          bubble.destroy();
+        }
+      }
+    });
   }
 
   /**
