@@ -71,12 +71,42 @@ jest.mock('phaser', () => ({
           setDepth: jest.fn(function() { return this; }),
           setStrokeStyle: jest.fn(function() { return this; }),
           setFillStyle: jest.fn(function() { return this; }),
+          setTint: jest.fn(function() { return this; }),
+          clearTint: jest.fn(function() { return this; }),
+          setScale: jest.fn(function() { return this; }),
           on: jest.fn(),
           body: null
         })),
         circle: jest.fn((x, y, radius, color) => ({
           x, y, radius, color,
           body: null,
+          destroy: jest.fn()
+        })),
+        image: jest.fn((x, y, texture) => ({
+          x, y, texture,
+          width: texture === 'obstacle' ? 30 : (texture === 'bubble' ? 32 : 32), // Default dimensions
+          height: texture === 'obstacle' ? 80 : (texture === 'bubble' ? 32 : 48), // Default dimensions  
+          scaleX: 1,
+          scaleY: 1,
+          setOrigin: jest.fn(function() { return this; }),
+          setScale: jest.fn(function(x, y) { 
+            if (y !== undefined) {
+              this.scaleX = x;
+              this.scaleY = y;
+            } else {
+              this.scaleX = this.scaleY = x;
+            }
+            return this; 
+          }),
+          setTint: jest.fn(function() { return this; }),
+          clearTint: jest.fn(function() { return this; }),
+          body: null,
+          destroy: jest.fn()
+        })),
+        tileSprite: jest.fn((x, y, width, height, texture) => ({
+          x, y, width, height, texture,
+          setOrigin: jest.fn(function() { return this; }),
+          setScale: jest.fn(function() { return this; }),
           destroy: jest.fn()
         })),
         text: jest.fn((x, y, text, style) => ({
@@ -129,6 +159,8 @@ jest.mock('phaser', () => ({
         rectangles: [],
         circles: [],
         texts: [],
+        images: [],
+        tileSprites: [],
         timers: []
       };
       
@@ -152,6 +184,20 @@ jest.mock('phaser', () => ({
         const textObj = originalAddText(x, y, text, style);
         this.createdObjects.texts.push(textObj);
         return textObj;
+      });
+      
+      const originalAddImage = this.add.image;
+      this.add.image = jest.fn((x, y, texture) => {
+        const imageObj = originalAddImage(x, y, texture);
+        this.createdObjects.images.push(imageObj);
+        return imageObj;
+      });
+      
+      const originalAddTileSprite = this.add.tileSprite;
+      this.add.tileSprite = jest.fn((x, y, width, height, texture) => {
+        const tileSprite = originalAddTileSprite(x, y, width, height, texture);
+        this.createdObjects.tileSprites.push(tileSprite);
+        return tileSprite;
       });
       
       const originalAddEvent = this.time.addEvent;
@@ -211,9 +257,9 @@ describe('GameScene Visual and Positioning Tests', () => {
       expect(gameScene.cameras.main.height).toBe(GAME_CONFIG.HEIGHT);
     });
     
-    test('should set sky blue background color', () => {
+    test('should create background using tile sprite', () => {
       gameScene.create();
-      expect(gameScene.cameras.main.setBackgroundColor).toHaveBeenCalledWith('#87CEEB');
+      expect(gameScene.add.tileSprite).toHaveBeenCalledWith(0, 0, 800, 600, 'background');
     });
     
     test('should initialize with correct game state from storage', () => {
@@ -232,8 +278,8 @@ describe('GameScene Visual and Positioning Tests', () => {
     test('should position player correctly on screen', () => {
       expect(gameScene.player.x).toBe(100);
       expect(gameScene.player.y).toBe(GAME_CONFIG.HEIGHT - 60); // height - 60
-      expect(gameScene.player.width).toBe(32);
-      expect(gameScene.player.height).toBe(48);
+      expect(gameScene.player.width * gameScene.player.scaleX).toBe(32); // Effective width
+      expect(gameScene.player.height * gameScene.player.scaleY).toBe(48); // Effective height
     });
     
     test('should position ground platform at bottom of screen', () => {
@@ -244,14 +290,14 @@ describe('GameScene Visual and Positioning Tests', () => {
     });
     
     test('should create player with correct visual properties', () => {
-      expect(gameScene.player.color).toBe(0xe74c3c); // Red color
+      expect(gameScene.player.texture).toBe('player'); // Player sprite asset
       expect(gameScene.player.body.setCollideWorldBounds).toHaveBeenCalled();
       expect(gameScene.player.body.setSize).toHaveBeenCalledWith(32, 48);
     });
     
     test('should position player above ground level', () => {
       const groundTop = gameScene.ground.y - gameScene.ground.height / 2;
-      const playerBottom = gameScene.player.y + gameScene.player.height / 2;
+      const playerBottom = gameScene.player.y + (gameScene.player.height * gameScene.player.scaleY) / 2;
       // Player should be positioned so that its bottom can touch the ground top
       expect(playerBottom).toBeLessThanOrEqual(groundTop + 10); // Allow small tolerance for physics
     });
@@ -399,8 +445,8 @@ describe('GameScene Visual and Positioning Tests', () => {
         gameScene.createBubble();
       }
       
-      const bubbles = gameScene.createdObjects.circles.filter(circle => 
-        circle.color === GAME_CONFIG.BUBBLES.COLOR
+      const bubbles = gameScene.createdObjects.images.filter(image => 
+        image.texture === 'bubble'
       );
       
       bubbles.forEach(bubble => {
@@ -412,15 +458,14 @@ describe('GameScene Visual and Positioning Tests', () => {
         expect(bubble.y).toBeGreaterThanOrEqual(100);
         expect(bubble.y).toBeLessThanOrEqual(GAME_CONFIG.HEIGHT - 100);
         
-        // Should have correct visual properties
-        expect(bubble.radius).toBe(GAME_CONFIG.BUBBLES.RADIUS);
-        expect(bubble.color).toBe(GAME_CONFIG.BUBBLES.COLOR);
+        // Should have correct texture
+        expect(bubble.texture).toBe('bubble');
       });
     });
     
     test('should create initial bubbles during scene creation', () => {
-      const initialBubbles = gameScene.createdObjects.circles.filter(circle => 
-        circle.color === GAME_CONFIG.BUBBLES.COLOR
+      const initialBubbles = gameScene.createdObjects.images.filter(image => 
+        image.texture === 'bubble'
       );
       
       expect(initialBubbles.length).toBe(3); // Should create 3 initial bubbles
@@ -429,8 +474,8 @@ describe('GameScene Visual and Positioning Tests', () => {
     test('should set correct physics properties for bubbles', () => {
       gameScene.createBubble();
       
-      const bubble = gameScene.createdObjects.circles.find(circle => 
-        circle.color === GAME_CONFIG.BUBBLES.COLOR
+      const bubble = gameScene.createdObjects.images.find(image => 
+        image.texture === 'bubble'
       );
       
       expect(gameScene.physics.add.existing).toHaveBeenCalledWith(bubble);
@@ -450,26 +495,32 @@ describe('GameScene Visual and Positioning Tests', () => {
     test('should spawn obstacles off-screen to the right', () => {
       gameScene.createObstacle();
       
-      const obstacle = gameScene.createdObjects.rectangles.find(rect => 
-        rect.color === GAME_CONFIG.OBSTACLES.COLOR
+      const obstacle = gameScene.createdObjects.images.find(image => 
+        image.texture === 'obstacle'
       );
       
       expect(obstacle).toBeDefined();
       expect(obstacle.x).toBe(GAME_CONFIG.WIDTH + (GAME_CONFIG.OBSTACLES.WIDTH / 2));
-      expect(obstacle.width).toBe(GAME_CONFIG.OBSTACLES.WIDTH);
     });
     
     test('should position obstacles on ground level', () => {
+      // Mock Phaser.Math.Between to return a predictable height value for this test
+      const originalMathBetween = require('phaser').Math.Between;
+      require('phaser').Math.Between = jest.fn(() => 60); // Return fixed height of 60
+      
       gameScene.createObstacle();
       
-      const obstacle = gameScene.createdObjects.rectangles.find(rect => 
-        rect.color === GAME_CONFIG.OBSTACLES.COLOR
+      const obstacle = gameScene.createdObjects.images.find(image => 
+        image.texture === 'obstacle'
       );
       
       // Should be positioned so bottom touches ground
-      const expectedY = GAME_CONFIG.HEIGHT - 40 - (obstacle.height / 2);
+      const expectedY = GAME_CONFIG.HEIGHT - 40 - (60 / 2); // Using the fixed height 60
       expect(obstacle.y).toBe(expectedY);
       expect(obstacle.initialY).toBe(expectedY);
+      
+      // Restore original function
+      require('phaser').Math.Between = originalMathBetween;
     });
     
     test('should create obstacles with random height within bounds', () => {
@@ -478,27 +529,31 @@ describe('GameScene Visual and Positioning Tests', () => {
         gameScene.createObstacle();
       }
       
-      const obstacles = gameScene.createdObjects.rectangles.filter(rect => 
-        rect.color === GAME_CONFIG.OBSTACLES.COLOR
+      const obstacles = gameScene.createdObjects.images.filter(image => 
+        image.texture === 'obstacle'
       );
       
       obstacles.forEach(obstacle => {
-        expect(obstacle.height).toBeGreaterThanOrEqual(GAME_CONFIG.OBSTACLES.MIN_HEIGHT);
-        expect(obstacle.height).toBeLessThanOrEqual(GAME_CONFIG.OBSTACLES.MAX_HEIGHT);
-        expect(obstacle.width).toBe(GAME_CONFIG.OBSTACLES.WIDTH);
+        // For sprites, check the scale to ensure height variation
+        // The setScale mock should have been called, so scaleY should be set
+        expect(obstacle.scaleY).toBeGreaterThanOrEqual(GAME_CONFIG.OBSTACLES.MIN_HEIGHT / 80); // 80 is base height
+        expect(obstacle.scaleY).toBeLessThanOrEqual(GAME_CONFIG.OBSTACLES.MAX_HEIGHT / 80);
+        expect(obstacle.scaleX).toBe(1); // Width scale should remain 1
+        // Verify setScale was called
+        expect(obstacle.setScale).toHaveBeenCalled();
       });
     });
     
     test('should not spawn obstacles when game is over', () => {
       gameScene.gameOver = true;
-      const initialObstacleCount = gameScene.createdObjects.rectangles.filter(rect => 
-        rect.color === GAME_CONFIG.OBSTACLES.COLOR
+      const initialObstacleCount = gameScene.createdObjects.images.filter(image => 
+        image.texture === 'obstacle'
       ).length;
       
       gameScene.createObstacle();
       
-      const finalObstacleCount = gameScene.createdObjects.rectangles.filter(rect => 
-        rect.color === GAME_CONFIG.OBSTACLES.COLOR
+      const finalObstacleCount = gameScene.createdObjects.images.filter(image => 
+        image.texture === 'obstacle'
       ).length;
       
       expect(finalObstacleCount).toBe(initialObstacleCount);
@@ -507,8 +562,8 @@ describe('GameScene Visual and Positioning Tests', () => {
     test('should set correct physics properties for obstacles', () => {
       gameScene.createObstacle();
       
-      const obstacle = gameScene.createdObjects.rectangles.find(rect => 
-        rect.color === GAME_CONFIG.OBSTACLES.COLOR
+      const obstacle = gameScene.createdObjects.images.find(image => 
+        image.texture === 'obstacle'
       );
       
       expect(gameScene.physics.add.existing).toHaveBeenCalledWith(obstacle);
@@ -543,8 +598,8 @@ describe('GameScene Visual and Positioning Tests', () => {
     test('should update obstacle positions over time', () => {
       // Create an obstacle
       gameScene.createObstacle();
-      const obstacle = gameScene.createdObjects.rectangles.find(rect => 
-        rect.color === GAME_CONFIG.OBSTACLES.COLOR
+      const obstacle = gameScene.createdObjects.images.find(image => 
+        image.texture === 'obstacle'
       );
       
       const initialX = obstacle.x;
@@ -567,8 +622,8 @@ describe('GameScene Visual and Positioning Tests', () => {
     
     test('should maintain obstacle Y position to prevent drift', () => {
       gameScene.createObstacle();
-      const obstacle = gameScene.createdObjects.rectangles.find(rect => 
-        rect.color === GAME_CONFIG.OBSTACLES.COLOR
+      const obstacle = gameScene.createdObjects.images.find(image => 
+        image.texture === 'obstacle'
       );
       
       // Store initial Y and simulate it being changed
@@ -589,17 +644,18 @@ describe('GameScene Visual and Positioning Tests', () => {
     
     test('should remove obstacles when they move off-screen', () => {
       gameScene.createObstacle();
-      const obstacle = gameScene.createdObjects.rectangles.find(rect => 
-        rect.color === GAME_CONFIG.OBSTACLES.COLOR
+      const obstacle = gameScene.createdObjects.images.find(image => 
+        image.texture === 'obstacle'
       );
       
-      // Position obstacle off-screen to the left
+      // Position obstacle off-screen to the left (further than needed for width check)
       obstacle.x = -obstacle.width - 10;
       obstacle.destroy = jest.fn();
       
+      // Mock the obstacles group properly with moveSpeed property
       gameScene.obstacles = {
         children: {
-          entries: [{ ...obstacle, active: true }]
+          entries: [{ ...obstacle, active: true, moveSpeed: GAME_CONFIG.OBSTACLES.SPEED }]
         }
       };
       
@@ -688,8 +744,8 @@ describe('GameScene Visual and Positioning Tests', () => {
         gameScene.createBubble();
       }
       
-      const bubbles = gameScene.createdObjects.circles.filter(circle => 
-        circle.color === GAME_CONFIG.BUBBLES.COLOR
+      const bubbles = gameScene.createdObjects.images.filter(image => 
+        image.texture === 'bubble'
       );
       
       bubbles.forEach(bubble => {
@@ -757,7 +813,7 @@ describe('GameScene Visual and Positioning Tests', () => {
       
       gameScene.hitObstacle(gameScene.player, mockObstacle);
       
-      expect(gameScene.player.setFillStyle).toHaveBeenCalledWith(0xff0000); // Red damage color
+      expect(gameScene.player.setTint).toHaveBeenCalledWith(0xff0000); // Red damage tint
       expect(gameScene.invulnerable).toBe(true);
     });
     

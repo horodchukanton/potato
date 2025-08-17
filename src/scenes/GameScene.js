@@ -43,8 +43,8 @@ export default class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
-    // Background
-    this.cameras.main.setBackgroundColor('#87CEEB'); // Sky blue
+    // Background - use tiled background sprite
+    this.add.tileSprite(0, 0, width, height, ASSET_KEYS.BACKGROUND).setOrigin(0, 0);
 
     // Create player
     this.createPlayer();
@@ -79,8 +79,8 @@ export default class GameScene extends Phaser.Scene {
     this.ground = this.add.rectangle(width / 2, height - 20, width, 40, 0x8B4513);
     this.physics.add.existing(this.ground, true); // true makes it static
     
-    // Create player as a colored rectangle for now
-    this.player = this.add.rectangle(100, height - 60, 32, 48, 0xe74c3c);
+    // Create player using custom sprite
+    this.player = this.add.image(100, height - 60, ASSET_KEYS.PLAYER);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setSize(32, 48);
@@ -322,8 +322,9 @@ export default class GameScene extends Phaser.Scene {
     const x = Phaser.Math.Between(200, width - 200);
     const y = Phaser.Math.Between(100, height - 100);
     
-    const bubble = this.add.circle(x, y, GAME_CONFIG.BUBBLES.RADIUS, GAME_CONFIG.BUBBLES.COLOR);
+    const bubble = this.add.image(x, y, ASSET_KEYS.BUBBLE);
     this.physics.add.existing(bubble);
+    bubble.body.setSize(32, 32); // Set collision box for bubble sprite
     
     // Set diagonal movement with X speed matching obstacles and random Y movement
     bubble.body.setVelocityX(GAME_CONFIG.BUBBLES.SPEED_X);
@@ -353,11 +354,13 @@ export default class GameScene extends Phaser.Scene {
     const x = width + (obstacleWidth / 2); // Start just off-screen
     const y = height - 40 - (obstacleHeight / 2); // Ground level minus half obstacle height
     
-    // Create obstacle as a grey rock-like rectangle
-    const obstacle = this.add.rectangle(x, y, obstacleWidth, obstacleHeight, GAME_CONFIG.OBSTACLES.COLOR);
+    // Create obstacle using custom sprite
+    const obstacle = this.add.image(x, y, ASSET_KEYS.OBSTACLE);
     
-    // Add some visual detail to make it look more rock-like
-    obstacle.setStrokeStyle(2, 0x606060); // Darker grey outline
+    // Scale obstacle to match the height variation
+    const baseHeight = 80; // Max height from sprite
+    const scaleFactor = obstacleHeight / baseHeight;
+    obstacle.setScale(1, scaleFactor);
     
     // Add physics for collision detection only
     this.physics.add.existing(obstacle);
@@ -468,7 +471,7 @@ export default class GameScene extends Phaser.Scene {
 
     // Make player temporarily invulnerable
     this.invulnerable = true;
-    this.player.setFillStyle(0xff0000); // Red color to show damage
+    this.player.setTint(0xff0000); // Red tint to show damage
 
     // Clear existing invulnerability timer if any
     if (this.invulnerabilityTimer) {
@@ -478,7 +481,7 @@ export default class GameScene extends Phaser.Scene {
     // Set invulnerability timer
     this.invulnerabilityTimer = this.time.delayedCall(2000, () => {
       this.invulnerable = false;
-      this.player.setFillStyle(0xe74c3c); // Restore original player color
+      this.player.clearTint(); // Restore original sprite color
       this.invulnerabilityTimer = null;
     });
 
