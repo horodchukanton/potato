@@ -38,6 +38,11 @@ export default class TetrisScene extends Phaser.Scene {
     this.linesCleared = 0;
     this.gameOver = false;
     this.pieces = [];
+    
+    // Tetromino limitation tracking
+    this.bubblesCollected = 0;
+    this.tetrominoesUsed = 0;
+    this.tetrominoesRemaining = 0;
   }
 
   /**
@@ -104,29 +109,35 @@ export default class TetrisScene extends Phaser.Scene {
       fill: '#ffffff'
     });
     
+    // Tetrominoes remaining counter
+    this.tetrominoesText = this.add.text(50, 130, `Pieces: ${this.tetrominoesRemaining}`, {
+      font: '20px Arial',
+      fill: '#ffffff'
+    });
+    
     // Speed indicator
-    this.speedText = this.add.text(50, 130, `Speed: ${this.getSpeedLevel()}`, {
+    this.speedText = this.add.text(50, 160, `Speed: ${this.getSpeedLevel()}`, {
       font: '20px Arial',
       fill: '#ffffff'
     });
     
     // Instructions
-    this.add.text(50, 200, 'Controls:', {
+    this.add.text(50, 220, 'Controls:', {
       font: '16px Arial',
       fill: '#cccccc'
     });
     
-    this.add.text(50, 220, 'Arrow Keys: Move', {
+    this.add.text(50, 240, 'Arrow Keys: Move', {
       font: '14px Arial',
       fill: '#cccccc'
     });
     
-    this.add.text(50, 240, 'Up: Rotate', {
+    this.add.text(50, 260, 'Up: Rotate', {
       font: '14px Arial',
       fill: '#cccccc'
     });
     
-    this.add.text(50, 260, 'Down: Drop Fast', {
+    this.add.text(50, 280, 'Down: Drop Fast', {
       font: '14px Arial',
       fill: '#cccccc'
     });
@@ -186,6 +197,12 @@ export default class TetrisScene extends Phaser.Scene {
    * Spawn a new tetromino piece
    */
   spawnNewPiece() {
+    // Check if we have tetrominoes remaining to use
+    if (this.tetrominoesRemaining <= 0) {
+      this.endGameNoMorePieces();
+      return;
+    }
+    
     const pieceTypes = Object.keys(this.TETROMINOES);
     const randomType = pieceTypes[Math.floor(Math.random() * pieceTypes.length)];
     
@@ -198,6 +215,12 @@ export default class TetrisScene extends Phaser.Scene {
     this.currentX = Math.floor(this.GRID_WIDTH / 2) - Math.floor(this.currentPiece.shape[0].length / 2);
     this.currentY = 0;
     this.currentRotation = 0;
+    
+    // Use one tetromino piece
+    this.tetrominoesUsed++;
+    this.tetrominoesRemaining--;
+    this.saveProgress();
+    this.updateUI();
     
     // Check for game over
     if (this.isColliding(this.currentX, this.currentY, this.currentPiece.shape)) {
@@ -386,6 +409,7 @@ export default class TetrisScene extends Phaser.Scene {
    */
   updateUI() {
     this.linesText.setText(`Lines: ${this.linesCleared}/${GAME_CONFIG.TETRIS_LINES_TARGET}`);
+    this.tetrominoesText.setText(`Pieces: ${this.tetrominoesRemaining}`);
     this.speedText.setText(`Speed: ${this.getSpeedLevel()}`);
   }
 
@@ -441,6 +465,56 @@ export default class TetrisScene extends Phaser.Scene {
     // Add border
     this.pieceGraphics.lineStyle(1, 0x000000);
     this.pieceGraphics.strokeRect(pixelX + 1, pixelY + 1, this.CELL_SIZE - 2, this.CELL_SIZE - 2);
+  }
+
+  /**
+   * Handle game end when no more tetrominoes are available
+   */
+  endGameNoMorePieces() {
+    if (this.dropTimer) {
+      this.dropTimer.destroy();
+    }
+    
+    this.gameOver = true;
+    
+    const { width, height } = this.scale;
+    
+    // Create end game overlay
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.8);
+    
+    this.add.text(width / 2, height / 2 - 80, 'No More Pieces!', {
+      font: '32px Arial',
+      fill: '#ff9500',
+      stroke: '#ffffff',
+      strokeThickness: 2
+    }).setOrigin(0.5);
+    
+    this.add.text(width / 2, height / 2 - 30, `You used all ${this.tetrominoesUsed} tetrominoes`, {
+      font: '20px Arial',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+    
+    this.add.text(width / 2, height / 2, `Lines Cleared: ${this.linesCleared}`, {
+      font: '20px Arial',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+    
+    this.add.text(width / 2, height / 2 + 30, 'Collect more bubbles to get more pieces!', {
+      font: '16px Arial',
+      fill: '#cccccc'
+    }).setOrigin(0.5);
+    
+    // Return button
+    const returnButton = this.add.text(width / 2, height / 2 + 70, 'Return to Game', {
+      font: '18px Arial',
+      fill: '#3498db',
+      backgroundColor: '#2c3e50',
+      padding: { x: 10, y: 5 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    
+    returnButton.on('pointerdown', () => {
+      this.scene.start(SCENE_KEYS.GAME);
+    });
   }
 
   /**
@@ -524,6 +598,9 @@ export default class TetrisScene extends Phaser.Scene {
    */
   loadProgress() {
     this.linesCleared = GameStateManager.loadTetrisLines();
+    this.bubblesCollected = GameStateManager.loadBubblesCollected();
+    this.tetrominoesUsed = GameStateManager.loadTetrominoesUsed();
+    this.tetrominoesRemaining = Math.max(0, this.bubblesCollected - this.tetrominoesUsed);
   }
 
   /**
@@ -531,6 +608,7 @@ export default class TetrisScene extends Phaser.Scene {
    */
   saveProgress() {
     GameStateManager.saveTetrisLines(this.linesCleared);
+    GameStateManager.saveTetrominoesUsed(this.tetrominoesUsed);
     GameStateManager.saveCurrentPhase(SCENE_KEYS.TETRIS);
   }
 
