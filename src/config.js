@@ -99,6 +99,50 @@ export const GAME_CONFIG = {
           name: 'Bouncy Mode',
           playerBounce: 0.8,
           color: 0x2ecc71 // Green tint
+        },
+        GRAVITY_FLIP: {
+          name: 'Gravity Flip',
+          gravityMultiplier: -1.0,
+          color: 0x8e44ad // Dark purple tint
+        },
+        WIND_GUST: {
+          name: 'Wind Gust',
+          windForce: 150,
+          color: 0x85c1e9 // Light blue tint
+        },
+        SLIPPERY_FLOOR: {
+          name: 'Slippery Floor',
+          frictionMultiplier: 0.3,
+          color: 0x5dade2 // Ice blue tint
+        },
+        STICKY_FLOOR: {
+          name: 'Sticky Floor',
+          frictionMultiplier: 3.0,
+          color: 0xd35400 // Orange-brown tint
+        },
+        TELEPORT_PORTAL: {
+          name: 'Teleport Portal',
+          color: 0xd63031 // Bright red tint
+        },
+        SHRINK_PLAYER: {
+          name: 'Shrink Player',
+          scaleMultiplier: 0.5,
+          color: 0xfdcb6e // Yellow tint
+        },
+        OBSTACLE_SPEED_BOOST: {
+          name: 'Obstacle Speed Boost',
+          obstacleSpeedMultiplier: 3.0,
+          color: 0xff7675 // Light red tint
+        },
+        OBSTACLE_REVERSE: {
+          name: 'Obstacle Reverse',
+          obstacleSpeedMultiplier: -1.0,
+          color: 0xa29bfe // Light purple tint
+        },
+        OBSTACLE_COLOR_SHIFT: {
+          name: 'Obstacle Color Shift',
+          obstacleColor: 0xe84393, // Pink color
+          color: 0xffeaa7 // Light yellow tint
         }
       }
     }

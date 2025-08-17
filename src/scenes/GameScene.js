@@ -41,6 +41,9 @@ export default class GameScene extends Phaser.Scene {
     this.dynamicEffectsManager = null;
     this.effectSpeedMultiplier = 1.0;
     this.invertedControls = false;
+    this.windForce = 0;
+    this.obstacleSpeedMultiplier = 1.0;
+    this.obstacleColorOverride = null;
   }
 
   /**
@@ -539,6 +542,11 @@ export default class GameScene extends Phaser.Scene {
     // Create obstacle using custom sprite
     const obstacle = this.add.image(x, y, ASSET_KEYS.OBSTACLE);
     
+    // Apply color override if active
+    if (this.obstacleColorOverride) {
+      obstacle.setTint(this.obstacleColorOverride);
+    }
+    
     // Scale obstacle to match the height variation
     const baseHeight = 80; // Max height from sprite
     const scaleFactor = obstacleHeight / baseHeight;
@@ -981,7 +989,8 @@ export default class GameScene extends Phaser.Scene {
       if (bubble.active) {
         // Move bubble horizontally using delta time (matching obstacle movement exactly)
         // Y movement is handled by physics for natural falling
-        bubble.x += bubble.moveSpeedX * this.game.loop.delta / 1000;
+        const effectiveSpeed = bubble.moveSpeedX * this.obstacleSpeedMultiplier;
+        bubble.x += effectiveSpeed * this.game.loop.delta / 1000;
       }
     });
   }
@@ -995,7 +1004,8 @@ export default class GameScene extends Phaser.Scene {
     this.obstacles.children.entries.forEach(obstacle => {
       if (obstacle.active) {
         // Move obstacle left using delta time for smooth movement
-        obstacle.x += obstacle.moveSpeed * this.game.loop.delta / 1000;
+        const effectiveSpeed = obstacle.moveSpeed * this.obstacleSpeedMultiplier;
+        obstacle.x += effectiveSpeed * this.game.loop.delta / 1000;
         
         // Keep at correct Y position (fix the Y drift issue)
         if (obstacle.initialY) {
@@ -1061,6 +1071,12 @@ export default class GameScene extends Phaser.Scene {
         this.leftIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
         this.rightIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
       }
+    }
+
+    // Apply wind force effect (additive to regular movement)
+    if (this.windForce !== 0) {
+      const currentVelocityX = player.body.velocity.x;
+      player.body.setVelocityX(currentVelocityX + this.windForce);
     }
 
     // Jumping (keyboard or touch)

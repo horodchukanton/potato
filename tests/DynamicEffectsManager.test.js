@@ -32,8 +32,15 @@ const createMockScene = () => ({
   player: {
     body: {
       bounce: { y: 0 },
-      setBounce: jest.fn()
-    }
+      setBounce: jest.fn(),
+      setDrag: jest.fn(),
+      setVelocity: jest.fn(),
+      friction: { x: 0, y: 0 },
+      drag: { x: 0, y: 0 }
+    },
+    scale: 1,
+    setScale: jest.fn(),
+    setPosition: jest.fn()
   },
   cameras: {
     main: {
@@ -60,7 +67,10 @@ const createMockScene = () => ({
     })
   },
   effectSpeedMultiplier: 1.0,
-  invertedControls: false
+  invertedControls: false,
+  windForce: 0,
+  obstacleSpeedMultiplier: 1.0,
+  obstacleColorOverride: null
 });
 
 describe('DynamicEffectsManager', () => {
@@ -88,7 +98,9 @@ describe('DynamicEffectsManager', () => {
     });
 
     test('should have all configured effects available', () => {
-      const expectedEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'INVERTED_CONTROLS', 'BOUNCY_MODE'];
+      const expectedEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'INVERTED_CONTROLS', 'BOUNCY_MODE', 
+                               'GRAVITY_FLIP', 'WIND_GUST', 'SLIPPERY_FLOOR', 'STICKY_FLOOR', 'TELEPORT_PORTAL',
+                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE', 'OBSTACLE_COLOR_SHIFT'];
       expect(effectsManager.availableEffects).toEqual(expect.arrayContaining(expectedEffects));
       expect(effectsManager.availableEffects.length).toBe(expectedEffects.length);
     });
@@ -137,7 +149,12 @@ describe('DynamicEffectsManager', () => {
         gravity: 300,
         playerSpeed: GAME_CONFIG.PHYSICS.PLAYER_SPEED,
         timeScale: 1.0,
-        playerBounce: 0
+        playerBounce: 0,
+        playerScale: 1,
+        playerFriction: { x: 0, y: 0 },
+        playerDrag: { x: 0, y: 0 },
+        obstacleSpeed: undefined,
+        obstacleColor: GAME_CONFIG.OBSTACLES.COLOR
       });
     });
 
@@ -188,6 +205,61 @@ describe('DynamicEffectsManager', () => {
       
       expect(mockScene.player.body.setBounce).toHaveBeenCalledWith(effectConfig.playerBounce);
     });
+
+    test('should apply GRAVITY_FLIP effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.GRAVITY_FLIP;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('GRAVITY_FLIP', effectConfig);
+      
+      expect(mockScene.physics.world.gravity.y).toBe(300 * effectConfig.gravityMultiplier);
+    });
+
+    test('should apply WIND_GUST effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.WIND_GUST;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('WIND_GUST', effectConfig);
+      
+      expect(mockScene.windForce).toBe(effectConfig.windForce);
+    });
+
+    test('should apply SLIPPERY_FLOOR effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.SLIPPERY_FLOOR;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('SLIPPERY_FLOOR', effectConfig);
+      
+      expect(mockScene.player.body.setDrag).toHaveBeenCalled();
+    });
+
+    test('should apply SHRINK_PLAYER effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.SHRINK_PLAYER;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('SHRINK_PLAYER', effectConfig);
+      
+      expect(mockScene.player.setScale).toHaveBeenCalledWith(effectConfig.scaleMultiplier);
+    });
+
+    test('should apply OBSTACLE_SPEED_BOOST effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.OBSTACLE_SPEED_BOOST;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('OBSTACLE_SPEED_BOOST', effectConfig);
+      
+      expect(mockScene.obstacleSpeedMultiplier).toBe(effectConfig.obstacleSpeedMultiplier);
+    });
+
+    test('should apply TELEPORT_PORTAL effect correctly', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.TELEPORT_PORTAL;
+      effectsManager.storeOriginalValues();
+      
+      effectsManager.applyEffect('TELEPORT_PORTAL', effectConfig);
+      
+      expect(mockScene.player.setPosition).toHaveBeenCalled();
+      expect(mockScene.player.body.setVelocity).toHaveBeenCalledWith(0, 0);
+    });
   });
 
   describe('Effect Deactivation', () => {
@@ -207,6 +279,9 @@ describe('DynamicEffectsManager', () => {
       expect(mockScene.physics.world.timeScale).toBe(1.0);
       expect(mockScene.effectSpeedMultiplier).toBe(1.0);
       expect(mockScene.invertedControls).toBe(false);
+      expect(mockScene.windForce).toBe(0);
+      expect(mockScene.obstacleSpeedMultiplier).toBe(1.0);
+      expect(mockScene.obstacleColorOverride).toBe(null);
       expect(mockScene.player.body.setBounce).toHaveBeenCalledWith(0);
       expect(effectsManager.currentEffect).toBe(null);
     });
