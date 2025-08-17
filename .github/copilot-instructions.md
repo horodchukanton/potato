@@ -43,14 +43,28 @@ npm run build            # Creates optimized bundle in dist/ folder
 
 **ALWAYS run these validation steps after making changes:**
 
-### 1. Build Validation
+### 1. Test Suite Validation (PRIMARY)
+```bash
+npm test                   # Runs Jest test suite - should complete in ~1-2 seconds
+```
+**The test suite is the PRIMARY validation method** with 90+ comprehensive test cases covering:
+- Game configuration validation
+- GameStateManager localStorage operations
+- Game mechanics and physics calculations
+- Progress tracking and state management
+- Game balance and collision detection logic
+- Edge cases and data type validation
+
+**Use the test suite for ALL game logic validation instead of manual testing or Playwright screenshots.**
+
+### 2. Build Validation
 ```bash
 npm run build
 test -f dist/index.html && echo "Build successful" || echo "Build failed"
 ```
 
-### 2. Manual Functional Testing
-**CRITICAL**: After any code changes, run through this complete scenario:
+### 3. Final Manual Functional Testing (ONLY for final verification)
+**Use this ONLY for final verification after test suite passes:**
 
 1. Start the development server: `npm start`
 2. Open browser to http://localhost:8080
@@ -60,7 +74,7 @@ test -f dist/index.html && echo "Build successful" || echo "Build failed"
 6. Test touch controls on mobile/tablet simulation
 7. Verify game responds to input correctly
 
-**You MUST manually test actual game functionality - simply starting the application is NOT sufficient validation.**
+**The test suite (npm test) should be your primary validation tool. Only use Playwright or manual testing for final UI verification.**
 
 ## Project Structure
 
@@ -71,11 +85,20 @@ potato/
 │   │   ├── PreloadScene.js  # Asset loading
 │   │   ├── MenuScene.js     # Main menu
 │   │   └── GameScene.js     # Gameplay
+│   ├── utils/           # Utility modules
+│   │   └── GameStateManager.js # localStorage game state management
 │   ├── config.js        # Game configuration constants
 │   ├── main.js          # Game initialization
 │   └── index.html       # HTML template
+├── tests/               # Jest test suite (PRIMARY validation)
+│   ├── config.test.js           # Configuration validation tests
+│   ├── GameStateManager.test.js # State management integration tests  
+│   ├── game-mechanics.test.js   # Game mechanics validation tests
+│   └── game-utilities.test.js   # Utility and edge case tests
 ├── dist/                # Build output (created by npm run build)
 ├── webpack.config.js    # Build configuration
+├── jest.config.js       # Test configuration
+├── babel.config.json    # Babel configuration for tests
 └── package.json         # Dependencies and scripts
 ```
 
@@ -85,6 +108,7 @@ potato/
    ```bash
    npm install
    npm run build
+   npm test              # Verify test suite passes
    ```
 
 2. **Start development environment**:
@@ -94,8 +118,9 @@ potato/
 
 3. **After making changes**:
    ```bash
-   npm run build          # Verify build still works
-   # Then run manual validation scenario above
+   npm test              # ALWAYS run test suite first
+   npm run build         # Verify build still works
+   # Only run manual testing for final verification if needed
    ```
 
 ## Technologies and Dependencies
@@ -104,6 +129,30 @@ potato/
 - **npm**: Version 10.8.2 or higher
 - **Phaser**: 3.90.0 (game framework)
 - **Webpack**: 5.101.2 (bundling and dev server)
+- **Jest**: 29.x (testing framework with 90+ test cases)
+- **Babel**: 7.x (ES6+ transpilation for tests)
+
+## Testing Framework
+
+The project includes a comprehensive Jest test suite with 90+ test cases covering:
+
+**Test Categories:**
+- **Configuration Tests**: Validate all game configuration values
+- **GameStateManager Tests**: Test localStorage operations and state persistence
+- **Game Mechanics Tests**: Validate physics, collision detection, and game balance
+- **Utilities Tests**: Test edge cases, data types, and boundary conditions
+
+**Test Commands:**
+```bash
+npm test                 # Run all tests (fast, ~1-2 seconds)
+npm test -- --verbose    # Run with detailed output
+npm test -- --coverage  # Run with coverage report
+```
+
+**When to Use Tests vs Manual Testing:**
+- **Use npm test**: For ALL game logic, state management, and configuration validation
+- **Use manual testing**: ONLY for final UI verification and user experience validation
+- **Avoid Playwright**: Tests replace the need for screenshot-based testing
 
 ## Deployment
 

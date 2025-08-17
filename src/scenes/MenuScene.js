@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { SCENE_KEYS, GAME_CONFIG } from '../config.js';
+import { SCENE_KEYS, GAME_CONFIG, UI_TEXT } from '../config.js';
+import GameStateManager from '../utils/GameStateManager.js';
 
 /**
  * MenuScene provides the main menu interface
@@ -33,8 +34,34 @@ export default class MenuScene extends Phaser.Scene {
       fill: '#ecf0f1'
     }).setOrigin(0.5);
 
-    // Start button
-    const startButton = this.add.text(width / 2, height / 2 + 50, 'Start Game', {
+    // Check for saved progress
+    const progressSummary = GameStateManager.getProgressSummary();
+    const hasProgress = progressSummary.bubblesCollected > 0 || progressSummary.tetrisLines > 0;
+
+    let buttonY = height / 2 + 50;
+
+    // Show progress if exists
+    if (hasProgress) {
+      const progressText = `Progress: ${progressSummary.bubblesCollected}/${progressSummary.bubblesTarget} bubbles`;
+      this.add.text(width / 2, height / 2 - 20, progressText, {
+        font: '18px Arial',
+        fill: '#95a5a6'
+      }).setOrigin(0.5);
+
+      if (progressSummary.tetrisLines > 0) {
+        const tetrisText = `Tetris: ${progressSummary.tetrisLines}/${progressSummary.tetrisTarget} lines`;
+        this.add.text(width / 2, height / 2, tetrisText, {
+          font: '18px Arial',
+          fill: '#95a5a6'
+        }).setOrigin(0.5);
+      }
+
+      buttonY = height / 2 + 80;
+    }
+
+    // Start/Resume button
+    const startButtonText = hasProgress ? 'Resume Game' : 'Start Game';
+    const startButton = this.add.text(width / 2, buttonY, startButtonText, {
       font: 'bold 24px Arial',
       fill: '#e74c3c',
       backgroundColor: '#34495e',
@@ -53,16 +80,48 @@ export default class MenuScene extends Phaser.Scene {
     });
 
     startButton.on('pointerdown', () => {
-      this.scene.start(SCENE_KEYS.GAME);
+      // Resume from appropriate scene based on progress
+      const resumeScene = GameStateManager.getResumeScene();
+      this.scene.start(resumeScene);
     });
+
+    // New Game button (only show if there's progress)
+    if (hasProgress) {
+      const newGameButton = this.add.text(width / 2, buttonY + 60, 'New Game', {
+        font: 'bold 20px Arial',
+        fill: '#3498db',
+        backgroundColor: '#34495e',
+        padding: { x: 15, y: 8 }
+      }).setOrigin(0.5);
+
+      newGameButton.setInteractive({ useHandCursor: true });
+      
+      newGameButton.on('pointerover', () => {
+        newGameButton.setStyle({ fill: '#2980b9' });
+      });
+
+      newGameButton.on('pointerout', () => {
+        newGameButton.setStyle({ fill: '#3498db' });
+      });
+
+      newGameButton.on('pointerdown', () => {
+        // Clear progress and start new game
+        GameStateManager.clearProgress();
+        this.scene.start(SCENE_KEYS.GAME);
+      });
+
+      buttonY += 120;
+    } else {
+      buttonY += 80;
+    }
 
     // Instructions - responsive based on device
     const isMobile = this.sys.game.device.input.touch;
     const instructionText = isMobile 
-      ? 'Tap LEFT/RIGHT to move and TAP UPPER RIGHT to jump\nCollect bubbles and avoid obstacles!'
-      : 'Use ARROW KEYS to move and SPACE to jump\nCollect bubbles and avoid obstacles!';
+      ? `${UI_TEXT.INSTRUCTIONS.MOBILE}\nCollect bubbles and avoid obstacles!`
+      : `${UI_TEXT.INSTRUCTIONS.DESKTOP}\nCollect bubbles and avoid obstacles!`;
     
-    this.add.text(width / 2, height - 100, instructionText, {
+    this.add.text(width / 2, buttonY + 20, instructionText, {
       font: '16px Arial',
       fill: '#bdc3c7',
       align: 'center'

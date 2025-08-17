@@ -70,9 +70,19 @@ export const ASSET_KEYS = {
  * LocalStorage keys for saving game progress
  */
 export const STORAGE_KEYS = {
-  BUBBLES_COLLECTED: 'bubbles_collected',
-  CURRENT_PHASE: 'current_phase',
-  TETRIS_LINES: 'tetris_lines',
-  TETROMINOES_USED: 'tetrominoes_used',
-  FIRST_BUBBLE_COLLECTED: 'first_bubble_collected',
+    BUBBLES_COLLECTED: 'bubbles_collected',
+    CURRENT_PHASE: 'current_phase',
+    TETRIS_LINES: 'tetris_lines',
+    TETROMINOES_USED: 'tetrominoes_used',
+    FIRST_BUBBLE_COLLECTED: 'first_bubble_collected',
+    PLAYER_LIVES: 'player_lives',
+}
+/**
+ * UI text constants for consistent messaging across scenes and tests
+ */
+export const UI_TEXT = {
+  INSTRUCTIONS: {
+    MOBILE: 'Tap LEFT/RIGHT to move and TAP UPPER RIGHT to jump',
+    DESKTOP: 'Use ARROW KEYS to move and SPACE to jump'
+  }
 };
