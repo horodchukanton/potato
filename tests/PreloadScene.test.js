@@ -27,7 +27,8 @@ jest.mock('phaser', () => ({
       };
       this.load = {
         on: jest.fn(),
-        image: jest.fn()
+        image: jest.fn(),
+        audio: jest.fn()
       };
       this.add = {
         rectangle: jest.fn((x, y, width, height, color) => ({

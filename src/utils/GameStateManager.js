@@ -16,7 +16,8 @@ export default class GameStateManager {
       tetrisLines: GameStateManager.loadTetrisLines(),
       tetrominoesUsed: GameStateManager.loadTetrominoesUsed(),
       firstBubbleCollected: GameStateManager.loadFirstBubbleFlag(),
-      playerLives: GameStateManager.loadPlayerLives()
+      playerLives: GameStateManager.loadPlayerLives(),
+      audioEnabled: GameStateManager.loadAudioEnabled()
     };
   }
 
@@ -42,6 +43,9 @@ export default class GameStateManager {
     }
     if (gameState.playerLives !== undefined) {
       GameStateManager.savePlayerLives(gameState.playerLives);
+    }
+    if (gameState.audioEnabled !== undefined) {
+      GameStateManager.saveAudioEnabled(gameState.audioEnabled);
     }
   }
 
@@ -237,6 +241,33 @@ export default class GameStateManager {
     } catch (e) {
       console.error('Failed to save player lives to localStorage:', e);
     }
+  }
+
+  /**
+   * Load audio enabled state from localStorage
+   * @returns {boolean} Whether audio is enabled
+   */
+  static loadAudioEnabled() {
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return GAME_CONFIG.AUDIO.ENABLED_BY_DEFAULT;
+    }
+    
+    const saved = localStorage.getItem(STORAGE_KEYS.AUDIO_ENABLED);
+    return saved !== null ? JSON.parse(saved) : GAME_CONFIG.AUDIO.ENABLED_BY_DEFAULT;
+  }
+
+  /**
+   * Save audio enabled state to localStorage
+   * @param {boolean} enabled - Whether audio is enabled
+   */
+  static saveAudioEnabled(enabled) {
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return;
+    }
+    
+    // Ensure the value is a boolean
+    const booleanValue = Boolean(enabled);
+    localStorage.setItem(STORAGE_KEYS.AUDIO_ENABLED, JSON.stringify(booleanValue));
   }
 
   /**
