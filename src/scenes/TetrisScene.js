@@ -30,6 +30,7 @@ export default class TetrisScene extends Phaser.Scene {
     // Game state
     this.grid = [];
     this.currentPiece = null;
+    this.nextPiece = null;
     this.currentX = 0;
     this.currentY = 0;
     this.currentRotation = 0;
@@ -75,6 +76,9 @@ export default class TetrisScene extends Phaser.Scene {
     // Start the game
     this.spawnNewPiece();
     this.startDropTimer();
+    
+    // Draw initial next piece preview
+    this.drawNextPiecePreview();
     
     console.log('TetrisScene initialized');
   }
@@ -136,6 +140,13 @@ export default class TetrisScene extends Phaser.Scene {
       font: '14px Arial',
       fill: '#cccccc'
     });
+    
+    // Next piece preview label
+    const previewX = this.GRID_OFFSET_X + this.GRID_WIDTH * this.CELL_SIZE + 30;
+    this.add.text(previewX, this.GRID_OFFSET_Y + 20, 'Next:', {
+      font: '16px Arial',
+      fill: '#ffffff'
+    });
   }
 
   /**
@@ -144,6 +155,7 @@ export default class TetrisScene extends Phaser.Scene {
   createGridGraphics() {
     this.gridGraphics = this.add.graphics();
     this.pieceGraphics = this.add.graphics();
+    this.previewGraphics = this.add.graphics();
     
     // Draw grid border
     this.gridGraphics.lineStyle(2, 0x444444);
@@ -164,6 +176,17 @@ export default class TetrisScene extends Phaser.Scene {
       this.gridGraphics.moveTo(this.GRID_OFFSET_X, this.GRID_OFFSET_Y + y * this.CELL_SIZE);
       this.gridGraphics.lineTo(this.GRID_OFFSET_X + this.GRID_WIDTH * this.CELL_SIZE, this.GRID_OFFSET_Y + y * this.CELL_SIZE);
     }
+    
+    // Draw next piece preview area
+    const previewX = this.GRID_OFFSET_X + this.GRID_WIDTH * this.CELL_SIZE + 30;
+    const previewY = this.GRID_OFFSET_Y + 50;
+    const previewSize = 4 * this.CELL_SIZE;
+    
+    this.previewAreaX = previewX;
+    this.previewAreaY = previewY;
+    
+    this.gridGraphics.lineStyle(2, 0x444444);
+    this.gridGraphics.strokeRect(previewX - 1, previewY - 1, previewSize + 2, previewSize + 2);
   }
 
   /**
@@ -183,17 +206,32 @@ export default class TetrisScene extends Phaser.Scene {
   }
 
   /**
-   * Spawn a new tetromino piece
+   * Generate a random tetromino piece
    */
-  spawnNewPiece() {
+  generateRandomPiece() {
     const pieceTypes = Object.keys(this.TETROMINOES);
     const randomType = pieceTypes[Math.floor(Math.random() * pieceTypes.length)];
     
-    this.currentPiece = {
+    return {
       type: randomType,
       shape: this.TETROMINOES[randomType].shape,
       color: this.TETROMINOES[randomType].color
     };
+  }
+
+  /**
+   * Spawn a new tetromino piece
+   */
+  spawnNewPiece() {
+    // Use next piece if available, otherwise generate new one
+    if (this.nextPiece) {
+      this.currentPiece = this.nextPiece;
+    } else {
+      this.currentPiece = this.generateRandomPiece();
+    }
+    
+    // Generate new next piece
+    this.nextPiece = this.generateRandomPiece();
     
     this.currentX = Math.floor(this.GRID_WIDTH / 2) - Math.floor(this.currentPiece.shape[0].length / 2);
     this.currentY = 0;
@@ -207,6 +245,7 @@ export default class TetrisScene extends Phaser.Scene {
     }
     
     this.redrawPieces();
+    this.drawNextPiecePreview();
   }
 
   /**
@@ -441,6 +480,43 @@ export default class TetrisScene extends Phaser.Scene {
     // Add border
     this.pieceGraphics.lineStyle(1, 0x000000);
     this.pieceGraphics.strokeRect(pixelX + 1, pixelY + 1, this.CELL_SIZE - 2, this.CELL_SIZE - 2);
+  }
+
+  /**
+   * Draw next piece preview
+   */
+  drawNextPiecePreview() {
+    this.previewGraphics.clear();
+    
+    if (!this.nextPiece) return;
+    
+    const shape = this.nextPiece.shape;
+    const color = this.nextPiece.color;
+    
+    // Calculate centering offset for the preview
+    const shapeWidth = shape[0].length;
+    const shapeHeight = shape.length;
+    const previewSize = 4; // 4x4 preview area
+    
+    const offsetX = Math.floor((previewSize - shapeWidth) / 2);
+    const offsetY = Math.floor((previewSize - shapeHeight) / 2);
+    
+    // Draw the next piece in the preview area
+    for (let py = 0; py < shape.length; py++) {
+      for (let px = 0; px < shape[py].length; px++) {
+        if (shape[py][px]) {
+          const previewX = this.previewAreaX + (offsetX + px) * this.CELL_SIZE;
+          const previewY = this.previewAreaY + (offsetY + py) * this.CELL_SIZE;
+          
+          this.previewGraphics.fillStyle(color);
+          this.previewGraphics.fillRect(previewX + 1, previewY + 1, this.CELL_SIZE - 2, this.CELL_SIZE - 2);
+          
+          // Add border
+          this.previewGraphics.lineStyle(1, 0x000000);
+          this.previewGraphics.strokeRect(previewX + 1, previewY + 1, this.CELL_SIZE - 2, this.CELL_SIZE - 2);
+        }
+      }
+    }
   }
 
   /**
