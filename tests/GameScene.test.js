@@ -689,6 +689,43 @@ describe('GameScene Visual and Positioning Tests', () => {
       expect(gameScene.tweens.add).toHaveBeenCalled();
     });
     
+    test('should set cutscenePlaying flag during first bubble cutscene', () => {
+      gameScene.firstBubbleCollected = false;
+      expect(gameScene.cutscenePlaying).toBe(false);
+      
+      gameScene.triggerFirstBubbleCutscene();
+      
+      expect(gameScene.cutscenePlaying).toBe(true);
+    });
+    
+    test('should pause obstacle and bubble updates during cutscene', () => {
+      gameScene.cutscenePlaying = true;
+      gameScene.handlePlayerMovement = jest.fn();
+      gameScene.updateObstacles = jest.fn();
+      gameScene.updateBubbles = jest.fn();
+      
+      gameScene.update();
+      
+      expect(gameScene.handlePlayerMovement).not.toHaveBeenCalled();
+      expect(gameScene.updateObstacles).not.toHaveBeenCalled();
+      expect(gameScene.updateBubbles).not.toHaveBeenCalled();
+    });
+    
+    test('should allow obstacle and bubble updates when cutscene is not playing', () => {
+      gameScene.cutscenePlaying = false;
+      gameScene.gameOver = false;
+      gameScene.tetrisPromptShowing = false;
+      gameScene.handlePlayerMovement = jest.fn();
+      gameScene.updateObstacles = jest.fn();
+      gameScene.updateBubbles = jest.fn();
+      
+      gameScene.update();
+      
+      expect(gameScene.handlePlayerMovement).toHaveBeenCalled();
+      expect(gameScene.updateObstacles).toHaveBeenCalled();
+      expect(gameScene.updateBubbles).toHaveBeenCalled();
+    });
+    
     test('should show Tetris prompt when collection target is reached', () => {
       gameScene.bubblesCollected = GAME_CONFIG.BUBBLE_COLLECTION_TARGET - 1;
       
