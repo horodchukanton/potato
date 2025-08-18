@@ -36,6 +36,7 @@ export default class GameScene extends Phaser.Scene {
     this.invulnerable = false;
     this.invulnerabilityTimer = null;
     this.tetrisPromptShowing = false;
+    this.cutscenePlaying = false;
     
     // Dynamic effects system properties
     this.dynamicEffectsManager = null;
@@ -575,6 +576,7 @@ export default class GameScene extends Phaser.Scene {
   triggerFirstBubbleCutscene() {
     // Pause game temporarily
     this.physics.pause();
+    this.cutscenePlaying = true;
     
     // Create glowing effect on player's belly with enhanced particles
     const glowEffect = this.add.circle(this.player.x, this.player.y + 10, 20, 0xffff00, 0.6);
@@ -602,6 +604,7 @@ export default class GameScene extends Phaser.Scene {
             this.bubbleCollectEmitter.stop();
           }
           this.physics.resume();
+          this.cutscenePlaying = false;
         }
       });
     } else {
@@ -613,6 +616,7 @@ export default class GameScene extends Phaser.Scene {
           this.bubbleCollectEmitter.stop();
         }
         this.physics.resume();
+        this.cutscenePlaying = false;
       });
     }
 
@@ -971,8 +975,8 @@ export default class GameScene extends Phaser.Scene {
    * Update loop - handle player movement and game logic
    */
   update() {
-    // Don't process movement if game is over or Tetris prompt is showing
-    if (this.gameOver || this.tetrisPromptShowing) return;
+    // Don't process movement if game is over, Tetris prompt is showing, or cutscene is playing
+    if (this.gameOver || this.tetrisPromptShowing || this.cutscenePlaying) return;
     
     this.handlePlayerMovement();
     this.updateObstacles();
