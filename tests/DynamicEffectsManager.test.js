@@ -242,6 +242,33 @@ describe('DynamicEffectsManager', () => {
       expect(mockScene.player.setScale).toHaveBeenCalledWith(effectConfig.scaleMultiplier);
     });
 
+    test('should adjust player position when shrinking to maintain ground contact', () => {
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.SHRINK_PLAYER;
+      
+      // Set up mock player with realistic positioning
+      mockScene.player.y = 540; // height - 60, typical player position
+      mockScene.player.height = 48; // standard player height
+      mockScene.player.scaleY = 1; // normal scale
+      
+      // Mock ground setup (height - 20 = 580, so ground top = 560)
+      mockScene.ground = {
+        y: 580,
+        height: 40
+      };
+      
+      effectsManager.storeOriginalValues();
+      effectsManager.applyEffect('SHRINK_PLAYER', effectConfig);
+      
+      // Player should be repositioned to maintain ground contact
+      // When scaled to 0.5, effective height becomes 24
+      // New Y position should be ground top - (scaled height / 2)
+      const groundTop = mockScene.ground.y - mockScene.ground.height / 2; // 560
+      const scaledHeight = mockScene.player.height * effectConfig.scaleMultiplier; // 24
+      const expectedY = groundTop - scaledHeight / 2; // 560 - 12 = 548
+      
+      expect(mockScene.player.setPosition).toHaveBeenCalledWith(mockScene.player.x, expectedY);
+    });
+
     test('should apply OBSTACLE_SPEED_BOOST effect correctly', () => {
       const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.OBSTACLE_SPEED_BOOST;
       effectsManager.storeOriginalValues();
@@ -284,6 +311,29 @@ describe('DynamicEffectsManager', () => {
       expect(mockScene.obstacleColorOverride).toBe(null);
       expect(mockScene.player.body.setBounce).toHaveBeenCalledWith(0);
       expect(effectsManager.currentEffect).toBe(null);
+    });
+
+    test('should restore player position when deactivating SHRINK_PLAYER effect', () => {
+      // Set up original player position
+      mockScene.player.y = 540;
+      mockScene.ground = { y: 580, height: 40 };
+      
+      effectsManager.storeOriginalValues();
+      
+      // Apply SHRINK_PLAYER effect
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.SHRINK_PLAYER;
+      effectsManager.currentEffect = { key: 'SHRINK_PLAYER', config: effectConfig };
+      effectsManager.applyEffect('SHRINK_PLAYER', effectConfig);
+      
+      // Reset the mock to track deactivation calls
+      mockScene.player.setPosition.mockClear();
+      
+      // Deactivate effect
+      effectsManager.deactivateCurrentEffect();
+      
+      // Should restore original Y position
+      expect(mockScene.player.setPosition).toHaveBeenCalledWith(mockScene.player.x, 540);
+      expect(mockScene.player.setScale).toHaveBeenCalledWith(1); // Original scale
     });
 
     test('should handle deactivation when no effect is active', () => {

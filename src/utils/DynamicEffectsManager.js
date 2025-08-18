@@ -114,6 +114,7 @@ export default class DynamicEffectsManager {
       timeScale: this.scene.physics.world.timeScale,
       playerBounce: player.body ? player.body.bounce.y : 0,
       playerScale: player.scale,
+      playerY: player.y,
       playerFriction: player.body ? player.body.friction : { x: 0, y: 0 },
       playerDrag: player.body ? player.body.drag : { x: 0, y: 0 },
       obstacleSpeed: GAME_CONFIG.PHYSICS.OBSTACLE_SPEED,
@@ -179,6 +180,13 @@ export default class DynamicEffectsManager {
         
       case 'SHRINK_PLAYER':
         player.setScale(effectConfig.scaleMultiplier);
+        // Adjust Y position to keep player above ground when shrunk
+        if (this.scene.ground) {
+          const groundTop = this.scene.ground.y - this.scene.ground.height / 2;
+          const scaledHeight = player.height * effectConfig.scaleMultiplier;
+          const newY = groundTop - scaledHeight / 2;
+          player.setPosition(player.x, newY);
+        }
         break;
         
       case 'OBSTACLE_SPEED_BOOST':
@@ -244,6 +252,11 @@ export default class DynamicEffectsManager {
     // Restore player scale
     if (this.originalValues.playerScale) {
       player.setScale(this.originalValues.playerScale);
+    }
+    
+    // Restore player position
+    if (this.originalValues.playerY !== undefined) {
+      player.setPosition(player.x, this.originalValues.playerY);
     }
     
     // Remove screen tint
