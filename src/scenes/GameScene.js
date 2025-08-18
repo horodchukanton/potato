@@ -111,6 +111,9 @@ export default class GameScene extends Phaser.Scene {
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setSize(32, 48);
     
+    // Store original player color tint for global color effects
+    this.originalPlayerTint = 0xffffff; // Default white tint
+    
     // Add collision between player and ground
     this.physics.add.collider(this.player, this.ground);
   }
@@ -510,6 +513,11 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.existing(bubble);
     bubble.body.setSize(32, 32); // Set collision box for bubble sprite
     
+    // Apply global color override if active
+    if (this.globalColorOverride) {
+      bubble.setTint(this.globalColorOverride);
+    }
+    
     // Set Y velocity for natural falling (physics-based)
     bubble.body.setVelocityY(Phaser.Math.Between(GAME_CONFIG.BUBBLES.SPEED_Y_MIN, GAME_CONFIG.BUBBLES.SPEED_Y_MAX));
     
@@ -543,9 +551,9 @@ export default class GameScene extends Phaser.Scene {
     // Create obstacle using custom sprite
     const obstacle = this.add.image(x, y, ASSET_KEYS.OBSTACLE);
     
-    // Apply color override if active
-    if (this.obstacleColorOverride) {
-      obstacle.setTint(this.obstacleColorOverride);
+    // Apply color override if active (global color shift effect)
+    if (this.globalColorOverride) {
+      obstacle.setTint(this.globalColorOverride);
     }
     
     // Scale obstacle to match the height variation
@@ -1141,6 +1149,64 @@ export default class GameScene extends Phaser.Scene {
       // Fallback for test environment
       this.time.delayedCall(1000, () => {
         floatingText.destroy();
+      });
+    }
+  }
+
+  /**
+   * Apply global color override to all game elements
+   */
+  applyGlobalColorOverride() {
+    if (!this.globalColorOverride) return;
+    
+    // Apply to player
+    if (this.player) {
+      this.player.setTint(this.globalColorOverride);
+    }
+    
+    // Apply to all existing bubbles
+    if (this.bubbles) {
+      this.bubbles.children.entries.forEach(bubble => {
+        if (bubble.active) {
+          bubble.setTint(this.globalColorOverride);
+        }
+      });
+    }
+    
+    // Apply to all existing obstacles
+    if (this.obstacles) {
+      this.obstacles.children.entries.forEach(obstacle => {
+        if (obstacle.active) {
+          obstacle.setTint(this.globalColorOverride);
+        }
+      });
+    }
+  }
+
+  /**
+   * Remove global color override from all game elements
+   */
+  removeGlobalColorOverride() {
+    // Restore player to original color
+    if (this.player) {
+      this.player.clearTint();
+    }
+    
+    // Restore all existing bubbles to original color
+    if (this.bubbles) {
+      this.bubbles.children.entries.forEach(bubble => {
+        if (bubble.active) {
+          bubble.clearTint();
+        }
+      });
+    }
+    
+    // Restore all existing obstacles to original color
+    if (this.obstacles) {
+      this.obstacles.children.entries.forEach(obstacle => {
+        if (obstacle.active) {
+          obstacle.clearTint();
+        }
       });
     }
   }

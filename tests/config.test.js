@@ -118,7 +118,7 @@ describe('Game Configuration', () => {
       const effects = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS;
       const requiredEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'INVERTED_CONTROLS', 'BOUNCY_MODE',
                                'GRAVITY_FLIP', 'WIND_GUST', 'SLIPPERY_FLOOR', 'STICKY_FLOOR', 'TELEPORT_PORTAL',
-                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE', 'OBSTACLE_COLOR_SHIFT'];
+                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE', 'GLOBAL_COLOR_SHIFT'];
       
       requiredEffects.forEach(effectKey => {
         expect(effects[effectKey]).toBeDefined();

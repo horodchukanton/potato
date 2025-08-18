@@ -118,7 +118,9 @@ export default class DynamicEffectsManager {
       playerFriction: player.body ? player.body.friction : { x: 0, y: 0 },
       playerDrag: player.body ? player.body.drag : { x: 0, y: 0 },
       obstacleSpeed: GAME_CONFIG.PHYSICS.OBSTACLE_SPEED,
-      obstacleColor: GAME_CONFIG.OBSTACLES.COLOR
+      originalPlayerColor: null, // Will store original player color
+      originalBubbleColor: GAME_CONFIG.BUBBLES.COLOR,
+      originalObstacleColor: GAME_CONFIG.OBSTACLES.COLOR
     };
   }
 
@@ -197,8 +199,12 @@ export default class DynamicEffectsManager {
         this.scene.obstacleSpeedMultiplier = effectConfig.obstacleSpeedMultiplier;
         break;
         
-      case 'OBSTACLE_COLOR_SHIFT':
-        this.scene.obstacleColorOverride = effectConfig.obstacleColor;
+      case 'GLOBAL_COLOR_SHIFT':
+        this.scene.globalColorOverride = effectConfig.globalColor;
+        // Apply color override to all existing game elements
+        if (this.scene.applyGlobalColorOverride) {
+          this.scene.applyGlobalColorOverride();
+        }
         break;
     }
     
@@ -240,7 +246,12 @@ export default class DynamicEffectsManager {
     this.scene.invertedControls = false;
     this.scene.windForce = 0;
     this.scene.obstacleSpeedMultiplier = 1.0;
-    this.scene.obstacleColorOverride = null;
+    this.scene.globalColorOverride = null;
+    
+    // Remove global color override from all existing game elements
+    if (this.scene.removeGlobalColorOverride) {
+      this.scene.removeGlobalColorOverride();
+    }
     
     if (player.body) {
       player.body.setBounce(this.originalValues.playerBounce);
