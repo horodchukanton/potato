@@ -158,7 +158,7 @@ npm test -- --coverage  # Run with coverage report
 
 The project uses GitHub Pages deployment:
 - Build output goes to `dist/` folder
-- GitHub Actions automatically deploys from `dist/` on push to main branch
+- GitHub Actions automatically deploys from `dist/` on push to master branch
 - Game available at: https://horodchukanton.github.io/potato/
 
 ## Known Issues and Limitations
