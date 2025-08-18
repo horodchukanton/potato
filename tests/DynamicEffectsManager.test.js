@@ -346,6 +346,58 @@ describe('DynamicEffectsManager', () => {
         effectsManager.deactivateCurrentEffect();
       }).not.toThrow();
     });
+
+    test('should not restore player position for non-position-modifying effects', () => {
+      // Set up initial player position
+      mockScene.player.y = 200;
+      mockScene.player.x = 300;
+      
+      effectsManager.storeOriginalValues();
+      
+      // Simulate player moving during effect
+      mockScene.player.y = 400;
+      mockScene.player.x = 500;
+      
+      // Apply a non-position-modifying effect (like GRAVITY_LOW)
+      effectsManager.currentEffect = { 
+        key: 'GRAVITY_LOW', 
+        config: GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.GRAVITY_LOW 
+      };
+      effectsManager.screenTint = { destroy: jest.fn() };
+      
+      // Reset mock to track deactivation calls
+      mockScene.player.setPosition.mockClear();
+      
+      // Deactivate effect
+      effectsManager.deactivateCurrentEffect();
+      
+      // Should NOT restore position for this effect
+      expect(mockScene.player.setPosition).not.toHaveBeenCalled();
+    });
+
+    test('should restore player position only for SHRINK_PLAYER effect', () => {
+      // Set up original player position
+      mockScene.player.y = 540;
+      mockScene.player.x = 300;
+      mockScene.ground = { y: 580, height: 40 };
+      
+      effectsManager.storeOriginalValues();
+      
+      // Apply SHRINK_PLAYER effect
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.SHRINK_PLAYER;
+      effectsManager.currentEffect = { key: 'SHRINK_PLAYER', config: effectConfig };
+      effectsManager.applyEffect('SHRINK_PLAYER', effectConfig);
+      
+      // Reset the mock to track deactivation calls
+      mockScene.player.setPosition.mockClear();
+      
+      // Deactivate effect
+      effectsManager.deactivateCurrentEffect();
+      
+      // Should restore original Y position for SHRINK_PLAYER
+      expect(mockScene.player.setPosition).toHaveBeenCalledWith(mockScene.player.x, 540);
+      expect(mockScene.player.setScale).toHaveBeenCalledWith(1); // Original scale
+    });
   });
 
   describe('Visual Effects', () => {

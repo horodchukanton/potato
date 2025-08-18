@@ -179,9 +179,11 @@ export default class DynamicEffectsManager {
       player.setScale(this.originalValues.playerScale);
     }
     
-    // Restore player position
-    if (this.originalValues.playerY !== undefined) {
-      player.setPosition(player.x, this.originalValues.playerY);
+    // Only restore player position for effects that actually modify it
+    if (this.shouldRestorePosition(this.currentEffect.key)) {
+      if (this.originalValues.playerY !== undefined) {
+        player.setPosition(player.x, this.originalValues.playerY);
+      }
     }
     
     // Remove screen tint
@@ -272,5 +274,20 @@ export default class DynamicEffectsManager {
    */
   isEffectsActive() {
     return this.isActive;
+  }
+
+  /**
+   * Determine if an effect requires position restoration
+   * Only effects that modify player position or require specific positioning should restore position
+   * @param {string} effectKey - The effect key to check
+   * @returns {boolean} True if position should be restored
+   */
+  shouldRestorePosition(effectKey) {
+    // Effects that modify player position and need restoration
+    const positionRestoringEffects = [
+      'SHRINK_PLAYER'  // Changes scale and adjusts position to stay above ground
+    ];
+    
+    return positionRestoringEffects.includes(effectKey);
   }
 }
