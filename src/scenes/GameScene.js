@@ -975,6 +975,8 @@ export default class GameScene extends Phaser.Scene {
     });
 
     menuButton.on('pointerdown', () => {
+      // Clear all saved progress before returning to menu after game over
+      GameStateManager.clearProgress();
       this.transitionToScene(SCENE_KEYS.MENU);
     });
   }
