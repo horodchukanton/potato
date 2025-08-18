@@ -952,6 +952,67 @@ describe('GameScene Visual and Positioning Tests', () => {
       gameScene.add.rectangle = originalAddRectangle;
       clearProgressSpy.mockRestore();
     });
+
+    test('should clear progress when menu button is clicked after game over', () => {
+      // Trigger game over
+      gameScene.playerLives = 0;
+      gameScene.gameOver = true;
+      
+      // Mock GameStateManager.clearProgress to verify it's called
+      const clearProgressSpy = jest.spyOn(GameStateManager, 'clearProgress');
+      
+      // Create a mock for the menu button that supports method chaining
+      const mockMenuButton = {
+        setOrigin: jest.fn().mockReturnThis(),
+        setInteractive: jest.fn().mockReturnThis(),
+        on: jest.fn().mockReturnThis(),
+        setStyle: jest.fn().mockReturnThis()
+      };
+      
+      // Create a generic mock for other UI elements
+      const mockGenericElement = {
+        setOrigin: jest.fn().mockReturnThis(),
+        setInteractive: jest.fn().mockReturnThis(),
+        on: jest.fn().mockReturnThis(),
+        setStyle: jest.fn().mockReturnThis()
+      };
+      
+      // Mock the add.text method to return our specific mocks
+      const originalAddText = gameScene.add.text;
+      gameScene.add.text = jest.fn().mockImplementation((x, y, text, style) => {
+        if (text === 'Back to Menu') {
+          return mockMenuButton;
+        }
+        // Return a generic mock for other text elements
+        return mockGenericElement;
+      });
+      
+      // Mock add.rectangle for overlay
+      const originalAddRectangle = gameScene.add.rectangle;
+      gameScene.add.rectangle = jest.fn().mockReturnValue(mockGenericElement);
+      
+      // Call showGameOverScreen
+      gameScene.showGameOverScreen();
+      
+      // Find the pointerdown handler for the menu button
+      const pointerdownCall = mockMenuButton.on.mock.calls.find(call => 
+        call[0] === 'pointerdown'
+      );
+      expect(pointerdownCall).toBeDefined();
+      
+      // Execute the menu button click handler
+      const menuHandler = pointerdownCall[1];
+      menuHandler();
+      
+      // Verify that clearProgress was called before transitioning to menu
+      expect(clearProgressSpy).toHaveBeenCalled();
+      expect(gameScene.scene.start).toHaveBeenCalledWith(SCENE_KEYS.MENU);
+      
+      // Restore mocks
+      gameScene.add.text = originalAddText;
+      gameScene.add.rectangle = originalAddRectangle;
+      clearProgressSpy.mockRestore();
+    });
   });
 
   describe('Dynamic Effects Integration', () => {
