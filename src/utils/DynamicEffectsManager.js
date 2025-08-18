@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from '../config.js';
+import { EFFECT_REGISTRY } from '../effects/index.js';
 
 /**
  * DynamicEffectsManager handles the cycling of random dynamic effects during gameplay
@@ -128,107 +129,20 @@ export default class DynamicEffectsManager {
    * Apply the specified effect
    */
   applyEffect(effectKey, effectConfig) {
-    const player = this.scene.player;
+    // Get the effect class from the registry
+    const EffectClass = EFFECT_REGISTRY[effectKey];
     
-    switch (effectKey) {
-      case 'GRAVITY_LOW':
-        this.scene.physics.world.gravity.y = this.originalValues.gravity * effectConfig.gravityMultiplier;
-        break;
-        
-      case 'SPEED_BOOST':
-        // Increase player movement speed (will be applied in movement handling)
-        this.scene.effectSpeedMultiplier = effectConfig.speedMultiplier;
-        break;
-        
-      case 'TIME_SLOW':
-        this.scene.physics.world.timeScale = effectConfig.timeScale;
-        break;
-        
-      case 'INVERTED_CONTROLS':
-        this.scene.invertedControls = effectConfig.invertControls;
-        break;
-        
-      case 'BOUNCY_MODE':
-        if (player.body) {
-          player.body.setBounce(effectConfig.playerBounce);
-        }
-        break;
-        
-      case 'GRAVITY_FLIP':
-        this.scene.physics.world.gravity.y = this.originalValues.gravity * effectConfig.gravityMultiplier;
-        break;
-        
-      case 'WIND_GUST':
-        // Apply continuous lateral force (handled in update loop)
-        this.scene.windForce = effectConfig.windForce;
-        break;
-        
-      case 'SLIPPERY_FLOOR':
-        if (player.body) {
-          player.body.setDrag(this.originalValues.playerDrag.x * effectConfig.frictionMultiplier);
-        }
-        break;
-        
-      case 'STICKY_FLOOR':
-        if (player.body) {
-          player.body.setDrag(this.originalValues.playerDrag.x * effectConfig.frictionMultiplier);
-        }
-        break;
-        
-      case 'TELEPORT_PORTAL':
-        // Teleport player to random position
-        this.teleportPlayer();
-        break;
-        
-      case 'SHRINK_PLAYER':
-        player.setScale(effectConfig.scaleMultiplier);
-        // Adjust Y position to keep player above ground when shrunk
-        if (this.scene.ground) {
-          const groundTop = this.scene.ground.y - this.scene.ground.height / 2;
-          const scaledHeight = player.height * effectConfig.scaleMultiplier;
-          const newY = groundTop - scaledHeight / 2;
-          player.setPosition(player.x, newY);
-        }
-        break;
-        
-      case 'OBSTACLE_SPEED_BOOST':
-        this.scene.obstacleSpeedMultiplier = effectConfig.obstacleSpeedMultiplier;
-        break;
-        
-      case 'OBSTACLE_REVERSE':
-        this.scene.obstacleSpeedMultiplier = effectConfig.obstacleSpeedMultiplier;
-        break;
-        
-      case 'GLOBAL_COLOR_SHIFT':
-        this.scene.globalColorOverride = effectConfig.globalColor;
-        // Apply color override to all existing game elements
-        if (this.scene.applyGlobalColorOverride) {
-          this.scene.applyGlobalColorOverride();
-        }
-        break;
+    if (!EffectClass) {
+      console.warn(`Unknown effect: ${effectKey}`);
+      return;
     }
+    
+    // Create and apply the effect
+    const effect = new EffectClass(this.scene, this.originalValues);
+    effect.apply(effectConfig);
     
     // Add visual screen tint
     this.addScreenTint(effectConfig.color);
-  }
-
-  /**
-   * Teleport player to a random safe position
-   */
-  teleportPlayer() {
-    const player = this.scene.player;
-    if (!player.body) return;
-    
-    const gameWidth = this.scene.cameras.main.width;
-    const gameHeight = this.scene.cameras.main.height;
-    
-    // Random X position (avoid edges)
-    const newX = 50 + Math.random() * (gameWidth - 100);
-    // Keep Y position reasonable (middle area)
-    const newY = gameHeight * 0.3 + Math.random() * (gameHeight * 0.4);
-    
-    player.setPosition(newX, newY);
-    player.body.setVelocity(0, 0); // Stop momentum
   }
 
   /**
