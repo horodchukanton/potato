@@ -139,9 +139,9 @@ export const GAME_CONFIG = {
           obstacleSpeedMultiplier: -1.0,
           color: 0xa29bfe // Light purple tint
         },
-        OBSTACLE_COLOR_SHIFT: {
-          name: 'Obstacle Color Shift',
-          obstacleColor: 0xe84393, // Pink color
+        GLOBAL_COLOR_SHIFT: {
+          name: 'Global Color Shift',
+          globalColor: 0xe84393, // Pink color for all game elements
           color: 0xffeaa7 // Light yellow tint
         }
       }

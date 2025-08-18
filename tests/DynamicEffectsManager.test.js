@@ -70,7 +70,9 @@ const createMockScene = () => ({
   invertedControls: false,
   windForce: 0,
   obstacleSpeedMultiplier: 1.0,
-  obstacleColorOverride: null
+  globalColorOverride: null,
+  applyGlobalColorOverride: jest.fn(),
+  removeGlobalColorOverride: jest.fn()
 });
 
 describe('DynamicEffectsManager', () => {
@@ -100,7 +102,7 @@ describe('DynamicEffectsManager', () => {
     test('should have all configured effects available', () => {
       const expectedEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'INVERTED_CONTROLS', 'BOUNCY_MODE', 
                                'GRAVITY_FLIP', 'WIND_GUST', 'SLIPPERY_FLOOR', 'STICKY_FLOOR', 'TELEPORT_PORTAL',
-                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE', 'OBSTACLE_COLOR_SHIFT'];
+                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE', 'GLOBAL_COLOR_SHIFT'];
       expect(effectsManager.availableEffects).toEqual(expect.arrayContaining(expectedEffects));
       expect(effectsManager.availableEffects.length).toBe(expectedEffects.length);
     });
@@ -154,7 +156,9 @@ describe('DynamicEffectsManager', () => {
         playerFriction: { x: 0, y: 0 },
         playerDrag: { x: 0, y: 0 },
         obstacleSpeed: undefined,
-        obstacleColor: GAME_CONFIG.OBSTACLES.COLOR
+        originalPlayerColor: null,
+        originalBubbleColor: GAME_CONFIG.BUBBLES.COLOR,
+        originalObstacleColor: GAME_CONFIG.OBSTACLES.COLOR
       });
     });
 
@@ -281,7 +285,8 @@ describe('DynamicEffectsManager', () => {
       expect(mockScene.invertedControls).toBe(false);
       expect(mockScene.windForce).toBe(0);
       expect(mockScene.obstacleSpeedMultiplier).toBe(1.0);
-      expect(mockScene.obstacleColorOverride).toBe(null);
+      expect(mockScene.globalColorOverride).toBe(null);
+      expect(mockScene.removeGlobalColorOverride).toHaveBeenCalled();
       expect(mockScene.player.body.setBounce).toHaveBeenCalledWith(0);
       expect(effectsManager.currentEffect).toBe(null);
     });
