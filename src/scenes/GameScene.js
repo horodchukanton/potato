@@ -405,8 +405,8 @@ export default class GameScene extends Phaser.Scene {
           loop: true
         });
         
-        // Start background music
-        if (this.sounds.backgroundMusic) {
+        // Start background music only if no other background music is playing
+        if (this.sounds.backgroundMusic && !this.isBackgroundMusicPlaying()) {
           this.sounds.backgroundMusic.play();
         }
       } catch (error) {
@@ -415,6 +415,34 @@ export default class GameScene extends Phaser.Scene {
         this.sounds = {};
       }
     }
+  }
+
+  /**
+   * Check if background music is already playing from any scene
+   * @returns {boolean} True if background music is playing
+   */
+  isBackgroundMusicPlaying() {
+    if (!this.sound) return false;
+    
+    // Check all sounds in the sound manager for background music
+    try {
+      const soundManager = this.sound;
+      if (soundManager.sounds && Array.isArray(soundManager.sounds)) {
+        return soundManager.sounds.some(sound => 
+          sound.key === ASSET_KEYS.BACKGROUND_MUSIC && sound.isPlaying
+        );
+      }
+      
+      // Alternative check for different Phaser versions
+      if (soundManager.getAllPlaying) {
+        const playingSounds = soundManager.getAllPlaying();
+        return playingSounds.some(sound => sound.key === ASSET_KEYS.BACKGROUND_MUSIC);
+      }
+    } catch (error) {
+      console.warn('Failed to check background music status:', error);
+    }
+    
+    return false;
   }
 
   /**
@@ -444,16 +472,55 @@ export default class GameScene extends Phaser.Scene {
       this.initializeAudio();
     } else {
       // Stop all sounds if disabling
-      if (this.sounds.backgroundMusic && this.sounds.backgroundMusic.isPlaying) {
-        this.sounds.backgroundMusic.stop();
+      this.stopAllAudio();
+    }
+  }
+
+  /**
+   * Stop all audio including background music
+   */
+  stopAllAudio() {
+    if (this.sounds && this.sounds.backgroundMusic && this.sounds.backgroundMusic.isPlaying) {
+      this.sounds.backgroundMusic.stop();
+    }
+  }
+
+  /**
+   * Set background music playback speed
+   * @param {number} speed - Playback rate (1.0 = normal, 2.0 = double speed, etc.)
+   */
+  setMusicSpeed(speed) {
+    if (this.audioEnabled && this.sounds && this.sounds.backgroundMusic) {
+      try {
+        // Phaser uses setRate method to change playback speed
+        this.sounds.backgroundMusic.setRate(speed);
+      } catch (error) {
+        console.warn('Failed to set music speed:', error);
       }
     }
+  }
+
+  /**
+   * Speed up background music for dynamic effects
+   */
+  speedUpMusic() {
+    this.setMusicSpeed(1.5); // 50% faster
+  }
+
+  /**
+   * Reset background music to normal speed
+   */
+  resetMusicSpeed() {
+    this.setMusicSpeed(1.0); // Normal speed
   }
 
   /**
    * Smooth transition to another scene
    */
   transitionToScene(sceneKey) {
+    // Stop background music when leaving the scene
+    this.stopAllAudio();
+    
     if (this.cameras.main.fadeOut) {
       this.cameras.main.fadeOut(GAME_CONFIG.EFFECTS.TRANSITIONS.FADE_DURATION, 0, 0, 0);
       
@@ -1224,6 +1291,9 @@ export default class GameScene extends Phaser.Scene {
    * Clean up resources when scene is destroyed
    */
   destroy() {
+    // Stop all audio before cleanup
+    this.stopAllAudio();
+    
     // Stop dynamic effects system
     if (this.dynamicEffectsManager) {
       this.dynamicEffectsManager.stop();
@@ -1249,6 +1319,35 @@ export default class GameScene extends Phaser.Scene {
     // Call parent destroy if it exists
     if (super.destroy) {
       super.destroy();
+    }
+  }
+
+  /**
+   * Scene lifecycle method called when scene is stopped/shutdown
+   */
+  shutdown() {
+    // Stop all audio when scene shuts down
+    this.stopAllAudio();
+    
+    // Stop dynamic effects system
+    if (this.dynamicEffectsManager) {
+      this.dynamicEffectsManager.stop();
+    }
+    
+    // Clean up timers
+    if (this.bubbleTimer) {
+      this.bubbleTimer.remove();
+      this.bubbleTimer = null;
+    }
+    
+    if (this.obstacleTimer) {
+      this.obstacleTimer.remove();
+      this.obstacleTimer = null;
+    }
+
+    if (this.invulnerabilityTimer) {
+      this.invulnerabilityTimer.remove();
+      this.invulnerabilityTimer = null;
     }
   }
 }

@@ -143,6 +143,11 @@ export default class DynamicEffectsManager {
     
     // Add visual screen tint
     this.addScreenTint(effectConfig.color);
+    
+    // Speed up background music during effects
+    if (this.scene.speedUpMusic) {
+      this.scene.speedUpMusic();
+    }
   }
 
   /**
@@ -188,6 +193,11 @@ export default class DynamicEffectsManager {
     
     // Remove screen tint
     this.removeScreenTint();
+    
+    // Reset background music speed to normal
+    if (this.scene.resetMusicSpeed) {
+      this.scene.resetMusicSpeed();
+    }
     
     this.currentEffect = null;
   }
