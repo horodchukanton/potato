@@ -99,51 +99,109 @@ export default class PreloadScene extends Phaser.Scene {
       let sample = 0;
       
       switch (type) {
-        case 'collect':
-          // Pleasant chime with decay
-          sample = Math.sin(2 * Math.PI * frequencies[0] * t) * Math.exp(-t * 8) * 0.3;
-          if (frequencies[1]) {
-            sample += Math.sin(2 * Math.PI * frequencies[1] * t) * Math.exp(-t * 6) * 0.2;
-          }
-          break;
-          
-        case 'jump':
-          // Quick frequency sweep
-          const sweepFreq = frequencies[0] + (frequencies[1] - frequencies[0]) * (t / duration);
-          sample = Math.sin(2 * Math.PI * sweepFreq * t) * Math.exp(-t * 10) * 0.2;
-          break;
-          
-        case 'hit':
-          // Low thud with noise
-          sample = (Math.random() - 0.5) * Math.exp(-t * 6) * 0.3;
-          sample += Math.sin(2 * Math.PI * frequencies[0] * t) * Math.exp(-t * 4) * 0.2;
-          break;
-          
-        case 'bgm':
-          // 8-bit style melody with square wave approximation
-          const melody = [261.63, 293.66, 329.63, 392.00, 329.63, 293.66]; // C-D-E-G-E-D progression
-          const noteLength = duration / melody.length;
-          const currentNoteIndex = Math.floor(t / noteLength) % melody.length;
-          const noteFreq = melody[currentNoteIndex];
-          
-          // Square wave approximation for 8-bit sound
-          const squareWave = Math.sin(2 * Math.PI * noteFreq * t) > 0 ? 1 : -1;
-          sample += squareWave * 0.15;
-          
-          // Add subtle bass line with lower octave
-          const bassFreq = noteFreq / 2;
-          const bassSquare = Math.sin(2 * Math.PI * bassFreq * t) > 0 ? 1 : -1;
-          sample += bassSquare * 0.08;
-          
-          // Envelope to smooth note transitions
-          const noteProgress = (t % noteLength) / noteLength;
-          const envelope = noteProgress < 0.1 ? noteProgress * 10 : 
-                          noteProgress > 0.9 ? (1 - noteProgress) * 10 : 1;
-          sample *= envelope;
-          break;
+          case 'collect':
+              // Pleasant chime with decay
+              sample = Math.sin(2 * Math.PI * frequencies[0] * t) * Math.exp(-t * 8) * 0.3;
+              if (frequencies[1]) {
+                  sample += Math.sin(2 * Math.PI * frequencies[1] * t) * Math.exp(-t * 6) * 0.2;
+              }
+              break;
+
+          case 'jump':
+              // Quick frequency sweep
+              const sweepFreq = frequencies[0] + (frequencies[1] - frequencies[0]) * (t / duration);
+              sample = Math.sin(2 * Math.PI * sweepFreq * t) * Math.exp(-t * 10) * 0.2;
+              break;
+
+          case 'hit':
+              // Low thud with noise
+              sample = (Math.random() - 0.5) * Math.exp(-t * 6) * 0.3;
+              sample += Math.sin(2 * Math.PI * frequencies[0] * t) * Math.exp(-t * 4) * 0.2;
+              break;
+
+          case 'bgm':
+              // --- Parameters ---
+              const bpm = 120;
+              const beat = 60 / bpm;
+              const bar = beat * 4;
+
+              // --- Lead Melody (arp) ---
+              const melody = [261.63, 293.66, 329.63, 392.00, 329.63, 293.66]; // simple arp
+              const noteLength = duration / melody.length;
+              const currentNoteIndex = Math.floor(t / noteLength) % melody.length;
+              const noteFreq = melody[currentNoteIndex];
+              const squareWave = Math.sin(2 * Math.PI * noteFreq * t) > 0 ? 1 : -1;
+              let lead = squareWave * 0.12;
+
+              // --- Bassline (syncopated) ---
+              const bassPattern = [65.41, 65.41, 98.00, 82.41]; // C2–C2–G2–E2
+              const bassIndex = Math.floor(t / (beat / 2)) % bassPattern.length; // 8th notes
+              const bassFreq = bassPattern[bassIndex];
+              const bassSquare = Math.sin(2 * Math.PI * bassFreq * t) > 0 ? 1 : -1;
+              let bass = bassSquare * 0.12;
+
+              // --- Extended Chord Sequence (16 bars, Nintendo-like) ---
+              // Inspired by Mario overworld / Zelda overworld style
+              const chords = [
+                  [261.63, 329.63, 392.0],   // C major (I)
+                  [329.63, 392.0, 493.88],   // E minor (iii)
+                  [293.66, 370.0, 440.0],    // D minor (ii)
+                  [196.0, 246.94, 392.0],    // G major (V)
+
+                  [174.61, 220.0, 349.23],   // F major (IV)
+                  [220.0, 261.63, 329.63],   // A minor (vi)
+                  [196.0, 246.94, 392.0],    // G major (V)
+                  [261.63, 329.63, 392.0],   // C major (I)
+
+                  [261.63, 329.63, 392.0],   // C major (I)
+                  [293.66, 370.0, 440.0],    // D minor (ii)
+                  [174.61, 220.0, 349.23],   // F major (IV)
+                  [196.0, 246.94, 392.0],    // G major (V)
+
+                  [220.0, 261.63, 329.63],   // A minor (vi)
+                  [174.61, 220.0, 349.23],   // F major (IV)
+                  [196.0, 246.94, 392.0],    // G major (V)
+                  [261.63, 329.63, 392.0]    // C major (I) — resolution
+              ];
+              const chordIndex = Math.floor(t / bar) % chords.length;
+              const chord = chords[chordIndex];
+
+              // Rhythmic chord stabs
+              let pad = 0;
+              const stabPos = (t % bar) / bar;
+              const stabActive = (stabPos < 0.25 || (stabPos > 0.5 && stabPos < 0.75));
+              if (stabActive) {
+                  const stabEnv = Math.exp(-((t % (bar / 2)) * 6));
+                  for (let f of chord) {
+                      pad += Math.sin(2 * Math.PI * f * t) * 0.07 * stabEnv;
+                  }
+              }
+
+              // --- Drums ---
+              let drums = 0;
+              const beatPos = (t % beat) / beat;
+              if (Math.floor(t / beat) % 2 === 0 && beatPos < 0.1) {
+                  drums += Math.sin(2 * Math.PI * 60 * t) * (1 - beatPos * 10) * 0.5; // Kick
+              }
+              if (Math.floor(t / beat) % 4 === 2 && beatPos < 0.1) {
+                  drums += (Math.random() * 2 - 1) * (1 - beatPos * 10) * 0.4; // Snare
+              }
+              if (beatPos < 0.05) {
+                  drums += (Math.random() * 2 - 1) * (1 - beatPos * 20) * 0.15; // Hi-hat
+              }
+
+              // --- Envelope ---
+              const noteProgress = (t % noteLength) / noteLength;
+              const envelope = noteProgress < 0.1 ? noteProgress * 10 :
+                  noteProgress > 0.9 ? (1 - noteProgress) * 10 : 1;
+
+              // --- Mix ---
+              sample += (lead + bass + pad + drums) * envelope;
+              break;
+
       }
-      
-      // Convert to 16-bit integer
+
+              // Convert to 16-bit integer
       const intSample = Math.max(-32768, Math.min(32767, sample * 32767));
       view.setInt16(44 + i * 2, intSample, true);
     }
