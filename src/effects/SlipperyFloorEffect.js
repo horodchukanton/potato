@@ -7,7 +7,9 @@ import BaseEffect from './BaseEffect.js';
 export default class SlipperyFloorEffect extends BaseEffect {
   apply(effectConfig) {
     if (this.hasPlayerBody()) {
-      this.getPlayer().body.setDrag(this.originalValues.playerDrag.x * effectConfig.frictionMultiplier);
+      const player = this.getPlayer();
+      const newDragValue = this.originalValues.playerDrag.x * effectConfig.frictionMultiplier;
+      player.body.setDrag(newDragValue, this.originalValues.playerDrag.y);
     }
   }
 }
