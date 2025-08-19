@@ -49,37 +49,43 @@ export default class PreloadScene extends Phaser.Scene {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
     
-    // Generate fluffy white clouds with soft edges
+    // Generate fluffy white clouds with soft edges designed for seamless horizontal tiling
     const clouds = [
-      { x: 20, y: 30, width: 80, height: 40, opacity: 0.8 },
-      { x: 120, y: 20, width: 100, height: 50, opacity: 0.9 },
-      { x: 250, y: 40, width: 70, height: 35, opacity: 0.7 },
-      { x: -30, y: 70, width: 90, height: 45, opacity: 0.8 },
-      { x: 80, y: 80, width: 110, height: 60, opacity: 0.85 },
-      { x: 200, y: 90, width: 80, height: 40, opacity: 0.75 },
-      { x: 300, y: 60, width: 60, height: 30, opacity: 0.8 },
-      { x: 40, y: 140, width: 95, height: 50, opacity: 0.8 },
-      { x: 160, y: 130, width: 85, height: 45, opacity: 0.9 },
-      { x: 270, y: 150, width: 75, height: 40, opacity: 0.7 }
+      // Main clouds distributed across the canvas
+      { x: 40, y: 30, width: 80, height: 40, opacity: 0.8 },
+      { x: 140, y: 20, width: 100, height: 50, opacity: 0.9 },
+      { x: 220, y: 40, width: 70, height: 35, opacity: 0.7 },
+      { x: 60, y: 80, width: 110, height: 60, opacity: 0.85 },
+      { x: 180, y: 90, width: 80, height: 40, opacity: 0.75 },
+      { x: 20, y: 140, width: 95, height: 50, opacity: 0.8 },
+      { x: 140, y: 130, width: 85, height: 45, opacity: 0.9 },
+      { x: 240, y: 150, width: 75, height: 40, opacity: 0.7 },
+      
+      // Edge clouds for seamless tiling - these clouds wrap around the edges
+      { x: -40, y: 70, width: 90, height: 45, opacity: 0.8 }, // Starts off left edge
+      { x: 280, y: 60, width: 80, height: 30, opacity: 0.8 }, // Extends past right edge (320-40=280, spans to 360)
+      { x: -25, y: 160, width: 70, height: 35, opacity: 0.75 }, // Another edge wrapper
+      { x: 290, y: 110, width: 60, height: 40, opacity: 0.7 } // Another edge wrapper
     ];
     
-    clouds.forEach(cloud => {
+    // Helper function to draw a single cloud with all its puffs
+    const drawCloud = (cloud, offsetX = 0) => {
       // Create fluffy cloud shapes with multiple overlapping ellipses
       ctx.globalAlpha = cloud.opacity;
       ctx.fillStyle = '#FFFFFF';
       
       // Main cloud body
       ctx.beginPath();
-      ctx.ellipse(cloud.x + cloud.width/2, cloud.y + cloud.height/2, 
+      ctx.ellipse(cloud.x + offsetX + cloud.width/2, cloud.y + cloud.height/2, 
                  cloud.width/2, cloud.height/2, 0, 0, 2 * Math.PI);
       ctx.fill();
       
       // Add smaller puffs for more realistic cloud shape
       const puffs = [
-        { x: cloud.x + cloud.width * 0.2, y: cloud.y + cloud.height * 0.3, w: cloud.width * 0.4, h: cloud.height * 0.4 },
-        { x: cloud.x + cloud.width * 0.6, y: cloud.y + cloud.height * 0.2, w: cloud.width * 0.5, h: cloud.height * 0.5 },
-        { x: cloud.x + cloud.width * 0.8, y: cloud.y + cloud.height * 0.6, w: cloud.width * 0.3, h: cloud.height * 0.3 },
-        { x: cloud.x + cloud.width * 0.1, y: cloud.y + cloud.height * 0.7, w: cloud.width * 0.35, h: cloud.height * 0.35 }
+        { x: cloud.x + offsetX + cloud.width * 0.2, y: cloud.y + cloud.height * 0.3, w: cloud.width * 0.4, h: cloud.height * 0.4 },
+        { x: cloud.x + offsetX + cloud.width * 0.6, y: cloud.y + cloud.height * 0.2, w: cloud.width * 0.5, h: cloud.height * 0.5 },
+        { x: cloud.x + offsetX + cloud.width * 0.8, y: cloud.y + cloud.height * 0.6, w: cloud.width * 0.3, h: cloud.height * 0.3 },
+        { x: cloud.x + offsetX + cloud.width * 0.1, y: cloud.y + cloud.height * 0.7, w: cloud.width * 0.35, h: cloud.height * 0.35 }
       ];
       
       puffs.forEach(puff => {
@@ -87,6 +93,22 @@ export default class PreloadScene extends Phaser.Scene {
         ctx.ellipse(puff.x, puff.y, puff.w/2, puff.h/2, 0, 0, 2 * Math.PI);
         ctx.fill();
       });
+    };
+
+    clouds.forEach(cloud => {
+      // Draw the main cloud
+      drawCloud(cloud);
+      
+      // For seamless tiling, also draw clouds that extend beyond canvas boundaries
+      // If cloud starts before left edge, draw it again on the right side
+      if (cloud.x < 0) {
+        drawCloud(cloud, width);
+      }
+      
+      // If cloud extends past right edge, draw it again on the left side  
+      if (cloud.x + cloud.width > width) {
+        drawCloud(cloud, -width);
+      }
     });
     
     ctx.globalAlpha = 1.0;
