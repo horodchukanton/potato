@@ -237,7 +237,8 @@ describe('DynamicEffectsManager', () => {
       expect(mockScene.player.body.setDrag).toHaveBeenCalled();
       // Verify drag is reduced by the friction multiplier (0.3 for slippery floor)
       const expectedDrag = effectsManager.originalValues.playerDrag.x * effectConfig.frictionMultiplier;
-      expect(mockScene.player.body.setDrag).toHaveBeenCalledWith(expectedDrag);
+      const expectedDragY = effectsManager.originalValues.playerDrag.y;
+      expect(mockScene.player.body.setDrag).toHaveBeenCalledWith(expectedDrag, expectedDragY);
     });
 
     test('should apply STICKY_FLOOR effect correctly', () => {
@@ -249,7 +250,8 @@ describe('DynamicEffectsManager', () => {
       expect(mockScene.player.body.setDrag).toHaveBeenCalled();
       // Verify drag is increased by the friction multiplier (3.0 for sticky floor)
       const expectedDrag = effectsManager.originalValues.playerDrag.x * effectConfig.frictionMultiplier;
-      expect(mockScene.player.body.setDrag).toHaveBeenCalledWith(expectedDrag);
+      const expectedDragY = effectsManager.originalValues.playerDrag.y;
+      expect(mockScene.player.body.setDrag).toHaveBeenCalledWith(expectedDrag, expectedDragY);
     });
 
     test('should apply SHRINK_PLAYER effect correctly', () => {

@@ -7,7 +7,10 @@ import BaseEffect from './BaseEffect.js';
 export default class StickyFloorEffect extends BaseEffect {
   apply(effectConfig) {
     if (this.hasPlayerBody()) {
-      this.getPlayer().body.setDrag(this.originalValues.playerDrag.x * effectConfig.frictionMultiplier);
+      const player = this.getPlayer();
+      const newDragValue = this.originalValues.playerDrag.x * effectConfig.frictionMultiplier;
+      // Keep Y drag at 0 for proper gravity behavior
+      player.body.setDrag(newDragValue, 0);
     }
   }
 }

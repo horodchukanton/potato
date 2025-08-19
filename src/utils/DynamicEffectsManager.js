@@ -110,7 +110,7 @@ export default class DynamicEffectsManager {
     const player = this.scene.player;
     
     this.originalValues = {
-      gravity: this.scene.physics.world.gravity.y,
+      gravity: GAME_CONFIG.PHYSICS.GRAVITY,
       playerSpeed: GAME_CONFIG.PHYSICS.PLAYER_SPEED,
       timeScale: this.scene.physics.world.timeScale,
       playerBounce: player.body ? player.body.bounce.y : 0,
@@ -175,7 +175,8 @@ export default class DynamicEffectsManager {
     if (player.body) {
       player.body.setBounce(this.originalValues.playerBounce);
       if (this.originalValues.playerDrag) {
-        player.body.setDrag(this.originalValues.playerDrag.x);
+        // Restore X drag but keep Y drag at 0 for proper gravity behavior
+        player.body.setDrag(this.originalValues.playerDrag.x, 0);
       }
     }
     
