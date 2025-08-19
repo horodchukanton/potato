@@ -120,10 +120,26 @@ export default class PreloadScene extends Phaser.Scene {
           break;
           
         case 'bgm':
-          // Simple ambient chord progression
-          for (let j = 0; j < frequencies.length; j++) {
-            sample += Math.sin(2 * Math.PI * frequencies[j] * t) * 0.1 * Math.sin(Math.PI * t / duration);
-          }
+          // 8-bit style melody with square wave approximation
+          const melody = [261.63, 293.66, 329.63, 392.00, 329.63, 293.66]; // C-D-E-G-E-D progression
+          const noteLength = duration / melody.length;
+          const currentNoteIndex = Math.floor(t / noteLength) % melody.length;
+          const noteFreq = melody[currentNoteIndex];
+          
+          // Square wave approximation for 8-bit sound
+          const squareWave = Math.sin(2 * Math.PI * noteFreq * t) > 0 ? 1 : -1;
+          sample += squareWave * 0.15;
+          
+          // Add subtle bass line with lower octave
+          const bassFreq = noteFreq / 2;
+          const bassSquare = Math.sin(2 * Math.PI * bassFreq * t) > 0 ? 1 : -1;
+          sample += bassSquare * 0.08;
+          
+          // Envelope to smooth note transitions
+          const noteProgress = (t % noteLength) / noteLength;
+          const envelope = noteProgress < 0.1 ? noteProgress * 10 : 
+                          noteProgress > 0.9 ? (1 - noteProgress) * 10 : 1;
+          sample *= envelope;
           break;
       }
       

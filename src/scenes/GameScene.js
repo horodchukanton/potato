@@ -451,6 +451,35 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /**
+   * Set background music playback speed
+   * @param {number} speed - Playback rate (1.0 = normal, 2.0 = double speed, etc.)
+   */
+  setMusicSpeed(speed) {
+    if (this.audioEnabled && this.sounds && this.sounds.backgroundMusic) {
+      try {
+        // Phaser uses setRate method to change playback speed
+        this.sounds.backgroundMusic.setRate(speed);
+      } catch (error) {
+        console.warn('Failed to set music speed:', error);
+      }
+    }
+  }
+
+  /**
+   * Speed up background music for dynamic effects
+   */
+  speedUpMusic() {
+    this.setMusicSpeed(1.5); // 50% faster
+  }
+
+  /**
+   * Reset background music to normal speed
+   */
+  resetMusicSpeed() {
+    this.setMusicSpeed(1.0); // Normal speed
+  }
+
+  /**
    * Smooth transition to another scene
    */
   transitionToScene(sceneKey) {
