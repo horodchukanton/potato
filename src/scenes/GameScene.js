@@ -106,7 +106,10 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.existing(this.ground, true); // true makes it static
     
     // Create player using custom sprite
-    this.player = this.add.image(100, height - 60, ASSET_KEYS.PLAYER);
+    // Position player to properly rest on ground (ground top is at height - 40)
+    const groundTop = height - 40;
+    const playerHeight = 48;
+    this.player = this.add.image(100, groundTop - playerHeight/2, ASSET_KEYS.PLAYER);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setSize(32, 48);

@@ -284,7 +284,8 @@ describe('GameScene Visual and Positioning Tests', () => {
     
     test('should position player correctly on screen', () => {
       expect(gameScene.player.x).toBe(100);
-      expect(gameScene.player.y).toBe(GAME_CONFIG.HEIGHT - 60); // height - 60
+      // Player should be positioned to rest on ground: ground top (HEIGHT - 40) minus half player height (24)
+      expect(gameScene.player.y).toBe(GAME_CONFIG.HEIGHT - 40 - 24); // ground top - player height/2
       expect(gameScene.player.width * gameScene.player.scaleX).toBe(32); // Effective width
       expect(gameScene.player.height * gameScene.player.scaleY).toBe(48); // Effective height
     });
