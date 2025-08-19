@@ -59,8 +59,8 @@ export default class GameScene extends Phaser.Scene {
       this.cameras.main.fadeIn(GAME_CONFIG.EFFECTS.TRANSITIONS.FADE_DURATION, 0, 0, 0);
     }
 
-    // Background - use tiled background sprite
-    this.add.tileSprite(0, 0, width, height, ASSET_KEYS.BACKGROUND).setOrigin(0, 0);
+    // Background - use tiled background sprite that can be animated
+    this.backgroundTileSprite = this.add.tileSprite(0, 0, width, height, ASSET_KEYS.BACKGROUND).setOrigin(0, 0);
 
     // Initialize particle systems
     this.createParticleSystems();
@@ -1079,9 +1079,29 @@ export default class GameScene extends Phaser.Scene {
     // Don't process movement if game is over, Tetris prompt is showing, or cutscene is playing
     if (this.gameOver || this.tetrisPromptShowing || this.cutscenePlaying) return;
     
+    this.updateBackground();
     this.handlePlayerMovement();
     this.updateObstacles();
     this.updateBubbles();
+  }
+
+  /**
+   * Update cloud background animation based on wind effects
+   */
+  updateBackground() {
+    if (!this.backgroundTileSprite) return;
+    
+    // Default cloud movement: slowly drifting to the left
+    let cloudSpeed = -20; // pixels per second, negative = left movement
+    
+    // When wind gust effect is active, reverse the direction (move right)
+    if (this.windForce && this.windForce > 0) {
+      cloudSpeed = 30; // Move right when wind is active, slightly faster
+    }
+    
+    // Apply the movement using delta time for smooth animation
+    const deltaInSeconds = this.game.loop.delta / 1000;
+    this.backgroundTileSprite.tilePositionX += cloudSpeed * deltaInSeconds;
   }
 
   /**

@@ -112,6 +112,8 @@ jest.mock('phaser', () => ({
         })),
         tileSprite: jest.fn((x, y, width, height, texture) => ({
           x, y, width, height, texture,
+          tilePositionX: 0, // Add tilePositionX property for background animation
+          tilePositionY: 0, // Add tilePositionY for completeness
           setOrigin: jest.fn(function() { return this; }),
           setScale: jest.fn(function() { return this; }),
           destroy: jest.fn()
@@ -1139,6 +1141,108 @@ describe('GameScene Visual and Positioning Tests', () => {
       
       expect(stopSpy).toHaveBeenCalled();
       expect(gameScene.dynamicEffectsManager).toBe(null);
+    });
+  });
+
+  describe('Background Animation', () => {
+    let gameScene;
+    
+    beforeEach(() => {
+      const GameScene = require('../src/scenes/GameScene.js').default;
+      gameScene = new GameScene();
+      gameScene.create();
+      
+      // Mock game loop delta for consistent testing
+      gameScene.game = {
+        loop: {
+          delta: 16.67 // ~60 FPS (1000ms/60fps ≈ 16.67ms per frame)
+        }
+      };
+    });
+
+    test('should move clouds slowly to the left by default', () => {
+      const initialPosition = gameScene.backgroundTileSprite.tilePositionX;
+      
+      // No wind force active (default state)
+      gameScene.windForce = 0;
+      
+      // Run a few update cycles
+      gameScene.updateBackground();
+      gameScene.updateBackground();
+      gameScene.updateBackground();
+      
+      // Clouds should have moved left (tilePositionX should decrease for leftward movement)
+      expect(gameScene.backgroundTileSprite.tilePositionX).toBeLessThan(initialPosition);
+    });
+
+    test('should move clouds to the right when wind gust is active', () => {
+      const initialPosition = gameScene.backgroundTileSprite.tilePositionX;
+      
+      // Activate wind gust effect
+      gameScene.windForce = 150; // Positive wind force
+      
+      // Run a few update cycles  
+      gameScene.updateBackground();
+      gameScene.updateBackground();
+      gameScene.updateBackground();
+      
+      // Clouds should have moved right (tilePositionX should increase for rightward movement)
+      expect(gameScene.backgroundTileSprite.tilePositionX).toBeGreaterThan(initialPosition);
+    });
+
+    test('should change cloud direction when wind effect starts and stops', () => {
+      // Start with no wind
+      gameScene.windForce = 0;
+      const noWindPosition = gameScene.backgroundTileSprite.tilePositionX;
+      
+      gameScene.updateBackground();
+      const afterNoWindMove = gameScene.backgroundTileSprite.tilePositionX;
+      
+      // Start wind effect
+      gameScene.windForce = 150;
+      gameScene.updateBackground();
+      const afterWindMove = gameScene.backgroundTileSprite.tilePositionX;
+      
+      // Stop wind effect
+      gameScene.windForce = 0;
+      gameScene.updateBackground();
+      const afterWindStop = gameScene.backgroundTileSprite.tilePositionX;
+      
+      // Each movement should change the position
+      expect(afterNoWindMove).not.toBe(noWindPosition);
+      expect(afterWindMove).not.toBe(afterNoWindMove);
+      expect(afterWindStop).not.toBe(afterWindMove);
+    });
+
+    test('should handle missing background tile sprite gracefully', () => {
+      gameScene.backgroundTileSprite = null;
+      
+      // Should not throw an error
+      expect(() => {
+        gameScene.updateBackground();
+      }).not.toThrow();
+    });
+
+    test('should animate smoothly based on frame delta time', () => {
+      const initialPosition = gameScene.backgroundTileSprite.tilePositionX;
+      
+      // Test with different frame rates (different delta times)
+      gameScene.game.loop.delta = 33.33; // ~30 FPS (slower frame rate)
+      gameScene.updateBackground();
+      const slowFramePosition = gameScene.backgroundTileSprite.tilePositionX;
+      
+      // Reset position
+      gameScene.backgroundTileSprite.tilePositionX = initialPosition;
+      gameScene.game.loop.delta = 8.33; // ~120 FPS (faster frame rate)
+      gameScene.updateBackground();
+      const fastFramePosition = gameScene.backgroundTileSprite.tilePositionX;
+      
+      // Movement should be consistent regardless of frame rate
+      // (slow frame should move more per update to maintain same speed per second)
+      const slowFrameMovement = Math.abs(slowFramePosition - initialPosition);
+      const fastFrameMovement = Math.abs(fastFramePosition - initialPosition);
+      
+      expect(slowFrameMovement).toBeGreaterThan(fastFrameMovement);
     });
   });
 });
