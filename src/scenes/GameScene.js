@@ -575,9 +575,23 @@ export default class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
-    // Spawn bubbles from above the screen and within horizontal bounds
-    const x = Phaser.Math.Between(200, width - 200);
+    // Calculate spawn position to ensure better ground distribution
+    // Account for horizontal drift during fall time to favor right side distribution
     const y = Phaser.Math.Between(-100, -20); // Above screen to fall into view
+    
+    // Estimate fall time to calculate horizontal drift compensation
+    const fallDistance = height - 40 - y; // Distance to ground level
+    const avgFallSpeed = (GAME_CONFIG.BUBBLES.SPEED_Y_MIN + GAME_CONFIG.BUBBLES.SPEED_Y_MAX) / 2;
+    const estimatedFallTime = Math.abs(fallDistance) / avgFallSpeed;
+    
+    // Calculate horizontal drift during fall (bubbles move left)
+    const horizontalDrift = Math.abs(GAME_CONFIG.BUBBLES.SPEED_X) * estimatedFallTime;
+    
+    // Target landing zone: favor right side (400-750px) for better gameplay
+    const targetLandingX = Phaser.Math.Between(400, width - 50);
+    
+    // Adjust spawn X to compensate for horizontal drift
+    const x = targetLandingX + horizontalDrift;
     
     const bubble = this.add.image(x, y, ASSET_KEYS.BUBBLE);
     this.physics.add.existing(bubble);

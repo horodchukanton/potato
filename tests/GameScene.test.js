@@ -457,9 +457,10 @@ describe('GameScene Visual and Positioning Tests', () => {
       );
       
       bubbles.forEach(bubble => {
-        // Should be within horizontal bounds (with margin)
+        // Bubbles can spawn outside screen bounds to compensate for horizontal drift
+        // This ensures better ground distribution by accounting for leftward movement
         expect(bubble.x).toBeGreaterThanOrEqual(200);
-        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH - 200);
+        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH + 600); // Allow spawning far off-screen right for proper distribution
         
         // Should spawn above screen to fall into view (simulating diagonal falling)
         expect(bubble.y).toBeGreaterThanOrEqual(-100);
@@ -468,6 +469,43 @@ describe('GameScene Visual and Positioning Tests', () => {
         // Should have correct texture
         expect(bubble.texture).toBe('bubble');
       });
+    });
+    
+    test('should distribute bubble landing positions toward the right side', () => {
+      // Create multiple bubbles to test distribution
+      const bubbleCount = 20;
+      for (let i = 0; i < bubbleCount; i++) {
+        gameScene.createBubble();
+      }
+      
+      const bubbles = gameScene.createdObjects.images.filter(image => 
+        image.texture === 'bubble'
+      );
+      
+      // Calculate expected landing positions accounting for horizontal drift
+      const landingPositions = bubbles.map(bubble => {
+        // Estimate fall time
+        const fallDistance = GAME_CONFIG.HEIGHT - 40 - bubble.y;
+        const avgFallSpeed = (GAME_CONFIG.BUBBLES.SPEED_Y_MIN + GAME_CONFIG.BUBBLES.SPEED_Y_MAX) / 2;
+        const estimatedFallTime = Math.abs(fallDistance) / avgFallSpeed;
+        
+        // Calculate where bubble will land (spawn X + horizontal drift)
+        const horizontalDrift = Math.abs(GAME_CONFIG.BUBBLES.SPEED_X) * estimatedFallTime;
+        const landingX = bubble.x - horizontalDrift; // Subtract because moving left
+        
+        return landingX;
+      });
+      
+      // Check that most bubbles land in the right half or center-right area (x > 300)
+      const rightSideLandings = landingPositions.filter(x => x > 300).length;
+      const rightSideRatio = rightSideLandings / landingPositions.length;
+      
+      // Expect at least 60% of bubbles to land in the right side for better gameplay
+      expect(rightSideRatio).toBeGreaterThan(0.6);
+      
+      // Ensure bubbles don't all cluster at one extreme
+      const landingSpread = Math.max(...landingPositions) - Math.min(...landingPositions);
+      expect(landingSpread).toBeGreaterThan(200); // Should have reasonable distribution spread
     });
     
     test('should create initial bubbles during scene creation', () => {
@@ -795,9 +833,9 @@ describe('GameScene Visual and Positioning Tests', () => {
       );
       
       bubbles.forEach(bubble => {
-        // Should have 200px margin from horizontal edges
+        // Bubbles can spawn outside screen bounds to compensate for horizontal drift
         expect(bubble.x).toBeGreaterThanOrEqual(200);
-        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH - 200);
+        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH + 600); // Allow spawning far off-screen right for proper distribution
         // Should spawn above screen for diagonal falling effect
         expect(bubble.y).toBeGreaterThanOrEqual(-100);
         expect(bubble.y).toBeLessThanOrEqual(-20);
