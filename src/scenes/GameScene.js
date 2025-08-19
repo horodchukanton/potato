@@ -1186,15 +1186,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // Jumping (keyboard or touch)
-    const wantsToJump = this.spaceKey.isDown || touch.jump;
-    
-    // Improved ground detection: check both physics collision and position
-    // This handles cases where Phaser's touching.down isn't reliable with static bodies
-    const playerBottom = player.y + (GAME_CONFIG.PHYSICS.PLAYER_BODY_HEIGHT / 2);
-    const groundTop = this.cameras.main.height - 40; // Ground surface
-    const isOnGround = player.body.touching.down || Math.abs(playerBottom - groundTop) <= 2; // 2px tolerance
-    
-    if (wantsToJump && isOnGround) {
+    if ((this.spaceKey.isDown || touch.jump) && player.body.touching.down) {
       player.body.setVelocityY(GAME_CONFIG.PHYSICS.JUMP_VELOCITY);
       
       // Play jump sound effect
