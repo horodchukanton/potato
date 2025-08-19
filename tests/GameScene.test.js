@@ -299,7 +299,7 @@ describe('GameScene Visual and Positioning Tests', () => {
     
     test('should create player with correct visual properties', () => {
       expect(gameScene.player.texture).toBe('player'); // Player sprite asset
-      expect(gameScene.player.body.setCollideWorldBounds).toHaveBeenCalled();
+      // Removed setCollideWorldBounds check as it can interfere with gravity physics
       expect(gameScene.player.body.setSize).toHaveBeenCalledWith(32, 48);
     });
     

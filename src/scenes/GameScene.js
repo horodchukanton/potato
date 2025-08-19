@@ -112,7 +112,7 @@ export default class GameScene extends Phaser.Scene {
     // Player center should be at groundTop - bodyHeight/2 to make body bottom touch ground top
     this.player = this.add.image(100, groundTop - playerBodyHeight/2, ASSET_KEYS.PLAYER);
     this.physics.add.existing(this.player);
-    this.player.body.setCollideWorldBounds(true);
+    // Removed setCollideWorldBounds(true) as it can interfere with gravity physics
     this.player.body.setSize(GAME_CONFIG.PHYSICS.PLAYER_BODY_WIDTH, GAME_CONFIG.PHYSICS.PLAYER_BODY_HEIGHT);
     
     // Set default drag for friction-based effects to work properly
