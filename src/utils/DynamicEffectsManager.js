@@ -110,7 +110,7 @@ export default class DynamicEffectsManager {
     const player = this.scene.player;
     
     this.originalValues = {
-      gravity: this.scene.physics.world.gravity.y,
+      gravity: GAME_CONFIG.PHYSICS.GRAVITY,
       playerSpeed: GAME_CONFIG.PHYSICS.PLAYER_SPEED,
       timeScale: this.scene.physics.world.timeScale,
       playerBounce: player.body ? player.body.bounce.y : 0,
