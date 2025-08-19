@@ -129,9 +129,10 @@ describe('Game State and Logic Utilities', () => {
       expect(aspectRatio).toBeLessThan(3); // Not too wide
     });
 
-    test('should have consistent speed values across game objects', () => {
-      // Bubbles and obstacles should move at same horizontal speed for consistency
-      expect(GAME_CONFIG.BUBBLES.SPEED_X).toBe(GAME_CONFIG.OBSTACLES.SPEED);
+    test('should have optimized speed values for different game objects', () => {
+      // Bubbles have same speed as obstacles for forward movement illusion
+      expect(GAME_CONFIG.BUBBLES.SPEED_X).toBe(-150); // Same as obstacles for movement illusion
+      expect(GAME_CONFIG.OBSTACLES.SPEED).toBe(-150); // Standard speed for challenge
       
       // All speeds should be reasonable values
       expect(Math.abs(GAME_CONFIG.BUBBLES.SPEED_X)).toBeLessThan(500);

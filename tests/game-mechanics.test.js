@@ -24,7 +24,9 @@ describe('Game Mechanics Validation', () => {
       expect(radius).toBeLessThan(100); // Not too large
     });
 
-    test('bubble should move at same horizontal speed as obstacles for consistent gameplay', () => {
+    test('bubble should move at same speed as obstacles for forward movement illusion', () => {
+      // Bubbles have same horizontal speed as obstacles to maintain forward movement illusion
+      expect(GAME_CONFIG.BUBBLES.SPEED_X).toBe(-150);
       expect(GAME_CONFIG.BUBBLES.SPEED_X).toBe(GAME_CONFIG.OBSTACLES.SPEED);
     });
   });
