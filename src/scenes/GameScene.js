@@ -579,23 +579,25 @@ export default class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
-    // Calculate spawn position to ensure better ground distribution
-    // Account for horizontal drift during fall time to favor right side distribution
+    // Calculate spawn position with controlled drift compensation
     const y = Phaser.Math.Between(-100, -20); // Above screen to fall into view
     
-    // Estimate fall time to calculate horizontal drift compensation
+    // Estimate fall time for moderate drift compensation
     const fallDistance = height - 40 - y; // Distance to ground level
     const avgFallSpeed = (GAME_CONFIG.BUBBLES.SPEED_Y_MIN + GAME_CONFIG.BUBBLES.SPEED_Y_MAX) / 2;
     const estimatedFallTime = Math.abs(fallDistance) / avgFallSpeed;
     
-    // Calculate horizontal drift during fall (bubbles move left)
-    const horizontalDrift = Math.abs(GAME_CONFIG.BUBBLES.SPEED_X) * estimatedFallTime;
+    // Calculate controlled horizontal drift (reduced compensation to keep bubbles on-screen)
+    const fullDrift = Math.abs(GAME_CONFIG.BUBBLES.SPEED_X) * estimatedFallTime;
+    const compensatedDrift = fullDrift * GAME_CONFIG.BUBBLES.SPAWN_DRIFT_COMPENSATION;
     
-    // Target landing zone: favor right side (400-750px) for better gameplay
+    // Target landing zone: favor right side (400-750px) for better gameplay  
     const targetLandingX = Phaser.Math.Between(400, width - 50);
     
-    // Adjust spawn X to compensate for horizontal drift
-    const x = targetLandingX + horizontalDrift;
+    // Adjust spawn X with controlled compensation, ensuring reasonable bounds
+    const idealX = targetLandingX + compensatedDrift;
+    const x = Math.max(GAME_CONFIG.BUBBLES.SPAWN_X_MIN, 
+                      Math.min(GAME_CONFIG.BUBBLES.SPAWN_X_MAX, idealX));
     
     const bubble = this.add.image(x, y, ASSET_KEYS.BUBBLE);
     this.physics.add.existing(bubble);
