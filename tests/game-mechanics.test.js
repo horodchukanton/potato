@@ -24,10 +24,10 @@ describe('Game Mechanics Validation', () => {
       expect(radius).toBeLessThan(100); // Not too large
     });
 
-    test('bubble should move slower than obstacles for better ground distribution', () => {
-      // Bubbles now have reduced horizontal speed for better landing distribution
-      expect(GAME_CONFIG.BUBBLES.SPEED_X).toBe(-50);
-      expect(Math.abs(GAME_CONFIG.BUBBLES.SPEED_X)).toBeLessThan(Math.abs(GAME_CONFIG.OBSTACLES.SPEED));
+    test('bubble should move at same speed as obstacles for forward movement illusion', () => {
+      // Bubbles have same horizontal speed as obstacles to maintain forward movement illusion
+      expect(GAME_CONFIG.BUBBLES.SPEED_X).toBe(-150);
+      expect(GAME_CONFIG.BUBBLES.SPEED_X).toBe(GAME_CONFIG.OBSTACLES.SPEED);
     });
   });
 

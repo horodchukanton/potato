@@ -460,7 +460,7 @@ describe('GameScene Visual and Positioning Tests', () => {
         // Bubbles can spawn outside screen bounds to compensate for horizontal drift
         // This ensures better ground distribution by accounting for leftward movement
         expect(bubble.x).toBeGreaterThanOrEqual(200);
-        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH + 600); // Allow spawning far off-screen right for proper distribution
+        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH + 2000); // Allow spawning far off-screen right for proper distribution
         
         // Should spawn above screen to fall into view (simulating diagonal falling)
         expect(bubble.y).toBeGreaterThanOrEqual(-100);
@@ -835,7 +835,7 @@ describe('GameScene Visual and Positioning Tests', () => {
       bubbles.forEach(bubble => {
         // Bubbles can spawn outside screen bounds to compensate for horizontal drift
         expect(bubble.x).toBeGreaterThanOrEqual(200);
-        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH + 600); // Allow spawning far off-screen right for proper distribution
+        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH + 2000); // Allow spawning far off-screen right for proper distribution
         // Should spawn above screen for diagonal falling effect
         expect(bubble.y).toBeGreaterThanOrEqual(-100);
         expect(bubble.y).toBeLessThanOrEqual(-20);
