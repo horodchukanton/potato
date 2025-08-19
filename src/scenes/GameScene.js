@@ -112,9 +112,7 @@ export default class GameScene extends Phaser.Scene {
     this.player.body.setSize(32, 48);
     
     // Set default drag for friction-based effects to work properly
-    if (this.player.body.setDrag) {
-      this.player.body.setDrag(800);
-    }
+    this.player.body.setDrag(GAME_CONFIG.PHYSICS.PLAYER_DEFAULT_DRAG);
     
     // Store original player color tint for global color effects
     this.originalPlayerTint = 0xffffff; // Default white tint
@@ -1085,8 +1083,8 @@ export default class GameScene extends Phaser.Scene {
       }
     } else {
       // Allow drag physics to naturally slow down the player
-      // Only set velocity to 0 if drag is very low (< 50) to maintain normal movement feel
-      if (player.body.drag.x < 50) {
+      // Only set velocity to 0 if drag is very low to maintain normal movement feel
+      if (player.body.drag.x < GAME_CONFIG.PHYSICS.PLAYER_DRAG_ZERO_VELOCITY_THRESHOLD) {
         player.body.setVelocityX(0);
       }
       // Reset visual feedback
