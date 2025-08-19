@@ -10,6 +10,8 @@ export const GAME_CONFIG = {
     JUMP_VELOCITY: -350, // Slightly stronger jump for mobile
     PLAYER_DEFAULT_DRAG: 800, // Default drag for friction-based effects
     PLAYER_DRAG_ZERO_VELOCITY_THRESHOLD: 50, // Threshold below which velocity is forced to 0
+    PLAYER_BODY_WIDTH: 32, // Player physics body width
+    PLAYER_BODY_HEIGHT: 48, // Player physics body height
   },
   BUBBLE_COLLECTION_TARGET: 50,
   TETRIS_LINES_TARGET: 34,

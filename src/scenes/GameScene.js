@@ -108,12 +108,12 @@ export default class GameScene extends Phaser.Scene {
     // Create player using custom sprite
     // Position player so physics body bottom touches ground top (height - 40)
     const groundTop = height - 40;
-    const playerBodyHeight = 48;
+    const playerBodyHeight = GAME_CONFIG.PHYSICS.PLAYER_BODY_HEIGHT;
     // Player center should be at groundTop - bodyHeight/2 to make body bottom touch ground top
     this.player = this.add.image(100, groundTop - playerBodyHeight/2, ASSET_KEYS.PLAYER);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
-    this.player.body.setSize(32, 48);
+    this.player.body.setSize(GAME_CONFIG.PHYSICS.PLAYER_BODY_WIDTH, GAME_CONFIG.PHYSICS.PLAYER_BODY_HEIGHT);
     
     // Set default drag for friction-based effects to work properly
     this.player.body.setDrag(GAME_CONFIG.PHYSICS.PLAYER_DEFAULT_DRAG);
