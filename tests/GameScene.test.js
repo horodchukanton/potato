@@ -458,10 +458,10 @@ describe('GameScene Visual and Positioning Tests', () => {
       );
       
       bubbles.forEach(bubble => {
-        // Bubbles can spawn outside screen bounds to compensate for horizontal drift
-        // This ensures better ground distribution by accounting for leftward movement
-        expect(bubble.x).toBeGreaterThanOrEqual(200);
-        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH + 2000); // Allow spawning far off-screen right for proper distribution
+        // Bubbles spawn within controlled bounds for better visibility
+        // New configuration keeps bubbles closer to screen for immediate or quick visibility
+        expect(bubble.x).toBeGreaterThanOrEqual(GAME_CONFIG.BUBBLES.SPAWN_X_MIN);
+        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.BUBBLES.SPAWN_X_MAX);
         
         // Should spawn above screen to fall into view (simulating diagonal falling)
         expect(bubble.y).toBeGreaterThanOrEqual(-100);
@@ -483,16 +483,17 @@ describe('GameScene Visual and Positioning Tests', () => {
         image.texture === 'bubble'
       );
       
-      // Calculate expected landing positions accounting for horizontal drift
+      // Calculate expected landing positions accounting for the new controlled horizontal drift
       const landingPositions = bubbles.map(bubble => {
         // Estimate fall time
         const fallDistance = GAME_CONFIG.HEIGHT - 40 - bubble.y;
         const avgFallSpeed = (GAME_CONFIG.BUBBLES.SPEED_Y_MIN + GAME_CONFIG.BUBBLES.SPEED_Y_MAX) / 2;
         const estimatedFallTime = Math.abs(fallDistance) / avgFallSpeed;
         
-        // Calculate where bubble will land (spawn X + horizontal drift)
-        const horizontalDrift = Math.abs(GAME_CONFIG.BUBBLES.SPEED_X) * estimatedFallTime;
-        const landingX = bubble.x - horizontalDrift; // Subtract because moving left
+        // Calculate where bubble will land using the new controlled drift compensation
+        const fullDrift = Math.abs(GAME_CONFIG.BUBBLES.SPEED_X) * estimatedFallTime;
+        const actualDrift = fullDrift * GAME_CONFIG.BUBBLES.SPAWN_DRIFT_COMPENSATION;
+        const landingX = bubble.x - actualDrift; // Subtract compensated drift because bubbles move left
         
         return landingX;
       });
@@ -834,9 +835,9 @@ describe('GameScene Visual and Positioning Tests', () => {
       );
       
       bubbles.forEach(bubble => {
-        // Bubbles can spawn outside screen bounds to compensate for horizontal drift
-        expect(bubble.x).toBeGreaterThanOrEqual(200);
-        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.WIDTH + 2000); // Allow spawning far off-screen right for proper distribution
+        // Bubbles spawn within controlled bounds for better visibility
+        expect(bubble.x).toBeGreaterThanOrEqual(GAME_CONFIG.BUBBLES.SPAWN_X_MIN);
+        expect(bubble.x).toBeLessThanOrEqual(GAME_CONFIG.BUBBLES.SPAWN_X_MAX);
         // Should spawn above screen for diagonal falling effect
         expect(bubble.y).toBeGreaterThanOrEqual(-100);
         expect(bubble.y).toBeLessThanOrEqual(-20);

@@ -39,7 +39,11 @@ export const GAME_CONFIG = {
     SPEED_Y_MIN: 20, // Minimum downward speed for falling effect
     SPEED_Y_MAX: 80, // Maximum downward speed for falling effect
     COLOR: 0x3498db, // Blue color
-    RADIUS: 16 // Bubble radius
+    RADIUS: 16, // Bubble radius
+    // Spawn positioning configuration (separate from movement speed)
+    SPAWN_DRIFT_COMPENSATION: 0.2, // Further reduced drift compensation factor (0.0-1.0)
+    SPAWN_X_MIN: 200, // Minimum spawn X position
+    SPAWN_X_MAX: 1000 // Maximum spawn X position (slightly off-screen for better distribution)
   },
   // Visual effects configuration
   EFFECTS: {
