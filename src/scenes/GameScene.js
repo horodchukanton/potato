@@ -116,7 +116,8 @@ export default class GameScene extends Phaser.Scene {
     this.player.body.setSize(GAME_CONFIG.PHYSICS.PLAYER_BODY_WIDTH, GAME_CONFIG.PHYSICS.PLAYER_BODY_HEIGHT);
     
     // Set default drag for friction-based effects to work properly
-    this.player.body.setDrag(GAME_CONFIG.PHYSICS.PLAYER_DEFAULT_DRAG);
+    // Only apply drag to X-axis, keep Y-axis at 0 for proper gravity
+    this.player.body.setDrag(GAME_CONFIG.PHYSICS.PLAYER_DEFAULT_DRAG, 0);
     
     // Store original player color tint for global color effects
     this.originalPlayerTint = 0xffffff; // Default white tint

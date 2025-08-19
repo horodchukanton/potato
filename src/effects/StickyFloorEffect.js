@@ -9,7 +9,8 @@ export default class StickyFloorEffect extends BaseEffect {
     if (this.hasPlayerBody()) {
       const player = this.getPlayer();
       const newDragValue = this.originalValues.playerDrag.x * effectConfig.frictionMultiplier;
-      player.body.setDrag(newDragValue, this.originalValues.playerDrag.y);
+      // Keep Y drag at 0 for proper gravity behavior
+      player.body.setDrag(newDragValue, 0);
     }
   }
 }

@@ -175,7 +175,8 @@ export default class DynamicEffectsManager {
     if (player.body) {
       player.body.setBounce(this.originalValues.playerBounce);
       if (this.originalValues.playerDrag) {
-        player.body.setDrag(this.originalValues.playerDrag.x, this.originalValues.playerDrag.y);
+        // Restore X drag but keep Y drag at 0 for proper gravity behavior
+        player.body.setDrag(this.originalValues.playerDrag.x, 0);
       }
     }
     
