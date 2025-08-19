@@ -8,6 +8,8 @@ export const GAME_CONFIG = {
     GRAVITY: 300,
     PLAYER_SPEED: 180, // Slightly increased for better responsiveness
     JUMP_VELOCITY: -350, // Slightly stronger jump for mobile
+    PLAYER_DEFAULT_DRAG: 800, // Default drag for friction-based effects
+    PLAYER_DRAG_ZERO_VELOCITY_THRESHOLD: 50, // Threshold below which velocity is forced to 0
   },
   BUBBLE_COLLECTION_TARGET: 50,
   TETRIS_LINES_TARGET: 34,

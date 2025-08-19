@@ -38,7 +38,11 @@ jest.mock('phaser', () => ({
               setVelocityY: jest.fn((velocity) => {
                 obj.body.velocity.y = velocity;
               }),
+              setDrag: jest.fn((drag) => {
+                obj.body.drag = { x: drag, y: drag };
+              }),
               velocity: { x: 0, y: 0 },
+              drag: { x: 0, y: 0 },
               checkWorldBounds: false,
               outOfBoundsKill: false,
               touching: { down: false }
