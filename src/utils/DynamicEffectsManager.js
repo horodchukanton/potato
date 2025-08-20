@@ -180,6 +180,12 @@ export default class DynamicEffectsManager {
       }
     }
     
+    // Clean up sticky floor effect handler if it exists
+    if (this.scene.stickyFloorUpdateHandler) {
+      this.scene.events.off('update', this.scene.stickyFloorUpdateHandler);
+      this.scene.stickyFloorUpdateHandler = null;
+    }
+    
     // Restore player scale
     if (this.originalValues.playerScale) {
       player.setScale(this.originalValues.playerScale);

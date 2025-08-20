@@ -36,11 +36,13 @@ const createMockScene = () => ({
       setDrag: jest.fn(),
       setVelocity: jest.fn(),
       friction: { x: 0, y: 0 },
-      drag: { x: 0, y: 0 }
+      drag: { x: 100, y: 0 }, // Set non-zero initial drag for testing
+      touching: { down: false }
     },
     scale: 1,
     setScale: jest.fn(),
-    setPosition: jest.fn()
+    setPosition: jest.fn(),
+    y: 300
   },
   cameras: {
     main: {
@@ -65,6 +67,10 @@ const createMockScene = () => ({
       // Simulate tween completion
       if (config.onComplete) config.onComplete();
     })
+  },
+  events: {
+    on: jest.fn(),
+    off: jest.fn()
   },
   effectSpeedMultiplier: 1.0,
   invertedControls: false,
@@ -153,8 +159,9 @@ describe('DynamicEffectsManager', () => {
         timeScale: 1.0,
         playerBounce: 0,
         playerScale: 1,
+        playerY: 300,
         playerFriction: { x: 0, y: 0 },
-        playerDrag: { x: 0, y: 0 },
+        playerDrag: { x: 100, y: 0 },
         obstacleSpeed: undefined,
         originalPlayerColor: null,
         originalBubbleColor: GAME_CONFIG.BUBBLES.COLOR,
@@ -247,11 +254,85 @@ describe('DynamicEffectsManager', () => {
       
       effectsManager.applyEffect('STICKY_FLOOR', effectConfig);
       
-      expect(mockScene.player.body.setDrag).toHaveBeenCalled();
-      // Verify drag is increased by the friction multiplier (3.0 for sticky floor)
-      const expectedDrag = effectsManager.originalValues.playerDrag.x * effectConfig.frictionMultiplier;
-      const expectedDragY = effectsManager.originalValues.playerDrag.y;
-      expect(mockScene.player.body.setDrag).toHaveBeenCalledWith(expectedDrag, expectedDragY);
+      // Should register an update handler
+      expect(mockScene.events.on).toHaveBeenCalledWith('update', expect.any(Function));
+    });
+
+    test('should apply STICKY_FLOOR effect only when player is grounded', () => {
+      // Set up mock player with ground detection capabilities and non-zero initial drag
+      mockScene.player.body.touching = { down: true }; // Player is on ground initially
+      mockScene.player.body.drag = { x: 100, y: 0 }; // Set different initial drag
+      mockScene.player.y = 548; // Position on ground (ground top - body height/2)
+      mockScene.ground = { y: 580, height: 40 };
+      
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.STICKY_FLOOR;
+      effectsManager.storeOriginalValues();
+      
+      // Verify original values are stored correctly
+      expect(effectsManager.originalValues.playerDrag.x).toBe(100);
+      
+      // Apply the sticky floor effect
+      effectsManager.applyEffect('STICKY_FLOOR', effectConfig);
+      
+      // Should register an update handler
+      expect(mockScene.events.on).toHaveBeenCalledWith('update', expect.any(Function));
+      
+      // Get the update handler that was registered
+      const updateHandler = mockScene.events.on.mock.calls.find(call => call[0] === 'update')[1];
+      expect(updateHandler).toBeDefined();
+      
+      // Store the handler for later cleanup verification
+      mockScene.stickyFloorUpdateHandler = updateHandler;
+      
+      // Clear previous setDrag calls (from the initial application)
+      mockScene.player.body.setDrag.mockClear();
+      
+      // Simulate the update handler being called while player is grounded
+      updateHandler();
+      
+      // Should apply sticky drag when grounded (100 * 3.0 = 300)
+      expect(mockScene.player.body.setDrag).toHaveBeenCalledWith(300, 0);
+      
+      // Simulate that drag was actually set to sticky value
+      mockScene.player.body.drag.x = 300;
+      
+      // Clear previous calls
+      mockScene.player.body.setDrag.mockClear();
+      
+      // Simulate player in air
+      mockScene.player.body.touching.down = false;
+      mockScene.player.y = 400; // Player is in air
+      
+      // Call update handler while in air
+      updateHandler();
+      
+      // Should use normal drag when in air (100)
+      expect(mockScene.player.body.setDrag).toHaveBeenCalledWith(100, 0);
+    });
+
+    test('should clean up STICKY_FLOOR effect handler on deactivation', () => {
+      // Set up mock player
+      mockScene.player.body.touching = { down: true };
+      mockScene.player.y = 548;
+      
+      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.STICKY_FLOOR;
+      effectsManager.storeOriginalValues();
+      
+      // Apply sticky floor effect
+      effectsManager.currentEffect = { key: 'STICKY_FLOOR', config: effectConfig };
+      effectsManager.applyEffect('STICKY_FLOOR', effectConfig);
+      
+      // Should have registered an update handler
+      expect(mockScene.events.on).toHaveBeenCalledWith('update', expect.any(Function));
+      const updateHandler = mockScene.events.on.mock.calls.find(call => call[0] === 'update')[1];
+      mockScene.stickyFloorUpdateHandler = updateHandler;
+      
+      // Deactivate the effect
+      effectsManager.deactivateCurrentEffect();
+      
+      // Should clean up the event handler
+      expect(mockScene.events.off).toHaveBeenCalledWith('update', updateHandler);
+      expect(mockScene.stickyFloorUpdateHandler).toBeNull();
     });
 
     test('should apply SHRINK_PLAYER effect correctly', () => {
