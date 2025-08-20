@@ -107,8 +107,8 @@ describe('DynamicEffectsManager', () => {
 
     test('should have all configured effects available', () => {
       const expectedEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'INVERTED_CONTROLS', 'BOUNCY_MODE', 
-                               'GRAVITY_FLIP', 'WIND_GUST', 'SLIPPERY_FLOOR', 'STICKY_FLOOR', 'TELEPORT_PORTAL',
-                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE', 'GLOBAL_COLOR_SHIFT'];
+                               'WIND_GUST', 'SLIPPERY_FLOOR', 'STICKY_FLOOR', 'TELEPORT_PORTAL',
+                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE'];
       expect(effectsManager.availableEffects).toEqual(expect.arrayContaining(expectedEffects));
       expect(effectsManager.availableEffects.length).toBe(expectedEffects.length);
     });
@@ -217,14 +217,6 @@ describe('DynamicEffectsManager', () => {
       expect(mockScene.player.body.setBounce).toHaveBeenCalledWith(effectConfig.playerBounce);
     });
 
-    test('should apply GRAVITY_FLIP effect correctly', () => {
-      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.GRAVITY_FLIP;
-      effectsManager.storeOriginalValues();
-      
-      effectsManager.applyEffect('GRAVITY_FLIP', effectConfig);
-      
-      expect(mockScene.physics.world.gravity.y).toBe(300 * effectConfig.gravityMultiplier);
-    });
 
     test('should apply WIND_GUST effect correctly', () => {
       const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.WIND_GUST;
