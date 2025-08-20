@@ -84,12 +84,16 @@ test -f dist/index.html && echo "Build successful" || echo "Build failed"
 - Shows "POTATO Birthday Game" title and "Start Game" button
 - Background shows sky with clouds positioned in upper area
 
-**Gameplay Scene:**
-- Click "Start Game" button from Menu Scene
-- OR programmatically trigger: `window.game.scene.getScene('MenuScene').transitionToScene('GameScene')`
-- Shows player character, platforms, bubbles, and obstacles
-- Background shows same sky pattern but in gameplay context
-- Player can move with arrow keys and jump with spacebar
+**Gameplay Scene (CRITICAL for testing gameplay features):**
+- **Method 1**: Click "Start Game" button from Menu Scene (requires interaction)
+- **Method 2**: Wait for page load, then programmatically trigger: `window.game.scene.start('GameScene')`
+- **Method 3**: Use transition from MenuScene: `window.game.scene.getScene('MenuScene').transitionToScene('GameScene')`
+
+**Important for Screenshots:**
+- The GameScene contains the actual gameplay with player character, platforms, bubbles, and obstacles
+- Background shows same sky pattern but in gameplay context with game elements visible
+- Player character appears as an orange square that can move with arrow keys and jump with spacebar
+- Always verify the scene transition completed by checking: `window.game.scene.getScenes().filter(s => s.scene.isActive()).map(s => s.scene.key)`
 
 ## Project Structure
 
