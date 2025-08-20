@@ -82,7 +82,7 @@ test -f dist/index.html && echo "Build successful" || echo "Build failed"
 **Menu Scene (Default):**
 - Automatically loads when opening http://localhost:8080
 - Shows "POTATO Birthday Game" title and "Start Game" button
-- Background shows sky with clouds positioned in upper area
+- Background is dark, single colored
 
 **Gameplay Scene (CRITICAL for testing gameplay features):**
 - **Method 1**: Click "Start Game" button from Menu Scene (requires interaction)
