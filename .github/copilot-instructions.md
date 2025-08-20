@@ -70,11 +70,30 @@ test -f dist/index.html && echo "Build successful" || echo "Build failed"
 2. Open browser to http://localhost:8080
 3. Verify the game loads with "POTATO Birthday Game" title
 4. Verify "Start Game" button appears
-5. Test keyboard controls (arrow keys for movement, space for jump)
-6. Test touch controls on mobile/tablet simulation
-7. Verify game responds to input correctly
+5. **Click "Start Game" button to enter gameplay scene**
+6. Test keyboard controls (arrow keys for movement, space for jump)
+7. Test touch controls on mobile/tablet simulation
+8. Verify game responds to input correctly
 
 **The test suite (npm test) should be your primary validation tool. Only use Playwright or manual testing for final UI verification.**
+
+### 4. Accessing Different Game Scenes for Testing
+
+**Menu Scene (Default):**
+- Automatically loads when opening http://localhost:8080
+- Shows "POTATO Birthday Game" title and "Start Game" button
+- Background is dark, single colored
+
+**Gameplay Scene (CRITICAL for testing gameplay features):**
+- **Method 1**: Click "Start Game" button from Menu Scene (requires interaction)
+- **Method 2**: Wait for page load, then programmatically trigger: `window.game.scene.start('GameScene')`
+- **Method 3**: Use transition from MenuScene: `window.game.scene.getScene('MenuScene').transitionToScene('GameScene')`
+
+**Important for Screenshots:**
+- The GameScene contains the actual gameplay with player character, platforms, bubbles, and obstacles
+- Background shows same sky pattern but in gameplay context with game elements visible
+- Player character appears as an orange square that can move with arrow keys and jump with spacebar
+- Always verify the scene transition completed by checking: `window.game.scene.getScenes().filter(s => s.scene.isActive()).map(s => s.scene.key)`
 
 ## Project Structure
 
