@@ -1110,17 +1110,17 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Update bubble positions manually (synchronized X movement with obstacles)
+   * Update bubble positions manually (independent movement from obstacles)
    */
   updateBubbles() {
     if (!this.bubbles) return;
     
     this.bubbles.children.entries.forEach(bubble => {
       if (bubble.active) {
-        // Move bubble horizontally using delta time (matching obstacle movement exactly)
+        // Move bubble horizontally using delta time with consistent leftward movement
         // Y movement is handled by physics for natural falling
-        const effectiveSpeed = bubble.moveSpeedX * this.obstacleSpeedMultiplier;
-        bubble.x += effectiveSpeed * this.game.loop.delta / 1000;
+        // Bubbles maintain consistent movement regardless of obstacle effects for collectibility
+        bubble.x += bubble.moveSpeedX * this.game.loop.delta / 1000;
       }
     });
   }
