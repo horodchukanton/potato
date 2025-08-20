@@ -29,7 +29,7 @@ export default class PreloadScene extends Phaser.Scene {
    */
   generateCloudBackground() {
     const width = 320;
-    const height = 240;
+    const height = 600; // Match game height to prevent vertical tiling
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -50,22 +50,23 @@ export default class PreloadScene extends Phaser.Scene {
     ctx.fillRect(0, 0, width, height);
     
     // Generate fluffy white clouds with soft edges designed for seamless horizontal tiling
+    // Position clouds in upper 30% of canvas (0-180px area) for 600px height
     const clouds = [
-      // Main clouds distributed in upper 30% of canvas (0-72px area)
-      { x: 40, y: 15, width: 80, height: 40, opacity: 0.8 },
-      { x: 140, y: 5, width: 100, height: 50, opacity: 0.9 },
-      { x: 220, y: 25, width: 70, height: 35, opacity: 0.7 },
-      { x: 60, y: 12, width: 110, height: 45, opacity: 0.85 }, // Reduced height to fit
-      { x: 180, y: 32, width: 80, height: 40, opacity: 0.75 },
-      { x: 20, y: 22, width: 95, height: 45, opacity: 0.8 }, // Moved up and reduced height
-      { x: 140, y: 27, width: 85, height: 40, opacity: 0.9 }, // Moved up and reduced height
-      { x: 240, y: 32, width: 75, height: 35, opacity: 0.7 }, // Moved up and reduced height
+      // Main clouds distributed in upper 30% of canvas (0-180px area)
+      { x: 40, y: 45, width: 80, height: 40, opacity: 0.8 },
+      { x: 140, y: 15, width: 100, height: 50, opacity: 0.9 },
+      { x: 220, y: 75, width: 70, height: 35, opacity: 0.7 },
+      { x: 60, y: 36, width: 110, height: 45, opacity: 0.85 },
+      { x: 180, y: 96, width: 80, height: 40, opacity: 0.75 },
+      { x: 20, y: 66, width: 95, height: 45, opacity: 0.8 },
+      { x: 140, y: 81, width: 85, height: 40, opacity: 0.9 },
+      { x: 240, y: 96, width: 75, height: 35, opacity: 0.7 },
       
       // Edge clouds for seamless tiling - positioned in upper area
-      { x: -40, y: 17, width: 90, height: 40, opacity: 0.8 }, // Moved up and reduced height
-      { x: 280, y: 35, width: 80, height: 30, opacity: 0.8 }, // Moved up
-      { x: -25, y: 42, width: 70, height: 30, opacity: 0.75 }, // Moved up significantly and reduced height
-      { x: 290, y: 27, width: 60, height: 35, opacity: 0.7 } // Moved up and reduced height
+      { x: -40, y: 51, width: 90, height: 40, opacity: 0.8 },
+      { x: 280, y: 105, width: 80, height: 30, opacity: 0.8 },
+      { x: -25, y: 126, width: 70, height: 30, opacity: 0.75 },
+      { x: 290, y: 81, width: 60, height: 35, opacity: 0.7 }
     ];
     
     // Helper function to draw a single cloud with all its puffs
