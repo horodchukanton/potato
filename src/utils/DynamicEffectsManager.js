@@ -93,14 +93,8 @@ export default class DynamicEffectsManager {
     // Show effect notification
     this.showEffectNotification(effectConfig.name, effectConfig.color);
     
-    // Schedule effect end
-    this.effectTimer = this.scene.time.delayedCall(
-      GAME_CONFIG.EFFECTS.DYNAMIC.EFFECT_DURATION,
-      () => {
-        this.deactivateCurrentEffect();
-        this.scheduleNextEffect();
-      }
-    );
+    // Effects now end when a bubble is collected, not on a timer
+    // No effect timer is set here - effect will end on bubble collection
   }
 
   /**
@@ -148,6 +142,17 @@ export default class DynamicEffectsManager {
     if (this.scene.speedUpMusic) {
       this.scene.speedUpMusic();
     }
+  }
+
+  /**
+   * End current effect when a bubble is collected
+   * This replaces the timer-based effect ending
+   */
+  endCurrentEffectOnBubbleCollection() {
+    if (!this.currentEffect) return;
+    
+    this.deactivateCurrentEffect();
+    this.scheduleNextEffect();
   }
 
   /**

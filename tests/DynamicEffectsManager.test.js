@@ -107,8 +107,8 @@ describe('DynamicEffectsManager', () => {
 
     test('should have all configured effects available', () => {
       const expectedEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'INVERTED_CONTROLS', 'BOUNCY_MODE', 
-                               'GRAVITY_FLIP', 'WIND_GUST', 'SLIPPERY_FLOOR', 'STICKY_FLOOR', 'TELEPORT_PORTAL',
-                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE', 'GLOBAL_COLOR_SHIFT'];
+                               'WIND_GUST', 'SLIPPERY_FLOOR', 'STICKY_FLOOR', 'TELEPORT_PORTAL',
+                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE'];
       expect(effectsManager.availableEffects).toEqual(expect.arrayContaining(expectedEffects));
       expect(effectsManager.availableEffects.length).toBe(expectedEffects.length);
     });
@@ -217,14 +217,6 @@ describe('DynamicEffectsManager', () => {
       expect(mockScene.player.body.setBounce).toHaveBeenCalledWith(effectConfig.playerBounce);
     });
 
-    test('should apply GRAVITY_FLIP effect correctly', () => {
-      const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.GRAVITY_FLIP;
-      effectsManager.storeOriginalValues();
-      
-      effectsManager.applyEffect('GRAVITY_FLIP', effectConfig);
-      
-      expect(mockScene.physics.world.gravity.y).toBe(300 * effectConfig.gravityMultiplier);
-    });
 
     test('should apply WIND_GUST effect correctly', () => {
       const effectConfig = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS.WIND_GUST;
@@ -543,14 +535,14 @@ describe('DynamicEffectsManager', () => {
       expect(global.Phaser.Utils.Array.GetRandom).toHaveBeenCalledWith(effectsManager.availableEffects);
     });
 
-    test('should schedule effect end timer when activating effect', () => {
+    test('should not schedule effect end timer when activating effect (effects end on bubble collection)', () => {
       effectsManager.isActive = true; // Manually set active for test
+      const callCountBefore = mockScene.time.delayedCall.mock.calls.length;
+      
       effectsManager.activateRandomEffect();
       
-      expect(mockScene.time.delayedCall).toHaveBeenCalledWith(
-        GAME_CONFIG.EFFECTS.DYNAMIC.EFFECT_DURATION,
-        expect.any(Function)
-      );
+      // Verify that no effect timer was set (effects now end on bubble collection)
+      expect(mockScene.time.delayedCall.mock.calls.length).toBe(callCountBefore);
     });
   });
 
@@ -572,6 +564,40 @@ describe('DynamicEffectsManager', () => {
       
       expect(mockScene.physics.world.gravity.y).toBe(originalGravity);
       expect(effectsManager.currentEffect).toBe(null);
+    });
+
+    test('should end current effect on bubble collection', () => {
+      // Set up an active effect
+      effectsManager.isActive = true;
+      effectsManager.currentEffect = { key: 'GRAVITY_LOW', config: {} };
+      // Store original values to simulate proper effect setup
+      effectsManager.storeOriginalValues();
+      // Set up modified gravity as if an effect was active
+      mockScene.physics.world.gravity.y = 90; // Modified gravity from effect
+      
+      // Call the new method
+      effectsManager.endCurrentEffectOnBubbleCollection();
+      
+      // Verify effect was deactivated and normal state restored
+      expect(effectsManager.currentEffect).toBe(null);
+      expect(mockScene.physics.world.gravity.y).toBe(GAME_CONFIG.PHYSICS.GRAVITY);
+      
+      // Verify scheduleNextEffect was called
+      expect(mockScene.time.delayedCall).toHaveBeenCalledWith(
+        GAME_CONFIG.EFFECTS.DYNAMIC.NORMAL_DURATION,
+        expect.any(Function)
+      );
+    });
+
+    test('should handle bubble collection method when no effect is active', () => {
+      effectsManager.isActive = true;
+      effectsManager.currentEffect = null;
+      const callCountBefore = mockScene.time.delayedCall.mock.calls.length;
+      
+      effectsManager.endCurrentEffectOnBubbleCollection();
+      
+      // Should not schedule next effect if no current effect
+      expect(mockScene.time.delayedCall.mock.calls.length).toBe(callCountBefore);
     });
   });
 

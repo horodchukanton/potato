@@ -108,11 +108,7 @@ export const GAME_CONFIG = {
           playerBounce: 0.8,
           color: 0x2ecc71 // Green tint
         },
-        GRAVITY_FLIP: {
-          name: 'Gravity Flip',
-          gravityMultiplier: -1.0,
-          color: 0x8e44ad // Dark purple tint
-        },
+
         WIND_GUST: {
           name: 'Wind Gust',
           windForce: 150,
@@ -147,11 +143,7 @@ export const GAME_CONFIG = {
           obstacleSpeedMultiplier: -1.0,
           color: 0xa29bfe // Light purple tint
         },
-        GLOBAL_COLOR_SHIFT: {
-          name: 'Global Color Shift',
-          globalColor: 0xe84393, // Pink color for all game elements
-          color: 0xffeaa7 // Light yellow tint
-        }
+
       }
     }
   },
