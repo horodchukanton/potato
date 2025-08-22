@@ -62,18 +62,50 @@ Assets:
 |---------|-------------|-----|
 | `npm start` | Start development server with hot reload | http://localhost:8080 |
 | `npm run build` | Create production build | Creates `dist/` folder |
+| `npm test` | Run Jest test suite | Test results in terminal |
+| `npm run test:verbose` | Run tests with detailed output | - |
+| `npm run test:coverage` | Run tests with coverage report | - |
 
 ### Development Workflow
 1. **Start development**: `npm start`
 2. **Open browser**: Navigate to http://localhost:8080
 3. **Make changes**: Edit files in `src/` - changes auto-reload
-4. **Build for production**: `npm run build` when ready to deploy
+4. **Run tests**: `npm test` to validate changes
+5. **Build for production**: `npm run build` when ready to deploy
 
-### Deployment to GitHub Pages
-1. Build the project: `npm run build`
+### Testing
+The project includes a comprehensive Jest test suite with 300+ tests covering:
+- Game configuration validation
+- Game state management (localStorage operations)
+- Game mechanics and physics calculations
+- Scene functionality and UI components
+- Mobile responsiveness and touch controls
+
+Run tests with:
+```bash
+npm test              # Run all tests
+npm run test:verbose  # Detailed output
+npm run test:coverage # Coverage report
+```
+
+### Deployment
+The game is automatically deployed to GitHub Pages via GitHub Actions when changes are pushed to the master branch.
+
+**Live Game**: https://horodchukanton.github.io/potato/
+
+**Manual Deployment**:
+1. Run `npm run build` to create production build
 2. The `dist/` folder contains the deployable files
-3. Deploy `dist/` contents to GitHub Pages
-4. Game will be available at: `https://horodchukanton.github.io/potato/`
+3. GitHub Actions will automatically deploy on push to master
+
+### For Automated Agents/CI
+```bash
+# Complete setup and verification
+npm ci                    # Clean install (faster for CI)
+npm run build            # Verify build works
+test -f dist/index.html  # Verify build output exists
+npm test                 # Run test suite
+```
 
 ### Project Structure
 ```
@@ -82,27 +114,48 @@ potato/
 │   ├── scenes/          # Phaser game scenes
 │   │   ├── PreloadScene.js
 │   │   ├── MenuScene.js
-│   │   └── GameScene.js
-│   ├── objects/         # Game objects and prefabs
-│   ├── utils/           # Helper functions
+│   │   ├── GameScene.js
+│   │   └── TetrisScene.js
+│   ├── utils/           # Utility modules
+│   │   ├── GameStateManager.js
+│   │   └── DynamicEffectsManager.js
+│   ├── effects/         # Game effect classes
 │   ├── config.js        # Game configuration
 │   ├── main.js          # Game initialization
 │   └── index.html       # HTML template
-├── assets/              # Game assets (images, audio, sprites)
+├── tests/               # Jest test suite
 ├── dist/                # Built game (created by npm run build)
+├── .github/             # GitHub configuration
+│   └── workflows/       # CI/CD workflows
 └── webpack.config.js    # Build configuration
 ```
 
 ### Current Status
 ✅ Phaser framework integrated and working  
 ✅ Basic project structure established  
-✅ Test scenes implemented (Preload, Menu, Game)  
+✅ Game scenes implemented (Preload, Menu, Game, Tetris)  
 ✅ Build system configured for GitHub Pages deployment  
-🚧 Game mechanics in development  
-🚧 Asset creation pending  
+✅ Comprehensive test suite with 300+ tests  
+✅ Game mechanics and state management implemented  
+✅ Touch and keyboard controls working  
+
+## Contributing
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+- Setting up the development environment
+- Running tests and ensuring code quality
+- Submitting pull requests
+- Coding standards and conventions
+
+## License
+This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
+
+## Community Guidelines
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing to ensure a welcoming environment for all contributors.
+
+## Security
+If you discover a security vulnerability, please see our [Security Policy](SECURITY.md) for information on how to report it responsibly.
 
 ### Troubleshooting
-
 
 #### Common Issues
 - **Port already in use**: If port 8080 is busy, webpack will use the next available port
@@ -110,26 +163,13 @@ potato/
 - **Build fails**: Check Node.js version (requires 16+)
 - **Game doesn't load**: Check browser console for JavaScript errors
 
-#### Development Tips for Agents
-1. **Quick Start**: `cd /path/to/potato && npm install && npm start`
-2. **Verify Game State**: Check browser console for Phaser initialization messages
+#### Development Tips
+1. **Quick Start**: `npm install && npm start`
+2. **Run Tests**: `npm test` to validate game logic
 3. **Test Features**: Use browser dev tools to monitor game object creation
-4. **Build Verification**: After `npm run build`, serve `dist/index.html` to test production build
+4. **Build Verification**: After `npm run build`, verify `dist/index.html` exists
 
-### Deployment to GitHub Pages
-1. Run `npm run build` to create production build
-2. Copy contents of `dist/` folder to GitHub Pages source
-3. Commit and push to trigger GitHub Pages deployment
-4. Game will be available at `https://username.github.io/repository-name/`
-
-### Current Status
-✅ Phaser framework integrated and working  
-✅ Basic project structure established  
-✅ Test scenes implemented (Preload, Menu, Game)  
-✅ Build system configured for GitHub Pages deployment  
-🚧 Game mechanics in development  
-🚧 Asset creation pending
-
+#### Common Solutions
 
 **Port 8080 already in use:**
 ```bash
@@ -148,11 +188,3 @@ npm start -- --port 3000
 - Ensure you're using http://localhost:8080 (not 127.0.0.1)
 - Check firewall settings
 - Try restarting the development server
-
-### For Automated Agents/CI
-```bash
-# Complete setup and verification
-npm ci                    # Clean install (faster for CI)
-npm run build            # Verify build works
-test -f dist/index.html  # Verify build output exists
-```
