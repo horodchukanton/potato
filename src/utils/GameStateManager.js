@@ -15,6 +15,7 @@ export default class GameStateManager {
       currentPhase: GameStateManager.loadCurrentPhase(),
       tetrisLines: GameStateManager.loadTetrisLines(),
       tetrominoesUsed: GameStateManager.loadTetrominoesUsed(),
+      tetrisGrid: GameStateManager.loadTetrisGrid(),
       firstBubbleCollected: GameStateManager.loadFirstBubbleFlag(),
       playerLives: GameStateManager.loadPlayerLives(),
       audioEnabled: GameStateManager.loadAudioEnabled()
@@ -37,6 +38,9 @@ export default class GameStateManager {
     }
     if (gameState.tetrominoesUsed !== undefined) {
       GameStateManager.saveTetrominoesUsed(gameState.tetrominoesUsed);
+    }
+    if (gameState.tetrisGrid !== undefined) {
+      GameStateManager.saveTetrisGrid(gameState.tetrisGrid);
     }
     if (gameState.firstBubbleCollected !== undefined) {
       GameStateManager.saveFirstBubbleFlag(gameState.firstBubbleCollected);
@@ -176,6 +180,50 @@ export default class GameStateManager {
       localStorage.setItem(STORAGE_KEYS.TETROMINOES_USED, count.toString());
     } catch (e) {
       console.error('Failed to save tetrominoes used to localStorage:', e);
+    }
+  }
+
+  /**
+   * Load Tetris grid state from localStorage
+   * @returns {Array<Array<number>>} 2D grid array, or null if no saved state
+   */
+  static loadTetrisGrid() {
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return null;
+    }
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.TETRIS_GRID);
+      if (!saved) {
+        return null;
+      }
+      const parsed = JSON.parse(saved);
+      // Validate that it's a proper 2D array
+      if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(parsed[0])) {
+        return parsed;
+      }
+      return null;
+    } catch (e) {
+      console.error('Failed to load Tetris grid from localStorage:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Save Tetris grid state to localStorage
+   * @param {Array<Array<number>>} grid - 2D grid array representing placed pieces, or null to clear
+   */
+  static saveTetrisGrid(grid) {
+    if (!GameStateManager.isLocalStorageAvailable()) {
+      return;
+    }
+    try {
+      if (grid === null) {
+        localStorage.removeItem(STORAGE_KEYS.TETRIS_GRID);
+      } else if (grid && Array.isArray(grid)) {
+        localStorage.setItem(STORAGE_KEYS.TETRIS_GRID, JSON.stringify(grid));
+      }
+    } catch (e) {
+      console.error('Failed to save Tetris grid to localStorage:', e);
     }
   }
 

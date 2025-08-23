@@ -192,6 +192,7 @@ export const STORAGE_KEYS = {
     CURRENT_PHASE: 'current_phase',
     TETRIS_LINES: 'tetris_lines',
     TETROMINOES_USED: 'tetrominoes_used',
+    TETRIS_GRID: 'tetris_grid',
     FIRST_BUBBLE_COLLECTED: 'first_bubble_collected',
     PLAYER_LIVES: 'player_lives',
     AUDIO_ENABLED: 'audio_enabled',
