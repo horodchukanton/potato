@@ -78,6 +78,12 @@ export const GAME_CONFIG = {
       FADE_DURATION: 500,
       SCENE_TRANSITION_DURATION: 800
     },
+    CUTSCENES: {
+      GROW_DURATION: 1500,      // Duration for player growing animation (ms)
+      SHRINK_DURATION: 1500,    // Duration for player shrinking animation (ms)
+      PAUSE_DURATION: 300,      // Brief pause at peak of animation (ms)
+      FADE_DURATION: 400        // Fade duration for cutscene transitions (ms)
+    },
     // Dynamic effects system configuration
     DYNAMIC: {
       EFFECT_DURATION: 5000, // 5 seconds per effect

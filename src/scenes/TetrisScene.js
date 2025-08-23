@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SCENE_KEYS, GAME_CONFIG, STORAGE_KEYS } from '../config.js';
 import GameStateManager from '../utils/GameStateManager.js';
+import CutsceneManager from '../utils/CutsceneManager.js';
 
 /**
  * TetrisScene handles the Tetris gameplay inside character's belly
@@ -84,6 +85,9 @@ export default class TetrisScene extends Phaser.Scene {
     
     // Draw initial next piece preview
     this.drawNextPiecePreview();
+    
+    // Initialize cutscene manager
+    this.cutsceneManager = new CutsceneManager(this);
     
     console.log('TetrisScene initialized');
   }
@@ -572,7 +576,7 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
       GameStateManager.saveTetrisGrid(null);
-      this.scene.start(SCENE_KEYS.GAME);
+      this.transitionToGameWithCutscene();
     });
   }
 
@@ -651,7 +655,7 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
       GameStateManager.saveTetrisGrid(null);
-      this.scene.start(SCENE_KEYS.GAME);
+      this.transitionToGameWithCutscene();
     });
   }
 
@@ -693,7 +697,7 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
       GameStateManager.saveTetrisGrid(null);
-      this.scene.start(SCENE_KEYS.GAME);
+      this.transitionToGameWithCutscene();
     });
   }
 
@@ -747,7 +751,22 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
       GameStateManager.saveTetrisGrid(null);
-      this.scene.start(SCENE_KEYS.GAME);
+      this.transitionToGameWithCutscene();
     }
+  }
+
+  /**
+   * Transition back to GameScene with shrinking player cutscene
+   */
+  transitionToGameWithCutscene() {
+    if (!this.cutsceneManager) {
+      console.warn('CutsceneManager not initialized, falling back to direct transition');
+      this.transitionToGameWithCutscene();
+      return;
+    }
+
+    this.cutsceneManager.playShrinkingCutscene(() => {
+      this.transitionToGameWithCutscene();
+    });
   }
 }
