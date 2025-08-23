@@ -568,11 +568,7 @@ export default class TetrisScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
     returnButton.on('pointerdown', () => {
-      // Reset bubbles and tetrominoes used when transitioning back to Runner phase
-      GameStateManager.saveBubblesCollected(0);
-      GameStateManager.saveTetrominoesUsed(0);
-      GameStateManager.saveTetrisGrid(null);
-      this.scene.start(SCENE_KEYS.GAME);
+      this.returnToGameScene();
     });
   }
 
@@ -647,11 +643,7 @@ export default class TetrisScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
     returnButton.on('pointerdown', () => {
-      // Reset bubbles and tetrominoes used when transitioning back to Runner phase
-      GameStateManager.saveBubblesCollected(0);
-      GameStateManager.saveTetrominoesUsed(0);
-      GameStateManager.saveTetrisGrid(null);
-      this.scene.start(SCENE_KEYS.GAME);
+      this.returnToGameScene();
     });
   }
 
@@ -689,11 +681,7 @@ export default class TetrisScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
     returnButton.on('pointerdown', () => {
-      // Reset bubbles and tetrominoes used when transitioning back to Runner phase
-      GameStateManager.saveBubblesCollected(0);
-      GameStateManager.saveTetrominoesUsed(0);
-      GameStateManager.saveTetrisGrid(null);
-      this.scene.start(SCENE_KEYS.GAME);
+      this.returnToGameScene();
     });
   }
 
@@ -743,10 +731,28 @@ export default class TetrisScene extends Phaser.Scene {
       this.dropPiece();
     }
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
-      // Reset bubbles and tetrominoes used when transitioning back to Runner phase
-      GameStateManager.saveBubblesCollected(0);
-      GameStateManager.saveTetrominoesUsed(0);
-      GameStateManager.saveTetrisGrid(null);
+      this.returnToGameScene();
+    }
+  }
+
+  /**
+   * Transition back to GameScene with proper cleanup
+   */
+  returnToGameScene() {
+    // Reset bubbles and tetrominoes used when transitioning back to Runner phase
+    GameStateManager.saveBubblesCollected(0);
+    GameStateManager.saveTetrominoesUsed(0);
+    GameStateManager.saveTetrisGrid(null);
+    
+    // Use scene transition instead of direct scene.start to allow proper cleanup
+    if (this.cameras.main.fadeOut) {
+      this.cameras.main.fadeOut(300, 0, 0, 0);
+      
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.start(SCENE_KEYS.GAME);
+      });
+    } else {
+      // Fallback for test environment
       this.scene.start(SCENE_KEYS.GAME);
     }
   }
