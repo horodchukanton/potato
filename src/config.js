@@ -13,8 +13,8 @@ export const GAME_CONFIG = {
     PLAYER_BODY_WIDTH: 32, // Player physics body width
     PLAYER_BODY_HEIGHT: 48, // Player physics body height
   },
-  BUBBLE_COLLECTION_TARGET: 50,
-  TETRIS_LINES_TARGET: 34,
+  BUBBLE_COLLECTION_TARGET: 10,
+  TETRIS_LINES_TARGET: 5,
   // Mobile touch responsiveness settings
   TOUCH: {
     FEEDBACK_ALPHA: 1.0,
@@ -24,7 +24,7 @@ export const GAME_CONFIG = {
   // Obstacle configuration
   OBSTACLES: {
     SPAWN_DELAY_MIN: 3000, // Minimum time between obstacle spawns (ms)
-    SPAWN_DELAY_MAX: 6000, // Maximum time between obstacle spawns (ms)
+    SPAWN_DELAY_MAX: 4000, // Maximum time between obstacle spawns (ms)
     SPEED: -150, // Obstacle movement speed (negative = moving left)
     MIN_HEIGHT: 40, // Minimum obstacle height
     MAX_HEIGHT: 80, // Maximum obstacle height
@@ -111,7 +111,7 @@ export const GAME_CONFIG = {
 
         WIND_GUST: {
           name: 'Wind Gust',
-          windForce: 150,
+          windForce: 100,
           color: 0x85c1e9 // Light blue tint
         },
         SLIPPERY_FLOOR: {
@@ -151,7 +151,7 @@ export const GAME_CONFIG = {
   AUDIO: {
     MASTER_VOLUME: 0.7,
     EFFECTS_VOLUME: 0.8,
-    MUSIC_VOLUME: 0.4,
+    MUSIC_VOLUME: 0.2,
     ENABLED_BY_DEFAULT: true
   }
 };
