@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SCENE_KEYS, GAME_CONFIG, ASSET_KEYS, STORAGE_KEYS } from '../config.js';
 import GameStateManager from '../utils/GameStateManager.js';
 import DynamicEffectsManager from '../utils/DynamicEffectsManager.js';
+import CutsceneManager from '../utils/CutsceneManager.js';
 
 /**
  * GameScene handles the main running and collecting gameplay
@@ -93,6 +94,9 @@ export default class GameScene extends Phaser.Scene {
     // Initialize and start dynamic effects system
     this.dynamicEffectsManager = new DynamicEffectsManager(this);
     this.dynamicEffectsManager.start();
+    
+    // Initialize cutscene manager
+    this.cutsceneManager = new CutsceneManager(this);
   }
 
   /**
@@ -524,6 +528,33 @@ export default class GameScene extends Phaser.Scene {
    * Smooth transition to another scene
    */
   transitionToScene(sceneKey) {
+    // Use cutscene for Tetris transition, regular transition for others
+    if (sceneKey === SCENE_KEYS.TETRIS) {
+      this.transitionToTetrisWithCutscene();
+    } else {
+      this.performRegularTransition(sceneKey);
+    }
+  }
+
+  /**
+   * Transition to Tetris scene with growing player cutscene
+   */
+  transitionToTetrisWithCutscene() {
+    if (!this.cutsceneManager) {
+      console.warn('CutsceneManager not initialized, falling back to regular transition');
+      this.performRegularTransition(SCENE_KEYS.TETRIS);
+      return;
+    }
+
+    this.cutsceneManager.playGrowingCutscene(() => {
+      this.scene.start(SCENE_KEYS.TETRIS);
+    });
+  }
+
+  /**
+   * Perform regular fade transition to scene
+   */
+  performRegularTransition(sceneKey) {
     // Stop background music when leaving the scene
     this.stopAllAudio();
     
@@ -678,6 +709,11 @@ export default class GameScene extends Phaser.Scene {
     this.physics.pause();
     this.cutscenePlaying = true;
     
+    // Pause dynamic effects during cutscene
+    if (this.dynamicEffectsManager) {
+      this.dynamicEffectsManager.pause();
+    }
+    
     // Create glowing effect on player's belly with enhanced particles
     const glowEffect = this.add.circle(this.player.x, this.player.y + 10, 20, 0xffff00, 0.6);
     
@@ -705,6 +741,11 @@ export default class GameScene extends Phaser.Scene {
           }
           this.physics.resume();
           this.cutscenePlaying = false;
+          
+          // Resume dynamic effects after cutscene
+          if (this.dynamicEffectsManager) {
+            this.dynamicEffectsManager.resume();
+          }
         }
       });
     } else {
@@ -717,6 +758,11 @@ export default class GameScene extends Phaser.Scene {
         }
         this.physics.resume();
         this.cutscenePlaying = false;
+        
+        // Resume dynamic effects after cutscene
+        if (this.dynamicEffectsManager) {
+          this.dynamicEffectsManager.resume();
+        }
       });
     }
 

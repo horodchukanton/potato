@@ -8,6 +8,7 @@ export default class DynamicEffectsManager {
   constructor(scene) {
     this.scene = scene;
     this.isActive = false;
+    this.isPaused = false;
     this.currentEffect = null;
     this.effectTimer = null;
     this.normalTimer = null;
@@ -48,10 +49,43 @@ export default class DynamicEffectsManager {
   }
 
   /**
+   * Pause the dynamic effects system temporarily (e.g., during cutscenes)
+   */
+  pause() {
+    this.isPaused = true;
+    
+    // Clear any pending timers but don't deactivate current effect
+    if (this.normalTimer) {
+      this.normalTimer.remove();
+      this.normalTimer = null;
+    }
+    
+    if (this.effectTimer) {
+      this.effectTimer.remove();
+      this.effectTimer = null;
+    }
+  }
+
+  /**
+   * Resume the dynamic effects system after being paused
+   */
+  resume() {
+    if (!this.isActive) return;
+    
+    this.isPaused = false;
+    
+    // If no current effect is active, schedule the next one
+    if (!this.currentEffect) {
+      this.scheduleNextEffect();
+    }
+    // If there is a current effect, it will continue until ended normally
+  }
+
+  /**
    * Schedule the next random effect after normal period
    */
   scheduleNextEffect() {
-    if (!this.isActive) return;
+    if (!this.isActive || this.isPaused) return;
     
     this.normalTimer = this.scene.time.delayedCall(
       GAME_CONFIG.EFFECTS.DYNAMIC.NORMAL_DURATION,
@@ -65,7 +99,7 @@ export default class DynamicEffectsManager {
    * Activate a random effect from the available pool
    */
   activateRandomEffect() {
-    if (!this.isActive) return;
+    if (!this.isActive || this.isPaused) return;
     
     // Choose random effect (fallback for test environment)
     let effectKey;
@@ -152,7 +186,11 @@ export default class DynamicEffectsManager {
     if (!this.currentEffect) return;
     
     this.deactivateCurrentEffect();
-    this.scheduleNextEffect();
+    
+    // Only schedule next effect if not paused
+    if (!this.isPaused) {
+      this.scheduleNextEffect();
+    }
   }
 
   /**
