@@ -27,6 +27,11 @@ module.exports = {
           to: 'assets',
           noErrorOnMissing: true,
         },
+        {
+          from: 'src/assets/favicons',
+          to: 'favicons',
+          noErrorOnMissing: true,
+        },
       ],
     }),
   ],

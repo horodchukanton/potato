@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { SCENE_KEYS, ASSET_KEYS } from '../config.js';
-import FaviconGenerator from '../utils/FaviconGenerator.js';
 
 /**
  * PreloadScene handles loading all game assets
@@ -19,9 +18,6 @@ export default class PreloadScene extends Phaser.Scene {
 
     // Load custom sprite assets designed for game elements
     this.createPlaceholderAssets();
-
-    // Generate and inject favicons into the page
-    this.generateFavicons();
 
     // Load procedural audio assets
     this.createAudioAssets();
@@ -130,54 +126,6 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image(ASSET_KEYS.BUBBLE, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABI0lEQVR4nO2XQQ6CMBBFq3HnBVwbNm5NiEfwIiZcg2uQeBGPYEjcuiGsuQBrXU1ShunMtAxion8FtOW/zgy0de7XtUoZdChvr1DbszxHvVPdmTOdAqMCwObb3f4e6tt37SkGgm30jTlTDUwIJAhAmddF9oBnedUcLSBIAGzuG2NpQDiINTcwJeyx7xkBwOypsFOS2jEELugBADa3FgXBpuATEgGkItN+DSLA3OEH4TRsNINglin/AUkqAGtTX99fhH+AuTVYGKw+xbrIrnCdV83Fb4OFCRYl8wj45tQ91uIpGABAWPC2yko4/CMACwicc7inzJ0T/oR9155SCjJUeJTIGvApp6ZD2hMGi9ACYtKu2Ndi5wIOQiOzk1EMTOzZcHG9AaIzqC0dxtzZAAAAAElFTkSuQmCC');
     this.load.image(ASSET_KEYS.OBSTACLE, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAABQCAYAAAAOYsW+AAAB40lEQVR4nO2Z2W0DMQxEmSCFqLQtbUtTJ8kXDVoRb4pYBJlPw9bTUNdIBviXQ9d1fUd/+1EFve/b1ZYbTIFjDAAAmHO64S7wDkrl6YAJrAF3cK0Dn5XQ9TvS5PuqAq5w6nwn1jGWyQtdxblWS631nJNWchHsXZsS3AVGRV1Tra5VcKVrCjc5Bsi53pXcBM66pkLXZscAta7N4KzrdR93OaYNZOUCV46165BARV3TjrOHBP1yJuIA7DsaWk7Zg8MMXo/IOWd6kqmTRTqXES5VgItD6hhzUPqZpQOrRDC61RqMjDk7xtmZHAJn8lYYXA3FNsQg0OF0C+6C/gLjWqs6gczgTj0HXFFuy15u3jKtQADb5CwpNTocY4h7upqrreXWgJJCpY6cRmkwOsxKvR+v5a7a1VrW8S6FPGcDoTq5dx93zIW9Z5baGvbKwVlJT4xqymwLe106BtZecsVcfTL0PafUFW4tD+as49MRlwVXXcA5vZWCK3MkcWjlNiWQzAWc0wtsmVSVHQiFvYoOpNaxFGu5e3EJOKMXuPOK+gbu1lGwNM5/07EZXPkQ7gKjKme26Z3rhDgTbWPcepMI5eoqKKdjz01reyq4UtLyFM9jznXkP4hVoQ3D8nrfuRkBwPm/FNL6AZ1ELNWc8SQ8AAAAAElFTkSuQmCC');
     this.load.image(ASSET_KEYS.BACKGROUND, this.generateCloudBackground());
-  }
-
-  /**
-   * Generate and inject favicons into the page
-   */
-  generateFavicons() {
-    try {
-      // Generate all favicon sizes
-      const favicons = FaviconGenerator.generateAllFavicons();
-      
-      // Remove any existing favicons to avoid conflicts
-      this.removeExistingFavicons();
-      
-      // Add favicon link elements to the page head
-      this.addFaviconToHead('icon', favicons.favicon16, '16x16');
-      this.addFaviconToHead('icon', favicons.favicon32, '32x32');  
-      this.addFaviconToHead('icon', favicons.favicon48, '48x48');
-      this.addFaviconToHead('apple-touch-icon', favicons.appleTouchIcon, '180x180');
-      
-      // Also set the traditional favicon.ico reference
-      this.addFaviconToHead('shortcut icon', favicons.favicon32);
-      
-    } catch (error) {
-      console.warn('Failed to generate favicons:', error);
-    }
-  }
-  
-  /**
-   * Remove existing favicon elements from page head
-   */
-  removeExistingFavicons() {
-    const head = document.head;
-    const existingFavicons = head.querySelectorAll('link[rel*="icon"]');
-    existingFavicons.forEach(link => link.remove());
-  }
-  
-  /**
-   * Add a favicon link element to the page head
-   */
-  addFaviconToHead(rel, dataUrl, sizes = null) {
-    const link = document.createElement('link');
-    link.rel = rel;
-    link.type = 'image/png';
-    link.href = dataUrl;
-    if (sizes) {
-      link.sizes = sizes;
-    }
-    document.head.appendChild(link);
   }
 
   /**
