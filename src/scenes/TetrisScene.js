@@ -440,7 +440,7 @@ export default class TetrisScene extends Phaser.Scene {
    * Get current speed level
    */
   getSpeedLevel() {
-    return Math.min(10, Math.floor(this.linesCleared / 10) + 1);
+    return Math.min(20, Math.floor(this.linesCleared / 5) + 1);
   }
 
   /**
