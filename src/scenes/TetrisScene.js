@@ -572,35 +572,9 @@ export default class TetrisScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
     returnButton.on('pointerdown', () => {
-      // Reset bubbles and tetrominoes used when transitioning back to Runner phase
-      GameStateManager.saveBubblesCollected(0);
-      GameStateManager.saveTetrominoesUsed(0);
-      GameStateManager.saveTetrisGrid(null);
-      this.transitionToGameWithCutscene();
+      // Use GameStateManager to handle transition with proper cleanup
+      GameStateManager.transitionFromTetris(this, true);
     });
-  }
-
-  /**
-   * Smooth transition to another scene with proper cleanup
-   */
-  transitionToScene(sceneKey) {
-    // Ensure drop timer is stopped
-    if (this.dropTimer) {
-      this.dropTimer.destroy();
-      this.dropTimer = null;
-    }
-    
-    // Transition to the target scene
-    if (this.cameras.main.fadeOut) {
-      this.cameras.main.fadeOut(500, 0, 0, 0); // 500ms fade duration
-      
-      this.cameras.main.once('camerafadeoutcomplete', () => {
-        this.scene.start(sceneKey);
-      });
-    } else {
-      // Fallback for test environment
-      this.scene.start(sceneKey);
-    }
   }
 
   /**
@@ -644,11 +618,6 @@ export default class TetrisScene extends Phaser.Scene {
    * Handle game over
    */
   endGame() {
-    if (this.dropTimer) {
-      this.dropTimer.destroy();
-      this.dropTimer = null;
-    }
-    
     const { width, height } = this.scale;
     
     // Create game over overlay
@@ -675,12 +644,8 @@ export default class TetrisScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     
     returnButton.on('pointerdown', () => {
-      // Reset bubbles and tetrominoes used when transitioning back to Runner phase
-      GameStateManager.saveBubblesCollected(0);
-      GameStateManager.saveTetrominoesUsed(0);
-      GameStateManager.saveTetrisGrid(null);
-
-      this.transitionToGameWithCutscene();
+      // Use GameStateManager to handle transition with proper cleanup
+      GameStateManager.transitionFromTetris(this, true);
     });
   }
 
@@ -688,11 +653,6 @@ export default class TetrisScene extends Phaser.Scene {
    * Handle win condition
    */
   winGame() {
-    if (this.dropTimer) {
-      this.dropTimer.destroy();
-      this.dropTimer = null;
-    }
-    
     const { width, height } = this.scale;
     
     // Create win overlay
@@ -720,11 +680,8 @@ export default class TetrisScene extends Phaser.Scene {
     
     returnButton.on('pointerdown', () => {
       // Reset bubbles and tetrominoes used when transitioning back to Runner phase
-      GameStateManager.saveBubblesCollected(0);
-      GameStateManager.saveTetrominoesUsed(0);
-      GameStateManager.saveTetrisGrid(null);
-
-      this.transitionToGameWithCutscene();
+      // Use GameStateManager to handle transition with proper cleanup
+      GameStateManager.transitionFromTetris(this, true);
     });
   }
 
@@ -775,33 +732,9 @@ export default class TetrisScene extends Phaser.Scene {
     }
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
       // Reset bubbles and tetrominoes used when transitioning back to Runner phase
-      GameStateManager.saveBubblesCollected(0);
-      GameStateManager.saveTetrominoesUsed(0);
-      GameStateManager.saveTetrisGrid(null);
-
-      this.transitionToGameWithCutscene();
+      // Use GameStateManager to handle transition with proper cleanup
+      GameStateManager.transitionFromTetris(this, true);
     }
-  }
-
-  /**
-   * Transition back to GameScene with shrinking player cutscene
-   */
-  transitionToGameWithCutscene() {
-    // Ensure drop timer is stopped to prevent freeze issue
-    if (this.dropTimer) {
-      this.dropTimer.destroy();
-      this.dropTimer = null;
-    }
-    
-    if (!this.cutsceneManager) {
-      console.warn('CutsceneManager not initialized, falling back to direct transition');
-      this.scene.start(SCENE_KEYS.GAME);
-      return;
-    }
-
-    this.cutsceneManager.playShrinkingCutscene(() => {
-      this.scene.start(SCENE_KEYS.GAME);
-    });
   }
 
   /**

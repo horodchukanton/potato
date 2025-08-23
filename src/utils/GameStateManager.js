@@ -413,6 +413,72 @@ export default class GameStateManager {
   }
 
   /**
+   * Handle transition from TetrisScene back to GameScene with proper cleanup
+   * This centralizes all transition logic to prevent race conditions and freezing
+   * @param {Object} tetrisScene - The TetrisScene instance to transition from
+   * @param {boolean} withCutscene - Whether to play shrinking cutscene
+   */
+  static transitionFromTetris(tetrisScene, withCutscene = true) {
+    // Stop and clean up the drop timer first to prevent freeze
+    if (tetrisScene.dropTimer) {
+      tetrisScene.dropTimer.destroy();
+      tetrisScene.dropTimer = null;
+    }
+    
+    // Save final state before transition
+    GameStateManager.saveTetrisLines(tetrisScene.linesCleared);
+    GameStateManager.saveTetrominoesUsed(tetrisScene.tetrominoesUsed);
+    GameStateManager.saveTetrisGrid(tetrisScene.grid);
+    
+    // Reset bubbles and tetrominoes for next Runner phase
+    GameStateManager.saveBubblesCollected(0);
+    GameStateManager.saveTetrominoesUsed(0);
+    GameStateManager.saveTetrisGrid(null);
+    
+    if (withCutscene && tetrisScene.cutsceneManager) {
+      // Use cutscene transition
+      tetrisScene.cutsceneManager.playShrinkingCutscene(() => {
+        tetrisScene.scene.start(SCENE_KEYS.GAME);
+      });
+    } else {
+      // Direct transition (fallback or when cutscene not needed)
+      if (tetrisScene.cameras.main.fadeOut) {
+        tetrisScene.cameras.main.fadeOut(500, 0, 0, 0);
+        tetrisScene.cameras.main.once('camerafadeoutcomplete', () => {
+          tetrisScene.scene.start(SCENE_KEYS.GAME);
+        });
+      } else {
+        // Fallback for test environment
+        tetrisScene.scene.start(SCENE_KEYS.GAME);
+      }
+    }
+  }
+
+  /**
+   * Handle transition from TetrisScene to any other scene with proper cleanup
+   * @param {Object} tetrisScene - The TetrisScene instance to transition from
+   * @param {string} targetSceneKey - The scene key to transition to
+   */
+  static transitionFromTetrisToScene(tetrisScene, targetSceneKey) {
+    // Stop and clean up the drop timer first to prevent freeze
+    if (tetrisScene.dropTimer) {
+      tetrisScene.dropTimer.destroy();
+      tetrisScene.dropTimer = null;
+    }
+    
+    // Clean transition with fade effect
+    if (tetrisScene.cameras.main.fadeOut) {
+      tetrisScene.cameras.main.fadeOut(500, 0, 0, 0);
+      tetrisScene.cameras.main.once('camerafadeoutcomplete', () => {
+        tetrisScene.scene.start(targetSceneKey);
+      });
+    } else {
+      // Fallback for test environment
+      tetrisScene.scene.start(targetSceneKey);
+    }
+  }
+
+  /**
    * Check if localStorage is available and working
    * @returns {boolean} Whether localStorage is functional
    */
