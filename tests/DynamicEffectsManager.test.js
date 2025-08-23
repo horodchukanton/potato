@@ -73,6 +73,7 @@ const createMockScene = () => ({
     off: jest.fn()
   },
   effectSpeedMultiplier: 1.0,
+  effectJumpMultiplier: 1.0,
   invertedControls: false,
   windForce: 0,
   obstacleSpeedMultiplier: 1.0,
@@ -334,6 +335,9 @@ describe('DynamicEffectsManager', () => {
       effectsManager.applyEffect('SHRINK_PLAYER', effectConfig);
       
       expect(mockScene.player.setScale).toHaveBeenCalledWith(effectConfig.scaleMultiplier);
+      // Verify speed and jump multipliers are set to half
+      expect(mockScene.effectSpeedMultiplier).toBe(0.5);
+      expect(mockScene.effectJumpMultiplier).toBe(0.5);
     });
 
     test('should adjust player position when shrinking to maintain ground contact', () => {
@@ -399,6 +403,7 @@ describe('DynamicEffectsManager', () => {
       expect(mockScene.physics.world.gravity.y).toBe(300);
       expect(mockScene.physics.world.timeScale).toBe(1.0);
       expect(mockScene.effectSpeedMultiplier).toBe(1.0);
+      expect(mockScene.effectJumpMultiplier).toBe(1.0);
       expect(mockScene.invertedControls).toBe(false);
       expect(mockScene.windForce).toBe(0);
       expect(mockScene.obstacleSpeedMultiplier).toBe(1.0);
