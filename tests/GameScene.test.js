@@ -743,6 +743,61 @@ describe('GameScene Visual and Positioning Tests', () => {
       
       expect(gameScene.cutscenePlaying).toBe(true);
     });
+
+    test('should pause dynamic effects manager during cutscene', () => {
+      gameScene.dynamicEffectsManager = {
+        pause: jest.fn(),
+        resume: jest.fn()
+      };
+      
+      gameScene.triggerFirstBubbleCutscene();
+      
+      expect(gameScene.dynamicEffectsManager.pause).toHaveBeenCalled();
+    });
+
+    test('should resume dynamic effects manager after cutscene (tween completion)', () => {
+      gameScene.dynamicEffectsManager = {
+        pause: jest.fn(),
+        resume: jest.fn()
+      };
+      gameScene.tweens = {
+        add: jest.fn()
+      };
+      
+      gameScene.triggerFirstBubbleCutscene();
+      
+      // Get the tween completion callback and execute it
+      const tweenCall = gameScene.tweens.add.mock.calls.find(call => 
+        call[0].targets && call[0].onComplete
+      );
+      expect(tweenCall).toBeDefined();
+      
+      // Execute the completion callback
+      tweenCall[0].onComplete();
+      
+      expect(gameScene.dynamicEffectsManager.resume).toHaveBeenCalled();
+    });
+
+    test('should resume dynamic effects manager after cutscene (fallback completion)', () => {
+      gameScene.dynamicEffectsManager = {
+        pause: jest.fn(),
+        resume: jest.fn()
+      };
+      gameScene.tweens = null; // Force fallback path
+      
+      gameScene.triggerFirstBubbleCutscene();
+      
+      // Get the delayed call callback and execute it
+      const delayedCall = gameScene.time.delayedCall.mock.calls.find(call => 
+        call[0] === 3000 && typeof call[1] === 'function'
+      );
+      expect(delayedCall).toBeDefined();
+      
+      // Execute the delayed callback
+      delayedCall[1]();
+      
+      expect(gameScene.dynamicEffectsManager.resume).toHaveBeenCalled();
+    });
     
     test('should pause obstacle and bubble updates during cutscene', () => {
       gameScene.cutscenePlaying = true;

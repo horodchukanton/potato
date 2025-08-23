@@ -382,6 +382,7 @@ export default class GameStateManager {
       localStorage.removeItem(STORAGE_KEYS.CURRENT_PHASE);
       localStorage.removeItem(STORAGE_KEYS.TETRIS_LINES);
       localStorage.removeItem(STORAGE_KEYS.TETROMINOES_USED);
+      localStorage.removeItem(STORAGE_KEYS.TETRIS_GRID);
       localStorage.removeItem(STORAGE_KEYS.FIRST_BUBBLE_COLLECTED);
       localStorage.removeItem(STORAGE_KEYS.PLAYER_LIVES);
     } catch (e) {

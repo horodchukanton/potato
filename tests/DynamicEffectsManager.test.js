@@ -148,6 +148,76 @@ describe('DynamicEffectsManager', () => {
       expect(effectsManager.effectTimer).toBe(null);
       expect(effectsManager.normalTimer).toBe(null);
     });
+
+    test('should pause the effects system and clear timers', () => {
+      effectsManager.start();
+      const mockTimer = { remove: jest.fn() };
+      effectsManager.normalTimer = mockTimer;
+      effectsManager.effectTimer = mockTimer;
+      
+      effectsManager.pause();
+      
+      expect(effectsManager.isPaused).toBe(true);
+      expect(mockTimer.remove).toHaveBeenCalledTimes(2);
+      expect(effectsManager.normalTimer).toBe(null);
+      expect(effectsManager.effectTimer).toBe(null);
+    });
+
+    test('should resume the effects system and schedule next effect if no current effect', () => {
+      effectsManager.start();
+      effectsManager.pause();
+      mockScene.time.delayedCall.mockClear();
+      
+      effectsManager.resume();
+      
+      expect(effectsManager.isPaused).toBe(false);
+      expect(mockScene.time.delayedCall).toHaveBeenCalledWith(
+        GAME_CONFIG.EFFECTS.DYNAMIC.NORMAL_DURATION,
+        expect.any(Function)
+      );
+    });
+
+    test('should not resume if effects system is not active', () => {
+      effectsManager.isPaused = true;
+      mockScene.time.delayedCall.mockClear();
+      
+      effectsManager.resume();
+      
+      expect(effectsManager.isPaused).toBe(true);
+      expect(mockScene.time.delayedCall).not.toHaveBeenCalled();
+    });
+
+    test('should not schedule next effect when paused', () => {
+      effectsManager.start();
+      effectsManager.pause();
+      mockScene.time.delayedCall.mockClear();
+      
+      effectsManager.scheduleNextEffect();
+      
+      expect(mockScene.time.delayedCall).not.toHaveBeenCalled();
+    });
+
+    test('should not activate effects when paused', () => {
+      effectsManager.start();
+      effectsManager.pause();
+      const originalGravity = mockScene.physics.world.gravity.y;
+      
+      effectsManager.activateRandomEffect();
+      
+      expect(mockScene.physics.world.gravity.y).toBe(originalGravity);
+      expect(effectsManager.currentEffect).toBe(null);
+    });
+
+    test('should not schedule next effect after bubble collection when paused', () => {
+      effectsManager.start();
+      effectsManager.currentEffect = { key: 'TEST', config: {} };
+      effectsManager.pause();
+      mockScene.time.delayedCall.mockClear();
+      
+      effectsManager.endCurrentEffectOnBubbleCollection();
+      
+      expect(mockScene.time.delayedCall).not.toHaveBeenCalled();
+    });
   });
 
   describe('Effect Application', () => {

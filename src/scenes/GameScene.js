@@ -709,6 +709,11 @@ export default class GameScene extends Phaser.Scene {
     this.physics.pause();
     this.cutscenePlaying = true;
     
+    // Pause dynamic effects during cutscene
+    if (this.dynamicEffectsManager) {
+      this.dynamicEffectsManager.pause();
+    }
+    
     // Create glowing effect on player's belly with enhanced particles
     const glowEffect = this.add.circle(this.player.x, this.player.y + 10, 20, 0xffff00, 0.6);
     
@@ -736,6 +741,11 @@ export default class GameScene extends Phaser.Scene {
           }
           this.physics.resume();
           this.cutscenePlaying = false;
+          
+          // Resume dynamic effects after cutscene
+          if (this.dynamicEffectsManager) {
+            this.dynamicEffectsManager.resume();
+          }
         }
       });
     } else {
@@ -748,6 +758,11 @@ export default class GameScene extends Phaser.Scene {
         }
         this.physics.resume();
         this.cutscenePlaying = false;
+        
+        // Resume dynamic effects after cutscene
+        if (this.dynamicEffectsManager) {
+          this.dynamicEffectsManager.resume();
+        }
       });
     }
 
