@@ -744,15 +744,19 @@ export default class TetrisScene extends Phaser.Scene {
     GameStateManager.saveTetrominoesUsed(0);
     GameStateManager.saveTetrisGrid(null);
     
-    // Use scene transition instead of direct scene.start to allow proper cleanup
+    // Use proper scene management to ensure clean state
+    // Stop TetrisScene and start GameScene to ensure proper cleanup
     if (this.cameras.main.fadeOut) {
       this.cameras.main.fadeOut(300, 0, 0, 0);
       
       this.cameras.main.once('camerafadeoutcomplete', () => {
+        // Use scene manager to properly transition with cleanup
+        this.scene.stop(SCENE_KEYS.TETRIS);
         this.scene.start(SCENE_KEYS.GAME);
       });
     } else {
       // Fallback for test environment
+      this.scene.stop(SCENE_KEYS.TETRIS);
       this.scene.start(SCENE_KEYS.GAME);
     }
   }

@@ -33,8 +33,8 @@ describe('TetrisScene Transition Fix', () => {
       expect(mockGameStateManager.saveTetrisGrid).toHaveBeenCalledWith(null);
     });
 
-    test('should use proper scene transition with fade effect', () => {
-      const mockScene = { start: jest.fn() };
+    test('should use proper scene transition with fade effect and scene stop', () => {
+      const mockScene = { start: jest.fn(), stop: jest.fn() };
       const mockCameras = {
         main: {
           fadeOut: jest.fn(),
@@ -49,13 +49,15 @@ describe('TetrisScene Transition Fix', () => {
         mockGameStateManager.saveTetrominoesUsed(0);
         mockGameStateManager.saveTetrisGrid(null);
         
-        // Use scene transition with fade
+        // Use scene transition with fade and proper stop/start
         if (mockCameras.main.fadeOut) {
           mockCameras.main.fadeOut(300, 0, 0, 0);
           mockCameras.main.once('camerafadeoutcomplete', () => {
+            mockScene.stop(SCENE_KEYS.TETRIS);
             mockScene.start(SCENE_KEYS.GAME);
           });
         } else {
+          mockScene.stop(SCENE_KEYS.TETRIS);
           mockScene.start(SCENE_KEYS.GAME);
         }
       };
@@ -69,11 +71,12 @@ describe('TetrisScene Transition Fix', () => {
       const fadeCompleteCallback = mockCameras.main.once.mock.calls[0][1];
       fadeCompleteCallback();
       
+      expect(mockScene.stop).toHaveBeenCalledWith(SCENE_KEYS.TETRIS);
       expect(mockScene.start).toHaveBeenCalledWith(SCENE_KEYS.GAME);
     });
 
-    test('should fallback to direct scene start when fade is not available', () => {
-      const mockScene = { start: jest.fn() };
+    test('should fallback to direct scene stop/start when fade is not available', () => {
+      const mockScene = { start: jest.fn(), stop: jest.fn() };
       const mockCameras = { main: { fadeOut: null } };
 
       // Simulate the returnToGameScene method behavior with fallback
@@ -85,15 +88,18 @@ describe('TetrisScene Transition Fix', () => {
         if (mockCameras.main.fadeOut) {
           mockCameras.main.fadeOut(300, 0, 0, 0);
           mockCameras.main.once('camerafadeoutcomplete', () => {
+            mockScene.stop(SCENE_KEYS.TETRIS);
             mockScene.start(SCENE_KEYS.GAME);
           });
         } else {
+          mockScene.stop(SCENE_KEYS.TETRIS);
           mockScene.start(SCENE_KEYS.GAME);
         }
       };
 
       returnToGameScene();
 
+      expect(mockScene.stop).toHaveBeenCalledWith(SCENE_KEYS.TETRIS);
       expect(mockScene.start).toHaveBeenCalledWith(SCENE_KEYS.GAME);
     });
   });
