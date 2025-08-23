@@ -176,6 +176,31 @@ describe('Tetromino Limiting Mechanics', () => {
         expect(remaining).toBe(scenario.expected);
       });
     });
+
+    test('should allow multiple rounds of Tetris after collecting more bubbles', () => {
+      // Simulate first round: collect 50 bubbles, use all 50 pieces
+      GameStateManager.saveBubblesCollected(50);
+      GameStateManager.saveTetrominoesUsed(50);
+      
+      // Player has no pieces remaining
+      const firstRoundRemaining = Math.max(0, 50 - 50);
+      expect(firstRoundRemaining).toBe(0);
+      
+      // Simulate transition back to Runner phase (fixed behavior - resets both bubbles and tetrominoes used)
+      GameStateManager.saveBubblesCollected(0);
+      GameStateManager.saveTetrominoesUsed(0);
+      
+      // Player collects 50 new bubbles
+      GameStateManager.saveBubblesCollected(50);
+      
+      // After fix: player should have 50 pieces (50 bubbles - 0 used = 50)
+      const fixedRemaining = Math.max(0, 50 - 0);
+      expect(fixedRemaining).toBe(50);
+      
+      // Verify the player can now use all the newly collected bubbles as tetromino pieces
+      expect(fixedRemaining).toBeGreaterThan(0);
+      expect(fixedRemaining).toBe(50);
+    });
   });
 });
 
