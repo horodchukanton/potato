@@ -6,7 +6,6 @@ import InvertedControlsEffect from './InvertedControlsEffect.js';
 import BouncyModeEffect from './BouncyModeEffect.js';
 import WindGustEffect from './WindGustEffect.js';
 import SlipperyFloorEffect from './SlipperyFloorEffect.js';
-import StickyFloorEffect from './StickyFloorEffect.js';
 import TeleportPortalEffect from './TeleportPortalEffect.js';
 import ShrinkPlayerEffect from './ShrinkPlayerEffect.js';
 import ObstacleSpeedBoostEffect from './ObstacleSpeedBoostEffect.js';
@@ -24,7 +23,6 @@ export const EFFECT_REGISTRY = {
   'BOUNCY_MODE': BouncyModeEffect,
   'WIND_GUST': WindGustEffect,
   'SLIPPERY_FLOOR': SlipperyFloorEffect,
-  'STICKY_FLOOR': StickyFloorEffect,
   'TELEPORT_PORTAL': TeleportPortalEffect,
   'SHRINK_PLAYER': ShrinkPlayerEffect,
   'OBSTACLE_SPEED_BOOST': ObstacleSpeedBoostEffect,
@@ -40,7 +38,6 @@ export {
   BouncyModeEffect,
   WindGustEffect,
   SlipperyFloorEffect,
-  StickyFloorEffect,
   TeleportPortalEffect,
   ShrinkPlayerEffect,
   ObstacleSpeedBoostEffect,

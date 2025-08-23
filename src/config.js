@@ -119,11 +119,6 @@ export const GAME_CONFIG = {
           frictionMultiplier: 0.3,
           color: 0x5dade2 // Ice blue tint
         },
-        STICKY_FLOOR: {
-          name: 'Sticky Floor',
-          frictionMultiplier: 3.0,
-          color: 0xd35400 // Orange-brown tint
-        },
         TELEPORT_PORTAL: {
           name: 'Teleport Portal',
           color: 0xd63031 // Bright red tint
