@@ -680,6 +680,9 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveTetrisGrid(null);
 
       this.transitionToGameWithCutscene();
+
+      this.transitionToGameWithCutscene();
+
     });
   }
 
@@ -723,6 +726,9 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveTetrisGrid(null);
 
       this.transitionToGameWithCutscene();
+
+      this.transitionToGameWithCutscene();
+
     });
   }
 
@@ -778,6 +784,9 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveTetrisGrid(null);
 
       this.transitionToGameWithCutscene();
+
+      this.transitionToGameWithCutscene();
+
     }
   }
 
