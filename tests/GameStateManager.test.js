@@ -134,6 +134,7 @@ describe('GameStateManager Integration Tests', () => {
         currentPhase: SCENE_KEYS.GAME,
         tetrisLines: 0,
         tetrominoesUsed: 0,
+        tetrisGrid: null,
         firstBubbleCollected: false,
         playerLives: GAME_CONFIG.OBSTACLES.LIVES,
         audioEnabled: GAME_CONFIG.AUDIO.ENABLED_BY_DEFAULT
@@ -154,7 +155,9 @@ describe('GameStateManager Integration Tests', () => {
       GameStateManager.saveGameState(gameState);
       const loadedState = GameStateManager.loadGameState();
 
-      expect(loadedState).toEqual(gameState);
+      // tetrisGrid should be null when not set
+      const expectedState = { ...gameState, tetrisGrid: null };
+      expect(loadedState).toEqual(expectedState);
     });
 
     test('should save partial game state without affecting other values', () => {

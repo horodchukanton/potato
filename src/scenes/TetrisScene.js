@@ -92,11 +92,27 @@ export default class TetrisScene extends Phaser.Scene {
    * Initialize the game grid
    */
   initializeGrid() {
-    this.grid = [];
-    for (let y = 0; y < this.GRID_HEIGHT; y++) {
-      this.grid[y] = [];
-      for (let x = 0; x < this.GRID_WIDTH; x++) {
-        this.grid[y][x] = 0;
+    // Validate existing grid and reset if malformed
+    let gridIsValid = this.grid && Array.isArray(this.grid) && this.grid.length === this.GRID_HEIGHT;
+    if (gridIsValid) {
+      // Check that all rows exist and have correct dimensions
+      for (let i = 0; i < this.grid.length; i++) {
+        if (!Array.isArray(this.grid[i]) || this.grid[i].length !== this.GRID_WIDTH) {
+          gridIsValid = false;
+          console.warn('Loaded grid has invalid dimensions, resetting to empty grid');
+          break;
+        }
+      }
+    }
+    
+    // Only create a fresh grid if we don't have a valid saved grid
+    if (!gridIsValid) {
+      this.grid = [];
+      for (let y = 0; y < this.GRID_HEIGHT; y++) {
+        this.grid[y] = [];
+        for (let x = 0; x < this.GRID_WIDTH; x++) {
+          this.grid[y][x] = 0;
+        }
       }
     }
   }
@@ -555,6 +571,7 @@ export default class TetrisScene extends Phaser.Scene {
       // Reset bubbles and tetrominoes used when transitioning back to Runner phase
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
+      GameStateManager.saveTetrisGrid(null);
       this.scene.start(SCENE_KEYS.GAME);
     });
   }
@@ -633,6 +650,7 @@ export default class TetrisScene extends Phaser.Scene {
       // Reset bubbles and tetrominoes used when transitioning back to Runner phase
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
+      GameStateManager.saveTetrisGrid(null);
       this.scene.start(SCENE_KEYS.GAME);
     });
   }
@@ -674,6 +692,7 @@ export default class TetrisScene extends Phaser.Scene {
       // Reset bubbles and tetrominoes used when transitioning back to Runner phase
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
+      GameStateManager.saveTetrisGrid(null);
       this.scene.start(SCENE_KEYS.GAME);
     });
   }
@@ -686,6 +705,12 @@ export default class TetrisScene extends Phaser.Scene {
     this.bubblesCollected = GameStateManager.loadBubblesCollected();
     this.tetrominoesUsed = GameStateManager.loadTetrominoesUsed();
     this.tetrominoesRemaining = Math.max(0, this.bubblesCollected - this.tetrominoesUsed);
+    
+    // Load saved grid state if available
+    const savedGrid = GameStateManager.loadTetrisGrid();
+    if (savedGrid) {
+      this.grid = savedGrid;
+    }
   }
 
   /**
@@ -694,6 +719,7 @@ export default class TetrisScene extends Phaser.Scene {
   saveProgress() {
     GameStateManager.saveTetrisLines(this.linesCleared);
     GameStateManager.saveTetrominoesUsed(this.tetrominoesUsed);
+    GameStateManager.saveTetrisGrid(this.grid);
     GameStateManager.saveCurrentPhase(SCENE_KEYS.TETRIS);
   }
 
@@ -720,6 +746,7 @@ export default class TetrisScene extends Phaser.Scene {
       // Reset bubbles and tetrominoes used when transitioning back to Runner phase
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
+      GameStateManager.saveTetrisGrid(null);
       this.scene.start(SCENE_KEYS.GAME);
     }
   }

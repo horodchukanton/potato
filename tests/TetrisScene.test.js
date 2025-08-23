@@ -407,3 +407,179 @@ describe('TetrisScene Next Tetromino Preview', () => {
     });
   });
 });
+
+// Test suite for Tetris Grid State Persistence
+describe('Tetris Grid State Persistence', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  describe('Grid Save/Load Functionality', () => {
+    test('should save and load Tetris grid state', () => {
+      // Create a sample grid (10x20 typical Tetris grid)
+      const testGrid = [];
+      for (let y = 0; y < 20; y++) {
+        testGrid[y] = [];
+        for (let x = 0; x < 10; x++) {
+          testGrid[y][x] = (x % 2 === 0 && y > 15) ? 1 : 0; // Some pattern
+        }
+      }
+
+      // Save the grid
+      GameStateManager.saveTetrisGrid(testGrid);
+      
+      // Load the grid
+      const loadedGrid = GameStateManager.loadTetrisGrid();
+      
+      expect(loadedGrid).toEqual(testGrid);
+      expect(Array.isArray(loadedGrid)).toBe(true);
+      expect(loadedGrid.length).toBe(20);
+      expect(loadedGrid[0].length).toBe(10);
+    });
+
+    test('should return null when no grid is saved', () => {
+      const loadedGrid = GameStateManager.loadTetrisGrid();
+      expect(loadedGrid).toBeNull();
+    });
+
+    test('should handle invalid grid data gracefully', () => {
+      // Directly set invalid data in localStorage
+      localStorage.setItem('tetris_grid', 'invalid_json');
+      
+      const loadedGrid = GameStateManager.loadTetrisGrid();
+      expect(loadedGrid).toBeNull();
+    });
+
+    test('should handle non-array grid data gracefully', () => {
+      // Set non-array data
+      localStorage.setItem('tetris_grid', JSON.stringify("not_an_array"));
+      
+      const loadedGrid = GameStateManager.loadTetrisGrid();
+      expect(loadedGrid).toBeNull();
+    });
+
+    test('should clear grid state when null is saved', () => {
+      // First save a valid grid
+      const testGrid = [[1, 0], [0, 1]];
+      GameStateManager.saveTetrisGrid(testGrid);
+      expect(GameStateManager.loadTetrisGrid()).toEqual(testGrid);
+      
+      // Then save null to clear it
+      GameStateManager.saveTetrisGrid(null);
+      expect(GameStateManager.loadTetrisGrid()).toBeNull();
+    });
+  });
+
+  describe('Integration with TetrisScene Progress Loading', () => {
+    test('should restore grid state when returning to Tetris scene', () => {
+      // Create a partially filled grid
+      const savedGrid = [];
+      for (let y = 0; y < 20; y++) {
+        savedGrid[y] = [];
+        for (let x = 0; x < 10; x++) {
+          savedGrid[y][x] = (y >= 18) ? 1 : 0; // Bottom 2 rows filled
+        }
+      }
+      
+      // Save progress including grid
+      GameStateManager.saveTetrisLines(5);
+      GameStateManager.saveTetrominoesUsed(10);
+      GameStateManager.saveBubblesCollected(30);
+      GameStateManager.saveTetrisGrid(savedGrid);
+      
+      // Simulate TetrisScene loadProgress behavior
+      const linesCleared = GameStateManager.loadTetrisLines();
+      const tetrominoesUsed = GameStateManager.loadTetrominoesUsed();
+      const bubblesCollected = GameStateManager.loadBubblesCollected();
+      const loadedGrid = GameStateManager.loadTetrisGrid();
+      
+      expect(linesCleared).toBe(5);
+      expect(tetrominoesUsed).toBe(10);
+      expect(bubblesCollected).toBe(30);
+      expect(loadedGrid).toEqual(savedGrid);
+    });
+
+    test('should reset grid state when transitioning back to runner phase', () => {
+      // Set up initial Tetris state with grid
+      const testGrid = [[1, 0, 1], [0, 1, 0]];
+      GameStateManager.saveTetrisGrid(testGrid);
+      GameStateManager.saveBubblesCollected(25);
+      GameStateManager.saveTetrominoesUsed(15);
+      
+      // Verify initial state
+      expect(GameStateManager.loadTetrisGrid()).toEqual(testGrid);
+      expect(GameStateManager.loadBubblesCollected()).toBe(25);
+      expect(GameStateManager.loadTetrominoesUsed()).toBe(15);
+      
+      // Simulate transition back to runner phase (as done in TetrisScene)
+      GameStateManager.saveBubblesCollected(0);
+      GameStateManager.saveTetrominoesUsed(0);
+      GameStateManager.saveTetrisGrid(null);
+      
+      // Verify everything is reset
+      expect(GameStateManager.loadTetrisGrid()).toBeNull();
+      expect(GameStateManager.loadBubblesCollected()).toBe(0);
+      expect(GameStateManager.loadTetrominoesUsed()).toBe(0);
+    });
+
+    test('should allow multiple Tetris sessions with different grid states', () => {
+      // First session: save a grid with some pieces
+      const firstGrid = [];
+      for (let y = 0; y < 20; y++) {
+        firstGrid[y] = [];
+        for (let x = 0; x < 10; x++) {
+          firstGrid[y][x] = (y === 19 && x < 5) ? 1 : 0; // Bottom row, left half filled
+        }
+      }
+      
+      GameStateManager.saveTetrisGrid(firstGrid);
+      expect(GameStateManager.loadTetrisGrid()).toEqual(firstGrid);
+      
+      // Transition back to runner (reset)
+      GameStateManager.saveTetrisGrid(null);
+      expect(GameStateManager.loadTetrisGrid()).toBeNull();
+      
+      // Second session: save a different grid
+      const secondGrid = [];
+      for (let y = 0; y < 20; y++) {
+        secondGrid[y] = [];
+        for (let x = 0; x < 10; x++) {
+          secondGrid[y][x] = (y === 19 && x >= 5) ? 1 : 0; // Bottom row, right half filled
+        }
+      }
+      
+      GameStateManager.saveTetrisGrid(secondGrid);
+      expect(GameStateManager.loadTetrisGrid()).toEqual(secondGrid);
+      expect(GameStateManager.loadTetrisGrid()).not.toEqual(firstGrid);
+    });
+  });
+
+  describe('GameState Integration', () => {
+    test('should include tetrisGrid in complete game state', () => {
+      const testGrid = [[1, 0, 1, 0], [0, 1, 0, 1]];
+      GameStateManager.saveTetrisGrid(testGrid);
+      
+      const gameState = GameStateManager.loadGameState();
+      
+      expect(gameState).toHaveProperty('tetrisGrid');
+      expect(gameState.tetrisGrid).toEqual(testGrid);
+    });
+
+    test('should save tetrisGrid via saveGameState', () => {
+      const testGrid = [[1, 1, 0], [0, 0, 1]];
+      const gameState = {
+        tetrisGrid: testGrid,
+        bubblesCollected: 20
+      };
+      
+      GameStateManager.saveGameState(gameState);
+      
+      expect(GameStateManager.loadTetrisGrid()).toEqual(testGrid);
+      expect(GameStateManager.loadBubblesCollected()).toBe(20);
+    });
+  });
+});
