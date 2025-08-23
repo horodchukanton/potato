@@ -92,8 +92,21 @@ export default class TetrisScene extends Phaser.Scene {
    * Initialize the game grid
    */
   initializeGrid() {
-    // Only create a fresh grid if we don't already have a saved grid
-    if (!this.grid || !Array.isArray(this.grid)) {
+    // Validate existing grid and reset if malformed
+    let gridIsValid = this.grid && Array.isArray(this.grid) && this.grid.length === this.GRID_HEIGHT;
+    if (gridIsValid) {
+      // Check that all rows exist and have correct dimensions
+      for (let i = 0; i < this.grid.length; i++) {
+        if (!Array.isArray(this.grid[i]) || this.grid[i].length !== this.GRID_WIDTH) {
+          gridIsValid = false;
+          console.warn('Loaded grid has invalid dimensions, resetting to empty grid');
+          break;
+        }
+      }
+    }
+    
+    // Only create a fresh grid if we don't have a valid saved grid
+    if (!gridIsValid) {
       this.grid = [];
       for (let y = 0; y < this.GRID_HEIGHT; y++) {
         this.grid[y] = [];

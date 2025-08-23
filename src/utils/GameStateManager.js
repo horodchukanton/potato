@@ -198,9 +198,28 @@ export default class GameStateManager {
       }
       const parsed = JSON.parse(saved);
       // Validate that it's a proper 2D array
-      if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(parsed[0])) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Check that all rows exist and are arrays
+        for (let i = 0; i < parsed.length; i++) {
+          if (!Array.isArray(parsed[i])) {
+            console.warn('Invalid Tetris grid structure, discarding saved state');
+            return null;
+          }
+        }
+        
+        // For full-size Tetris grids (20x10), validate dimensions strictly
+        if (parsed.length === 20) {
+          for (let i = 0; i < parsed.length; i++) {
+            if (parsed[i].length !== 10) {
+              console.warn('Invalid Tetris grid dimensions (expected 20x10), discarding saved state');
+              return null;
+            }
+          }
+        }
+        
         return parsed;
       }
+      console.warn('Invalid Tetris grid structure, discarding saved state');
       return null;
     } catch (e) {
       console.error('Failed to load Tetris grid from localStorage:', e);
