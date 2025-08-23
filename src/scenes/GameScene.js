@@ -1096,12 +1096,12 @@ export default class GameScene extends Phaser.Scene {
   updateBackground() {
     if (!this.backgroundTileSprite) return;
     
-    // Default cloud movement: slowly drifting to the left
-    let cloudSpeed = -20; // pixels per second, negative = left movement
+    // Default cloud movement: slowly drifting to the right
+    let cloudSpeed = 20; // pixels per second, positive = right movement
     
-    // When wind gust effect is active, reverse the direction (move right)
+    // When wind gust effect is active, reverse the direction (move left)
     if (this.windForce && this.windForce > 0) {
-      cloudSpeed = 30; // Move right when wind is active, slightly faster
+      cloudSpeed = -30; // Move left when wind is active, slightly faster
     }
     
     // Apply the movement using delta time for smooth animation

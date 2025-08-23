@@ -1160,7 +1160,7 @@ describe('GameScene Visual and Positioning Tests', () => {
       };
     });
 
-    test('should move clouds slowly to the left by default', () => {
+    test('should move clouds slowly to the right by default', () => {
       const initialPosition = gameScene.backgroundTileSprite.tilePositionX;
       
       // No wind force active (default state)
@@ -1171,11 +1171,11 @@ describe('GameScene Visual and Positioning Tests', () => {
       gameScene.updateBackground();
       gameScene.updateBackground();
       
-      // Clouds should have moved left (tilePositionX should decrease for leftward movement)
-      expect(gameScene.backgroundTileSprite.tilePositionX).toBeLessThan(initialPosition);
+      // Clouds should have moved right (tilePositionX should increase for rightward movement)
+      expect(gameScene.backgroundTileSprite.tilePositionX).toBeGreaterThan(initialPosition);
     });
 
-    test('should move clouds to the right when wind gust is active', () => {
+    test('should move clouds to the left when wind gust is active', () => {
       const initialPosition = gameScene.backgroundTileSprite.tilePositionX;
       
       // Activate wind gust effect
@@ -1186,8 +1186,8 @@ describe('GameScene Visual and Positioning Tests', () => {
       gameScene.updateBackground();
       gameScene.updateBackground();
       
-      // Clouds should have moved right (tilePositionX should increase for rightward movement)
-      expect(gameScene.backgroundTileSprite.tilePositionX).toBeGreaterThan(initialPosition);
+      // Clouds should have moved left (tilePositionX should decrease for leftward movement)
+      expect(gameScene.backgroundTileSprite.tilePositionX).toBeLessThan(initialPosition);
     });
 
     test('should change cloud direction when wind effect starts and stops', () => {
