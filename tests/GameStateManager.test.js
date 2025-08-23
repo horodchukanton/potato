@@ -298,6 +298,11 @@ describe('GameStateManager Integration Tests', () => {
       GameStateManager.saveTetrominoesUsed(50);
       GameStateManager.saveFirstBubbleFlag(true);
       GameStateManager.savePlayerLives(1);
+      
+      // Add tetris grid data to test grid clearing
+      const testGrid = Array(20).fill(null).map(() => Array(10).fill(0));
+      testGrid[19] = [1,1,1,1,1,1,1,1,1,1]; // Fill bottom row
+      GameStateManager.saveTetrisGrid(testGrid);
 
       // Clear all progress
       GameStateManager.clearProgress();
@@ -310,6 +315,7 @@ describe('GameStateManager Integration Tests', () => {
       expect(gameState.tetrominoesUsed).toBe(0);
       expect(gameState.firstBubbleCollected).toBe(false);
       expect(gameState.playerLives).toBe(GAME_CONFIG.OBSTACLES.LIVES);
+      expect(gameState.tetrisGrid).toBe(null);
     });
   });
 
