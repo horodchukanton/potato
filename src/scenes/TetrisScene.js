@@ -761,12 +761,12 @@ export default class TetrisScene extends Phaser.Scene {
   transitionToGameWithCutscene() {
     if (!this.cutsceneManager) {
       console.warn('CutsceneManager not initialized, falling back to direct transition');
-      this.transitionToGameWithCutscene();
+      this.scene.start(SCENE_KEYS.GAME);
       return;
     }
 
     this.cutsceneManager.playShrinkingCutscene(() => {
-      this.transitionToGameWithCutscene();
+      this.scene.start(SCENE_KEYS.GAME);
     });
   }
 }
