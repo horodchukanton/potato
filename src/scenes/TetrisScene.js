@@ -646,6 +646,7 @@ export default class TetrisScene extends Phaser.Scene {
   endGame() {
     if (this.dropTimer) {
       this.dropTimer.destroy();
+      this.dropTimer = null;
     }
     
     const { width, height } = this.scale;
@@ -689,6 +690,7 @@ export default class TetrisScene extends Phaser.Scene {
   winGame() {
     if (this.dropTimer) {
       this.dropTimer.destroy();
+      this.dropTimer = null;
     }
     
     const { width, height } = this.scale;
@@ -800,5 +802,21 @@ export default class TetrisScene extends Phaser.Scene {
     this.cutsceneManager.playShrinkingCutscene(() => {
       this.scene.start(SCENE_KEYS.GAME);
     });
+  }
+
+  /**
+   * Scene lifecycle method called when scene is stopped/shutdown
+   */
+  shutdown() {
+    // Clean up the drop timer
+    if (this.dropTimer) {
+      this.dropTimer.destroy();
+      this.dropTimer = null;
+    }
+    
+    // Clean up cutscene manager
+    if (this.cutsceneManager) {
+      this.cutsceneManager = null;
+    }
   }
 }
