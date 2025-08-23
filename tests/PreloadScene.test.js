@@ -386,4 +386,85 @@ describe('PreloadScene', () => {
       expect(progressBar[2]).toBeLessThanOrEqual(progressBg[2]); // max width comparison
     });
   });
+
+  describe('Favicon Integration', () => {
+    let originalCreateElement;
+    let originalQuerySelectorAll;
+    let originalAppendChild;
+    
+    beforeEach(() => {
+      // Mock DOM manipulation functions
+      originalCreateElement = document.createElement;
+      originalQuerySelectorAll = document.head.querySelectorAll;
+      originalAppendChild = document.head.appendChild;
+      
+      document.createElement = jest.fn().mockImplementation((tagName) => {
+        if (tagName === 'link') {
+          return {
+            rel: '',
+            type: '',
+            href: '',
+            sizes: ''
+          };
+        }
+        return originalCreateElement.call(document, tagName);
+      });
+      
+      document.head.querySelectorAll = jest.fn().mockReturnValue([]);
+      document.head.appendChild = jest.fn();
+    });
+    
+    afterEach(() => {
+      document.createElement = originalCreateElement;
+      document.head.querySelectorAll = originalQuerySelectorAll;
+      document.head.appendChild = originalAppendChild;
+    });
+    
+    test('should generate favicons during preload', () => {
+      preloadScene.preload();
+      
+      // Should call appendChild to add favicon links
+      expect(document.head.appendChild).toHaveBeenCalled();
+      
+      // Should create link elements for favicons
+      expect(document.createElement).toHaveBeenCalledWith('link');
+    });
+    
+    test('should generate multiple favicon sizes', () => {
+      preloadScene.generateFavicons();
+      
+      // Should create multiple favicon link elements
+      const linkCreationCalls = document.createElement.mock.calls.filter(call => call[0] === 'link');
+      expect(linkCreationCalls.length).toBeGreaterThan(1);
+      
+      // Should append multiple links to head
+      expect(document.head.appendChild).toHaveBeenCalledTimes(5); // 4 standard sizes + shortcut icon
+    });
+    
+    test('should handle favicon generation errors gracefully', () => {
+      // Mock console.warn to check error handling
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      
+      // Simulate error by making createElement throw
+      document.createElement = jest.fn().mockImplementation(() => {
+        throw new Error('Canvas not available');
+      });
+      
+      preloadScene.generateFavicons();
+      
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Failed to generate favicons:', expect.any(Error));
+      
+      consoleWarnSpy.mockRestore();
+    });
+    
+    test('should remove existing favicons before adding new ones', () => {
+      const mockExistingFavicon = { remove: jest.fn() };
+      document.head.querySelectorAll = jest.fn().mockReturnValue([mockExistingFavicon]);
+      
+      preloadScene.removeExistingFavicons();
+      
+      expect(document.head.querySelectorAll).toHaveBeenCalledWith('link[rel*="icon"]');
+      expect(mockExistingFavicon.remove).toHaveBeenCalled();
+    });
+  });
 });
