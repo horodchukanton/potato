@@ -41,6 +41,7 @@ export default class GameScene extends Phaser.Scene {
     // Dynamic effects system properties
     this.dynamicEffectsManager = null;
     this.effectSpeedMultiplier = 1.0;
+    this.effectJumpMultiplier = 1.0;
     this.invertedControls = false;
     this.windForce = 0;
     this.obstacleSpeedMultiplier = 1.0;
@@ -1223,7 +1224,8 @@ export default class GameScene extends Phaser.Scene {
     const isOnGround = player.body.touching.down || Math.abs(playerBottom - groundTop) <= 2; // 2px tolerance
     
     if (wantsToJump && isOnGround) {
-      player.body.setVelocityY(GAME_CONFIG.PHYSICS.JUMP_VELOCITY);
+      const effectiveJumpVelocity = GAME_CONFIG.PHYSICS.JUMP_VELOCITY * this.effectJumpMultiplier;
+      player.body.setVelocityY(effectiveJumpVelocity);
       
       // Play jump sound effect
       this.playSound('jump');

@@ -1069,6 +1069,7 @@ describe('GameScene Visual and Positioning Tests', () => {
       
       expect(gameScene.dynamicEffectsManager).toBeDefined();
       expect(gameScene.effectSpeedMultiplier).toBe(1.0);
+      expect(gameScene.effectJumpMultiplier).toBe(1.0);
       expect(gameScene.invertedControls).toBe(false);
     });
 
@@ -1089,6 +1090,28 @@ describe('GameScene Visual and Positioning Tests', () => {
       
       const expectedSpeed = GAME_CONFIG.PHYSICS.PLAYER_SPEED * 1.8;
       expect(gameScene.player.body.setVelocityX).toHaveBeenCalledWith(expectedSpeed);
+    });
+
+    test('should handle effect jump multiplier in player movement', () => {
+      const gameScene = new GameScene();
+      gameScene.init();
+      gameScene.create();
+      
+      // Set up a jump reduction effect (like shrink player)
+      gameScene.effectJumpMultiplier = 0.5;
+      
+      // Mock input for jumping
+      gameScene.cursors.left.isDown = false;
+      gameScene.cursors.right.isDown = false;
+      gameScene.spaceKey.isDown = true;
+      
+      // Mock player on ground
+      gameScene.player.body.touching.down = true;
+      
+      gameScene.handlePlayerMovement();
+      
+      const expectedJumpVelocity = GAME_CONFIG.PHYSICS.JUMP_VELOCITY * 0.5;
+      expect(gameScene.player.body.setVelocityY).toHaveBeenCalledWith(expectedJumpVelocity);
     });
 
     test('should handle inverted controls effect', () => {
