@@ -1088,6 +1088,11 @@ export default class GameScene extends Phaser.Scene {
     this.handlePlayerMovement();
     this.updateObstacles();
     this.updateBubbles();
+    
+    // Emit update event for dynamic effects that need continuous monitoring
+    if (this.events) {
+      this.events.emit('update');
+    }
   }
 
   /**
