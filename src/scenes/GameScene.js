@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { SCENE_KEYS, GAME_CONFIG, ASSET_KEYS, STORAGE_KEYS } from '../config.js';
 import GameStateManager from '../utils/GameStateManager.js';
 import DynamicEffectsManager from '../utils/DynamicEffectsManager.js';
-import CutsceneManager from '../utils/CutsceneManager.js';
+import TransitionManager from '../utils/TransitionManager.js';
 
 /**
  * GameScene handles the main running and collecting gameplay
@@ -95,8 +95,8 @@ export default class GameScene extends Phaser.Scene {
     this.dynamicEffectsManager = new DynamicEffectsManager(this);
     this.dynamicEffectsManager.start();
     
-    // Initialize cutscene manager
-    this.cutsceneManager = new CutsceneManager(this);
+    // Initialize transition manager
+    this.transitionManager = new TransitionManager(this);
   }
 
   /**
@@ -528,11 +528,12 @@ export default class GameScene extends Phaser.Scene {
    * Smooth transition to another scene
    */
   transitionToScene(sceneKey) {
-    // Use cutscene for Tetris transition, regular transition for others
-    if (sceneKey === SCENE_KEYS.TETRIS) {
-      this.transitionToTetrisWithCutscene();
+    // Use TransitionManager for all transitions
+    if (this.transitionManager) {
+      this.transitionManager.transitionToScene(sceneKey);
     } else {
-      this.performRegularTransition(sceneKey);
+      console.warn('TransitionManager not initialized, falling back to direct transition');
+      this.scene.start(sceneKey);
     }
   }
 
@@ -540,15 +541,13 @@ export default class GameScene extends Phaser.Scene {
    * Transition to Tetris scene with growing player cutscene
    */
   transitionToTetrisWithCutscene() {
-    if (!this.cutsceneManager) {
-      console.warn('CutsceneManager not initialized, falling back to regular transition');
+    if (!this.transitionManager) {
+      console.warn('TransitionManager not initialized, falling back to regular transition');
       this.performRegularTransition(SCENE_KEYS.TETRIS);
       return;
     }
 
-    this.cutsceneManager.playGrowingCutscene(() => {
-      this.scene.start(SCENE_KEYS.TETRIS);
-    });
+    this.transitionManager.transitionToScene(SCENE_KEYS.TETRIS);
   }
 
   /**
@@ -1451,5 +1450,13 @@ export default class GameScene extends Phaser.Scene {
       this.invulnerabilityTimer.remove();
       this.invulnerabilityTimer = null;
     }
+
+    // Clean up transition manager
+    if (this.transitionManager) {
+      this.transitionManager.destroy();
+      this.transitionManager = null;
+    }
+    
+    console.log('GameScene shutdown completed');
   }
 }

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { SCENE_KEYS, GAME_CONFIG, STORAGE_KEYS } from '../config.js';
 import GameStateManager from '../utils/GameStateManager.js';
-import CutsceneManager from '../utils/CutsceneManager.js';
+import TransitionManager from '../utils/TransitionManager.js';
 
 /**
  * TetrisScene handles the Tetris gameplay inside character's belly
@@ -86,8 +86,8 @@ export default class TetrisScene extends Phaser.Scene {
     // Draw initial next piece preview
     this.drawNextPiecePreview();
     
-    // Initialize cutscene manager
-    this.cutsceneManager = new CutsceneManager(this);
+    // Initialize transition manager
+    this.transitionManager = new TransitionManager(this);
     
     console.log('TetrisScene initialized');
   }
@@ -759,14 +759,33 @@ export default class TetrisScene extends Phaser.Scene {
    * Transition back to GameScene with shrinking player cutscene
    */
   transitionToGameWithCutscene() {
-    if (!this.cutsceneManager) {
-      console.warn('CutsceneManager not initialized, falling back to direct transition');
+    if (!this.transitionManager) {
+      console.warn('TransitionManager not initialized, falling back to direct transition');
       this.scene.start(SCENE_KEYS.GAME);
       return;
     }
 
-    this.cutsceneManager.playShrinkingCutscene(() => {
-      this.scene.start(SCENE_KEYS.GAME);
-    });
+    this.transitionManager.transitionToScene(SCENE_KEYS.GAME);
+  }
+
+  /**
+   * Scene shutdown cleanup
+   * Properly clean up timers and resources before scene is destroyed
+   */
+  shutdown() {
+    // Clean up drop timer to prevent issues on scene restart
+    if (this.dropTimer) {
+      this.dropTimer.destroy();
+      this.dropTimer = null;
+    }
+
+    // Clean up transition manager
+    if (this.transitionManager) {
+      this.transitionManager.destroy();
+      this.transitionManager = null;
+    }
+
+    // Clean up any other timers or resources if needed
+    console.log('TetrisScene shutdown completed');
   }
 }
