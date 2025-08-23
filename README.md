@@ -2,14 +2,9 @@
 
 ## Quick Start
 
-**For immediate development:**
 ```bash
 npm install          # Install dependencies
 npm start           # Start development server (http://localhost:8080)
-```
-
-**For building/deployment:**
-```bash
 npm run build       # Create production build in dist/
 ```
 
@@ -149,12 +144,6 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 ## License
 This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
 
-## Community Guidelines
-Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing to ensure a welcoming environment for all contributors.
-
-## Security
-If you discover a security vulnerability, please see our [Security Policy](SECURITY.md) for information on how to report it responsibly.
-
 ### Troubleshooting
 
 #### Common Issues
@@ -164,10 +153,9 @@ If you discover a security vulnerability, please see our [Security Policy](SECUR
 - **Game doesn't load**: Check browser console for JavaScript errors
 
 #### Development Tips
-1. **Quick Start**: `npm install && npm start`
-2. **Run Tests**: `npm test` to validate game logic
-3. **Test Features**: Use browser dev tools to monitor game object creation
-4. **Build Verification**: After `npm run build`, verify `dist/index.html` exists
+1. **Run Tests**: `npm test` to validate game logic
+2. **Test Features**: Use browser dev tools to monitor game object creation
+3. **Build Verification**: After `npm run build`, verify `dist/index.html` exists
 
 #### Common Solutions
 

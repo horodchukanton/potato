@@ -137,13 +137,7 @@ We welcome:
 - Test improvements
 - Documentation updates
 
-## Code of Conduct
 
-Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a welcoming environment for all contributors.
-
-## Security
-
-If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) for responsible disclosure.
 
 ## Questions?
 
