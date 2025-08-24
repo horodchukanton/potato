@@ -39,6 +39,7 @@ export default class TetrisScene extends Phaser.Scene {
     this.dropSpeed = 1000; // Initial drop speed in milliseconds
     this.linesCleared = 0;
     this.gameOver = false;
+    this.isPaused = false; // Flag to pause gameplay when no pieces available
     this.pieces = [];
     
     // Tetromino limitation tracking
@@ -256,7 +257,7 @@ export default class TetrisScene extends Phaser.Scene {
   spawnNewPiece() {
     // Check if we have tetrominoes remaining to use
     if (this.tetrominoesRemaining <= 0) {
-      this.endGameNoMorePieces();
+      this.pauseGameNoMorePieces();
       return;
     }
     
@@ -318,7 +319,7 @@ export default class TetrisScene extends Phaser.Scene {
    * Move piece left
    */
   movePieceLeft() {
-    if (!this.gameOver && this.currentPiece && !this.isColliding(this.currentX - 1, this.currentY, this.currentPiece.shape)) {
+    if (!this.gameOver && !this.isPaused && this.currentPiece && !this.isColliding(this.currentX - 1, this.currentY, this.currentPiece.shape)) {
       this.currentX--;
       this.redrawPieces();
     }
@@ -328,7 +329,7 @@ export default class TetrisScene extends Phaser.Scene {
    * Move piece right
    */
   movePieceRight() {
-    if (!this.gameOver && this.currentPiece && !this.isColliding(this.currentX + 1, this.currentY, this.currentPiece.shape)) {
+    if (!this.gameOver && !this.isPaused && this.currentPiece && !this.isColliding(this.currentX + 1, this.currentY, this.currentPiece.shape)) {
       this.currentX++;
       this.redrawPieces();
     }
@@ -338,7 +339,7 @@ export default class TetrisScene extends Phaser.Scene {
    * Rotate piece
    */
   rotatePiece() {
-    if (!this.gameOver && this.currentPiece) {
+    if (!this.gameOver && !this.isPaused && this.currentPiece) {
       const rotatedShape = this.rotateMatrix(this.currentPiece.shape);
       if (!this.isColliding(this.currentX, this.currentY, rotatedShape)) {
         this.currentPiece.shape = rotatedShape;
@@ -369,7 +370,7 @@ export default class TetrisScene extends Phaser.Scene {
    * Drop piece one step
    */
   dropPiece() {
-    if (!this.gameOver && this.currentPiece) {
+    if (!this.gameOver && !this.isPaused && this.currentPiece) {
       if (!this.isColliding(this.currentX, this.currentY + 1, this.currentPiece.shape)) {
         this.currentY++;
         this.redrawPieces();
@@ -527,18 +528,18 @@ export default class TetrisScene extends Phaser.Scene {
   }
 
   /**
-   * Handle game end when no more tetrominoes are available
+   * Pause the game when no more tetrominoes are available
    */
-  endGameNoMorePieces() {
+  pauseGameNoMorePieces() {
     if (this.dropTimer) {
       this.dropTimer.destroy();
     }
     
-    this.gameOver = true;
+    this.isPaused = true;
     
     const { width, height } = this.scale;
     
-    // Create end game overlay
+    // Create pause overlay
     const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.8);
     
     this.add.text(width / 2, height / 2 - 80, 'No More Pieces!', {
@@ -618,12 +619,14 @@ export default class TetrisScene extends Phaser.Scene {
   }
 
   /**
-   * Handle game over
+   * Handle game over (no space left or other terminal conditions)
    */
   endGame() {
     if (this.dropTimer) {
       this.dropTimer.destroy();
     }
+    
+    this.gameOver = true;
     
     const { width, height } = this.scale;
     
@@ -660,12 +663,14 @@ export default class TetrisScene extends Phaser.Scene {
   }
 
   /**
-   * Handle win condition
+   * Handle win condition (lines goal met)
    */
   winGame() {
     if (this.dropTimer) {
       this.dropTimer.destroy();
     }
+    
+    this.gameOver = true;
     
     const { width, height } = this.scale;
     
@@ -731,7 +736,7 @@ export default class TetrisScene extends Phaser.Scene {
    * Update loop
    */
   update() {
-    if (this.gameOver) return;
+    if (this.gameOver || this.isPaused) return;
     
     // Handle input with some basic key repeat prevention
     if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {

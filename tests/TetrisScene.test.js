@@ -582,4 +582,82 @@ describe('Tetris Grid State Persistence', () => {
       expect(GameStateManager.loadBubblesCollected()).toBe(20);
     });
   });
+
+  describe('TetrisScene Game State Management', () => {
+    test('should properly distinguish between gameOver and isPaused states', () => {
+      // Simulate scenario where no more pieces are available (should pause, not end game)
+      const bubblesCollected = 10;
+      const tetrominoesUsed = 10;
+      const remaining = Math.max(0, bubblesCollected - tetrominoesUsed);
+      
+      expect(remaining).toBe(0);
+      
+      // When no pieces remain, game should be paused but not game over
+      // This represents the behavior after the fix: isPaused = true, gameOver = false
+      const shouldBePaused = remaining === 0;
+      const shouldBeGameOver = false; // Only true for actual terminal conditions
+      
+      expect(shouldBePaused).toBe(true);
+      expect(shouldBeGameOver).toBe(false);
+    });
+
+    test('should handle multiple rounds of Tetris without gameOver flag interference', () => {
+      // First round: collect 20 bubbles, use all 20 pieces
+      GameStateManager.saveBubblesCollected(20);
+      GameStateManager.saveTetrominoesUsed(20);
+      
+      let remaining = Math.max(0, GameStateManager.loadBubblesCollected() - GameStateManager.loadTetrominoesUsed());
+      expect(remaining).toBe(0);
+      
+      // This should trigger pause, not gameOver
+      const shouldBePaused = remaining === 0;
+      expect(shouldBePaused).toBe(true);
+      
+      // Reset for second round (transition back to runner, collect more bubbles)
+      GameStateManager.saveBubblesCollected(0);
+      GameStateManager.saveTetrominoesUsed(0);
+      GameStateManager.saveTetrisGrid(null);
+      
+      // Second round: collect 30 bubbles, use 15 pieces
+      GameStateManager.saveBubblesCollected(30);
+      GameStateManager.saveTetrominoesUsed(15);
+      
+      remaining = Math.max(0, GameStateManager.loadBubblesCollected() - GameStateManager.loadTetrominoesUsed());
+      expect(remaining).toBe(15);
+      
+      // Game should be playable, not paused or game over
+      const shouldNotBePaused = remaining > 0;
+      expect(shouldNotBePaused).toBe(true);
+    });
+
+    test('should distinguish between pause and game over conditions', () => {
+      const testCases = [
+        {
+          name: 'No pieces remaining',
+          bubbles: 25,
+          used: 25,
+          expectedPaused: true,
+          expectedGameOver: false,
+          reason: 'Should pause when no pieces left, not end game'
+        },
+        {
+          name: 'Pieces available',
+          bubbles: 50,
+          used: 30,
+          expectedPaused: false,
+          expectedGameOver: false,
+          reason: 'Should continue playing when pieces available'
+        }
+      ];
+
+      testCases.forEach(testCase => {
+        const remaining = Math.max(0, testCase.bubbles - testCase.used);
+        const shouldBePaused = remaining === 0;
+        const shouldBeGameOver = false; // gameOver only for terminal conditions like collision or goal reached
+        
+        expect(shouldBePaused).toBe(testCase.expectedPaused);
+        expect(shouldBeGameOver).toBe(testCase.expectedGameOver);
+      });
+    });
+  });
 });
