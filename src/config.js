@@ -13,8 +13,8 @@ export const GAME_CONFIG = {
     PLAYER_BODY_WIDTH: 32, // Player physics body width
     PLAYER_BODY_HEIGHT: 48, // Player physics body height
   },
-  BUBBLE_COLLECTION_TARGET: 10,
-  TETRIS_LINES_TARGET: 5,
+  BUBBLE_COLLECTION_TARGET: 50,
+  TETRIS_LINES_TARGET: 34,
   // Mobile touch responsiveness settings
   TOUCH: {
     FEEDBACK_ALPHA: 1.0,

@@ -56,7 +56,7 @@ export default class TetrisScene extends Phaser.Scene {
     
     // Load saved progress
     this.loadProgress();
-    
+
     // Create background
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e);
     
@@ -370,7 +370,7 @@ export default class TetrisScene extends Phaser.Scene {
    * Drop piece one step
    */
   dropPiece() {
-    if (!this.gameOver && !this.isPaused && this.currentPiece) {
+    if (!this.isPaused && this.currentPiece) {
       if (!this.isColliding(this.currentX, this.currentY + 1, this.currentPiece.shape)) {
         this.currentY++;
         this.redrawPieces();
@@ -477,6 +477,7 @@ export default class TetrisScene extends Phaser.Scene {
    * Start drop timer
    */
   startDropTimer() {
+    this.isPaused = false
     this.dropTimer = this.time.addEvent({
       delay: this.dropSpeed,
       callback: this.dropPiece,
