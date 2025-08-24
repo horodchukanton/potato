@@ -678,14 +678,14 @@ export default class TetrisScene extends Phaser.Scene {
     // Create win overlay
     const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.8);
     
-    this.add.text(width / 2, height / 2 - 50, 'Happy Birthday!', {
+    this.add.text(width / 2, height / 2 - 50, '🎂 Вітаємо, Андрій!', {
       font: '32px Arial',
       fill: '#00ff00',
       stroke: '#ffffff',
       strokeThickness: 2
     }).setOrigin(0.5);
     
-    this.add.text(width / 2, height / 2, `Congratulations! You cleared ${this.linesCleared} lines!`, {
+    this.add.text(width / 2, height / 2, `🥳 Тепер подивись в пральну машинку 🥳`, {
       font: '20px Arial',
       fill: '#ffffff'
     }).setOrigin(0.5);
