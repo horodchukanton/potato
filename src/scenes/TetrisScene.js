@@ -576,6 +576,8 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
       GameStateManager.saveTetrisGrid(null);
+      // Reset player lives to prevent gameOver state from carrying over
+      GameStateManager.savePlayerLives(GAME_CONFIG.OBSTACLES.LIVES);
       this.transitionToGameWithCutscene();
     });
   }
@@ -655,6 +657,8 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
       GameStateManager.saveTetrisGrid(null);
+      // Reset player lives to prevent gameOver state from carrying over
+      GameStateManager.savePlayerLives(GAME_CONFIG.OBSTACLES.LIVES);
       this.transitionToGameWithCutscene();
     });
   }
@@ -697,6 +701,8 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
       GameStateManager.saveTetrisGrid(null);
+      // Reset player lives to prevent gameOver state from carrying over
+      GameStateManager.savePlayerLives(GAME_CONFIG.OBSTACLES.LIVES);
       this.transitionToGameWithCutscene();
     });
   }
@@ -751,6 +757,8 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveBubblesCollected(0);
       GameStateManager.saveTetrominoesUsed(0);
       GameStateManager.saveTetrisGrid(null);
+      // Reset player lives to prevent gameOver state from carrying over
+      GameStateManager.savePlayerLives(GAME_CONFIG.OBSTACLES.LIVES);
       this.transitionToGameWithCutscene();
     }
   }
