@@ -152,20 +152,40 @@ export default class TetrisScene extends Phaser.Scene {
       fill: '#cccccc'
     });
     
-    this.add.text(50, 240, 'Arrow Keys: Move', {
-      font: '14px Arial',
-      fill: '#cccccc'
-    });
+    // Show different instructions based on device type
+    const isMobile = this.sys.game.device.input.touch;
     
-    this.add.text(50, 260, 'Up: Rotate', {
-      font: '14px Arial',
-      fill: '#cccccc'
-    });
-    
-    this.add.text(50, 280, 'Down: Drop Fast', {
-      font: '14px Arial',
-      fill: '#cccccc'
-    });
+    if (isMobile) {
+      this.add.text(50, 240, 'Touch Left/Right: Move', {
+        font: '14px Arial',
+        fill: '#cccccc'
+      });
+      
+      this.add.text(50, 260, 'Touch Top: Rotate', {
+        font: '14px Arial',
+        fill: '#cccccc'
+      });
+      
+      this.add.text(50, 280, 'Touch Bottom: Drop Fast', {
+        font: '14px Arial',
+        fill: '#cccccc'
+      });
+    } else {
+      this.add.text(50, 240, 'Arrow Keys: Move', {
+        font: '14px Arial',
+        fill: '#cccccc'
+      });
+      
+      this.add.text(50, 260, 'Up: Rotate', {
+        font: '14px Arial',
+        fill: '#cccccc'
+      });
+      
+      this.add.text(50, 280, 'Down: Drop Fast', {
+        font: '14px Arial',
+        fill: '#cccccc'
+      });
+    }
     
     // Back to game button
     this.add.text(50, 320, 'ESC: Return to Game', {
@@ -235,6 +255,149 @@ export default class TetrisScene extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.LEFT,
       Phaser.Input.Keyboard.KeyCodes.RIGHT
     ]);
+    
+    // Set up touch controls
+    this.createTouchControls();
+  }
+
+  /**
+   * Create touch controls for mobile devices
+   */
+  createTouchControls() {
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    // Touch input state
+    this.touchInput = {
+      left: false,
+      right: false,
+      rotate: false,
+      drop: false
+    };
+    
+    // Create invisible touch areas
+    // Left side for moving left (30% of screen width)
+    this.leftTouchArea = this.add.rectangle(0, 0, width * 0.3, height, 0x000000, 0)
+      .setOrigin(0, 0)
+      .setInteractive()
+      .setDepth(-1);
+    
+    // Right side for moving right (30% of screen width)
+    this.rightTouchArea = this.add.rectangle(width * 0.7, 0, width * 0.3, height, 0x000000, 0)
+      .setOrigin(0, 0)
+      .setInteractive()
+      .setDepth(-1);
+    
+    // Top area for rotation (middle 40% width, top 50% height)
+    this.rotateTouchArea = this.add.rectangle(width * 0.3, 0, width * 0.4, height * 0.5, 0x000000, 0)
+      .setOrigin(0, 0)
+      .setInteractive()
+      .setDepth(-1);
+    
+    // Bottom area for fast drop (middle 40% width, bottom 50% height)
+    this.dropTouchArea = this.add.rectangle(width * 0.3, height * 0.5, width * 0.4, height * 0.5, 0x000000, 0)
+      .setOrigin(0, 0)
+      .setInteractive()
+      .setDepth(-1);
+    
+    // Touch events for left movement
+    this.leftTouchArea.on('pointerdown', () => {
+      this.touchInput.left = true;
+    });
+    
+    this.leftTouchArea.on('pointerup', () => {
+      this.touchInput.left = false;
+    });
+    
+    this.leftTouchArea.on('pointerout', () => {
+      this.touchInput.left = false;
+    });
+    
+    // Touch events for right movement
+    this.rightTouchArea.on('pointerdown', () => {
+      this.touchInput.right = true;
+    });
+    
+    this.rightTouchArea.on('pointerup', () => {
+      this.touchInput.right = false;
+    });
+    
+    this.rightTouchArea.on('pointerout', () => {
+      this.touchInput.right = false;
+    });
+    
+    // Touch events for rotation
+    this.rotateTouchArea.on('pointerdown', () => {
+      this.touchInput.rotate = true;
+    });
+    
+    this.rotateTouchArea.on('pointerup', () => {
+      this.touchInput.rotate = false;
+    });
+    
+    this.rotateTouchArea.on('pointerout', () => {
+      this.touchInput.rotate = false;
+    });
+    
+    // Touch events for fast drop
+    this.dropTouchArea.on('pointerdown', () => {
+      this.touchInput.drop = true;
+    });
+    
+    this.dropTouchArea.on('pointerup', () => {
+      this.touchInput.drop = false;
+    });
+    
+    this.dropTouchArea.on('pointerout', () => {
+      this.touchInput.drop = false;
+    });
+    
+    // Add visual indicators for touch controls
+    this.createTouchIndicators();
+  }
+
+  /**
+   * Create visual indicators for touch controls
+   */
+  createTouchIndicators() {
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    // Only show touch indicators on mobile devices
+    const isMobile = this.sys.game.device.input.touch;
+    const alpha = isMobile ? GAME_CONFIG.TOUCH.NORMAL_ALPHA : 0;
+    
+    // Left arrow indicator
+    this.leftIndicator = this.add.text(width * 0.15, height - 50, '←', {
+      font: 'bold 24px Arial',
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5).setAlpha(alpha);
+    
+    // Right arrow indicator
+    this.rightIndicator = this.add.text(width * 0.85, height - 50, '→', {
+      font: 'bold 24px Arial',
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5).setAlpha(alpha);
+    
+    // Rotate indicator
+    this.rotateIndicator = this.add.text(width * 0.5, height * 0.25, '↻', {
+      font: 'bold 24px Arial',
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5).setAlpha(alpha);
+    
+    // Drop indicator
+    this.dropIndicator = this.add.text(width * 0.5, height * 0.75, '↓', {
+      font: 'bold 24px Arial',
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5).setAlpha(alpha);
   }
 
   /**
@@ -739,7 +902,7 @@ export default class TetrisScene extends Phaser.Scene {
   update() {
     if (this.gameOver || this.isPaused) return;
     
-    // Handle input with some basic key repeat prevention
+    // Handle keyboard input with some basic key repeat prevention
     if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
       this.movePieceLeft();
     }
@@ -758,6 +921,91 @@ export default class TetrisScene extends Phaser.Scene {
       GameStateManager.saveTetrominoesUsed(0);
       GameStateManager.saveTetrisGrid(null);
       this.transitionToGameWithCutscene();
+    }
+    
+    // Handle touch input with timing controls
+    this.handleTouchInput();
+  }
+
+  /**
+   * Handle touch input with timing controls to prevent rapid firing
+   */
+  handleTouchInput() {
+    if (!this.touchInput) return;
+    
+    const currentTime = this.time.now;
+    
+    // Initialize touch timing if not set
+    if (!this.touchTiming) {
+      this.touchTiming = {
+        left: 0,
+        right: 0,
+        rotate: 0,
+        drop: 0,
+        moveDelay: 150, // milliseconds between moves
+        rotateDelay: 200, // milliseconds between rotations
+        dropDelay: 100 // milliseconds between drops
+      };
+    }
+    
+    // Handle left movement
+    if (this.touchInput.left && currentTime - this.touchTiming.left > this.touchTiming.moveDelay) {
+      this.movePieceLeft();
+      this.touchTiming.left = currentTime;
+      // Update visual feedback
+      if (this.leftIndicator) {
+        this.leftIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);
+        this.time.delayedCall(100, () => {
+          if (this.leftIndicator) {
+            this.leftIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
+          }
+        });
+      }
+    }
+    
+    // Handle right movement
+    if (this.touchInput.right && currentTime - this.touchTiming.right > this.touchTiming.moveDelay) {
+      this.movePieceRight();
+      this.touchTiming.right = currentTime;
+      // Update visual feedback
+      if (this.rightIndicator) {
+        this.rightIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);
+        this.time.delayedCall(100, () => {
+          if (this.rightIndicator) {
+            this.rightIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
+          }
+        });
+      }
+    }
+    
+    // Handle rotation
+    if (this.touchInput.rotate && currentTime - this.touchTiming.rotate > this.touchTiming.rotateDelay) {
+      this.rotatePiece();
+      this.touchTiming.rotate = currentTime;
+      // Update visual feedback
+      if (this.rotateIndicator) {
+        this.rotateIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);
+        this.time.delayedCall(100, () => {
+          if (this.rotateIndicator) {
+            this.rotateIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
+          }
+        });
+      }
+    }
+    
+    // Handle fast drop
+    if (this.touchInput.drop && currentTime - this.touchTiming.drop > this.touchTiming.dropDelay) {
+      this.dropPiece();
+      this.touchTiming.drop = currentTime;
+      // Update visual feedback
+      if (this.dropIndicator) {
+        this.dropIndicator.setAlpha(GAME_CONFIG.TOUCH.FEEDBACK_ALPHA);
+        this.time.delayedCall(100, () => {
+          if (this.dropIndicator) {
+            this.dropIndicator.setAlpha(GAME_CONFIG.TOUCH.NORMAL_ALPHA);
+          }
+        });
+      }
     }
   }
 
