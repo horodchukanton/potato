@@ -104,11 +104,6 @@ export const GAME_CONFIG = {
           timeScale: 0.6,
           color: 0x3498db // Blue tint
         },
-        INVERTED_CONTROLS: {
-          name: 'Inverted Controls',
-          invertControls: true,
-          color: 0xf39c12 // Orange tint
-        },
         BOUNCY_MODE: {
           name: 'Bouncy Mode',
           playerBounce: 0.8,
@@ -133,11 +128,6 @@ export const GAME_CONFIG = {
           name: 'Shrink Player',
           scaleMultiplier: 0.5,
           color: 0xfdcb6e // Yellow tint
-        },
-        OBSTACLE_SPEED_BOOST: {
-          name: 'Obstacle Speed Boost',
-          obstacleSpeedMultiplier: 3.0,
-          color: 0xff7675 // Light red tint
         },
         OBSTACLE_REVERSE: {
           name: 'Obstacle Reverse',

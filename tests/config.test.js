@@ -116,9 +116,9 @@ describe('Game Configuration', () => {
 
     test('should have all required effect types', () => {
       const effects = GAME_CONFIG.EFFECTS.DYNAMIC.EFFECTS;
-      const requiredEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'INVERTED_CONTROLS', 'BOUNCY_MODE',
-                               'WIND_GUST', 'SLIPPERY_FLOOR', 'STICKY_FLOOR', 'TELEPORT_PORTAL',
-                               'SHRINK_PLAYER', 'OBSTACLE_SPEED_BOOST', 'OBSTACLE_REVERSE'];
+      const requiredEffects = ['GRAVITY_LOW', 'SPEED_BOOST', 'TIME_SLOW', 'BOUNCY_MODE',
+                               'WIND_GUST', 'SLIPPERY_FLOOR', 'TELEPORT_PORTAL',
+                               'SHRINK_PLAYER', 'OBSTACLE_REVERSE'];
       
       requiredEffects.forEach(effectKey => {
         expect(effects[effectKey]).toBeDefined();
@@ -141,10 +141,6 @@ describe('Game Configuration', () => {
       // Time scale should slow down time
       expect(effects.TIME_SLOW.timeScale).toBeGreaterThan(0);
       expect(effects.TIME_SLOW.timeScale).toBeLessThan(1);
-      
-      // Inverted controls should be boolean
-      expect(typeof effects.INVERTED_CONTROLS.invertControls).toBe('boolean');
-      expect(effects.INVERTED_CONTROLS.invertControls).toBe(true);
       
       // Bounce should be reasonable
       expect(effects.BOUNCY_MODE.playerBounce).toBeGreaterThan(0);

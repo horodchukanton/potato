@@ -1125,7 +1125,6 @@ describe('GameScene Visual and Positioning Tests', () => {
       expect(gameScene.dynamicEffectsManager).toBeDefined();
       expect(gameScene.effectSpeedMultiplier).toBe(1.0);
       expect(gameScene.effectJumpMultiplier).toBe(1.0);
-      expect(gameScene.invertedControls).toBe(false);
     });
 
     test('should handle effect speed multiplier in player movement', () => {
@@ -1167,45 +1166,6 @@ describe('GameScene Visual and Positioning Tests', () => {
       
       const expectedJumpVelocity = GAME_CONFIG.PHYSICS.JUMP_VELOCITY * 0.5;
       expect(gameScene.player.body.setVelocityY).toHaveBeenCalledWith(expectedJumpVelocity);
-    });
-
-    test('should handle inverted controls effect', () => {
-      const gameScene = new GameScene();
-      gameScene.init();
-      gameScene.create();
-      
-      // Enable inverted controls
-      gameScene.invertedControls = true;
-      
-      // Mock input for right movement (should result in left movement due to inversion)
-      gameScene.cursors.right.isDown = true;
-      gameScene.cursors.left.isDown = false;
-      gameScene.spaceKey.isDown = false;
-      
-      gameScene.handlePlayerMovement();
-      
-      const expectedSpeed = -GAME_CONFIG.PHYSICS.PLAYER_SPEED; // Negative for left movement
-      expect(gameScene.player.body.setVelocityX).toHaveBeenCalledWith(expectedSpeed);
-    });
-
-    test('should combine effects properly (speed boost + inverted controls)', () => {
-      const gameScene = new GameScene();
-      gameScene.init();
-      gameScene.create();
-      
-      // Enable both effects
-      gameScene.effectSpeedMultiplier = 1.5;
-      gameScene.invertedControls = true;
-      
-      // Mock input for left movement (should result in right movement due to inversion)
-      gameScene.cursors.left.isDown = true;
-      gameScene.cursors.right.isDown = false;
-      gameScene.spaceKey.isDown = false;
-      
-      gameScene.handlePlayerMovement();
-      
-      const expectedSpeed = GAME_CONFIG.PHYSICS.PLAYER_SPEED * 1.5; // Positive for right movement
-      expect(gameScene.player.body.setVelocityX).toHaveBeenCalledWith(expectedSpeed);
     });
 
     test('should clean up dynamic effects on destroy', () => {
