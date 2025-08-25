@@ -308,9 +308,9 @@ describe('DynamicEffectsManager', () => {
       effectsManager.applyEffect('SHRINK_PLAYER', effectConfig);
       
       expect(mockScene.player.setScale).toHaveBeenCalledWith(effectConfig.scaleMultiplier);
-      // Verify speed and jump multipliers are set to half
+      // Verify speed multiplier is set to half and jump multiplier to 0.75
       expect(mockScene.effectSpeedMultiplier).toBe(0.5);
-      expect(mockScene.effectJumpMultiplier).toBe(0.5);
+      expect(mockScene.effectJumpMultiplier).toBe(0.75);
     });
 
     test('should adjust player position when shrinking to maintain ground contact', () => {

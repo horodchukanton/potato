@@ -10,9 +10,9 @@ export default class ShrinkPlayerEffect extends BaseEffect {
     const player = this.getPlayer();
     player.setScale(effectConfig.scaleMultiplier);
     
-    // Reduce speed and jump height to half when shrunk
+    // Reduce speed and jump height when shrunk
     this.scene.effectSpeedMultiplier = 0.5;
-    this.scene.effectJumpMultiplier = 0.5;
+    this.scene.effectJumpMultiplier = 0.75;
     
     // Adjust Y position to keep player above ground when shrunk
     if (this.scene.ground) {
