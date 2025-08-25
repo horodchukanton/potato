@@ -206,7 +206,6 @@ export default class DynamicEffectsManager {
     this.scene.physics.world.timeScale = 1.0;
     this.scene.effectSpeedMultiplier = 1.0;
     this.scene.effectJumpMultiplier = 1.0;
-    this.scene.invertedControls = false;
     this.scene.windForce = 0;
     this.scene.obstacleSpeedMultiplier = 1.0;
     this.scene.globalColorOverride = null;

@@ -24,7 +24,7 @@ export const GAME_CONFIG = {
   // Obstacle configuration
   OBSTACLES: {
     SPAWN_DELAY_MIN: 3000, // Minimum time between obstacle spawns (ms)
-    SPAWN_DELAY_MAX: 4000, // Maximum time between obstacle spawns (ms)
+    SPAWN_DELAY_MAX: 4500, // Maximum time between obstacle spawns (ms)
     SPEED: -150, // Obstacle movement speed (negative = moving left)
     MIN_HEIGHT: 40, // Minimum obstacle height
     MAX_HEIGHT: 80, // Maximum obstacle height
@@ -104,11 +104,6 @@ export const GAME_CONFIG = {
           timeScale: 0.6,
           color: 0x3498db // Blue tint
         },
-        INVERTED_CONTROLS: {
-          name: 'Inverted Controls',
-          invertControls: true,
-          color: 0xf39c12 // Orange tint
-        },
         BOUNCY_MODE: {
           name: 'Bouncy Mode',
           playerBounce: 0.8,
@@ -133,11 +128,6 @@ export const GAME_CONFIG = {
           name: 'Shrink Player',
           scaleMultiplier: 0.5,
           color: 0xfdcb6e // Yellow tint
-        },
-        OBSTACLE_SPEED_BOOST: {
-          name: 'Obstacle Speed Boost',
-          obstacleSpeedMultiplier: 3.0,
-          color: 0xff7675 // Light red tint
         },
         OBSTACLE_REVERSE: {
           name: 'Obstacle Reverse',

@@ -43,7 +43,6 @@ export default class GameScene extends Phaser.Scene {
     this.dynamicEffectsManager = null;
     this.effectSpeedMultiplier = 1.0;
     this.effectJumpMultiplier = 1.0;
-    this.invertedControls = false;
     this.windForce = 0;
     this.obstacleSpeedMultiplier = 1.0;
     this.obstacleColorOverride = null;
@@ -1217,16 +1216,9 @@ export default class GameScene extends Phaser.Scene {
     // Apply speed multiplier from dynamic effects
     const effectiveSpeed = GAME_CONFIG.PHYSICS.PLAYER_SPEED * this.effectSpeedMultiplier;
     
-    // Determine movement direction (considering inverted controls)
+    // Determine movement direction
     let moveLeft = cursors.left.isDown || touch.left;
     let moveRight = cursors.right.isDown || touch.right;
-    
-    // Apply inverted controls effect
-    if (this.invertedControls) {
-      const temp = moveLeft;
-      moveLeft = moveRight;
-      moveRight = temp;
-    }
 
     // Horizontal movement (keyboard or touch)
     if (moveLeft) {
