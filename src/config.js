@@ -24,7 +24,7 @@ export const GAME_CONFIG = {
   // Obstacle configuration
   OBSTACLES: {
     SPAWN_DELAY_MIN: 3000, // Minimum time between obstacle spawns (ms)
-    SPAWN_DELAY_MAX: 4000, // Maximum time between obstacle spawns (ms)
+    SPAWN_DELAY_MAX: 4500, // Maximum time between obstacle spawns (ms)
     SPEED: -150, // Obstacle movement speed (negative = moving left)
     MIN_HEIGHT: 40, // Minimum obstacle height
     MAX_HEIGHT: 80, // Maximum obstacle height

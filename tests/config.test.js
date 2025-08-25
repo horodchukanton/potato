@@ -28,7 +28,7 @@ describe('Game Configuration', () => {
     test('should have valid obstacle configuration', () => {
       const obstacles = GAME_CONFIG.OBSTACLES;
       expect(obstacles.SPAWN_DELAY_MIN).toBe(3000);
-      expect(obstacles.SPAWN_DELAY_MAX).toBe(6000);
+      expect(obstacles.SPAWN_DELAY_MAX).toBe(4500);
       expect(obstacles.SPAWN_DELAY_MIN).toBeLessThan(obstacles.SPAWN_DELAY_MAX);
       expect(obstacles.SPEED).toBe(-150);
       expect(obstacles.MIN_HEIGHT).toBe(40);
